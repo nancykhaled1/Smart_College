@@ -18,6 +18,32 @@ class ApiConstants{
 
   static const String googleLoginApi = "/api/user/auth/google";
 
+  static const String notificationApi = "/api/user/auth/local/fcm-token";
+
+  static const String getNotificationApi = "/api/user/notification";
+
+  static const String counterApi = "/api/user/notification/unread-count";
+
+  static const String sendMessageApi = "/api/user/chat/messages/send";
+
+  static const String completeProfileApi = "/api/user/auth/local/complete-student";
+
+  static const String examsApi = "/api/user/exam";
+
+  static const String getMessagesApi = "/api/user/chat/messages";
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -36,7 +36,7 @@ class SuccessScreen extends StatelessWidget{
                 ),
                 Text('تم انشاء حسابك بنجاح',
                 style: TextStyle(
-                  color: MyColors.blackColor,
+                  color: MyColors.softBlackColor,
                   fontSize: 20.sp,
                   fontFamily: "Noto Kufi Arabic",
                   fontWeight: FontWeight.w400

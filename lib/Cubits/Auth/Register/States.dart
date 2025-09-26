@@ -1,3 +1,4 @@
+import 'package:smart_college/Models/Response/CompleteProfileResponse.dart';
 import 'package:smart_college/Models/Response/VerifyEmailResponse.dart';
 
 import '../../../Models/Response/StudentRegisterResponse.dart';
@@ -18,6 +19,12 @@ class RegisterSuccessState extends RegisterStates {
   final StudentRegisterResponse response;
 
   RegisterSuccessState({required this.response});
+}
+
+class ProfileSuccessState extends RegisterStates {
+  final CompleteProfileResponse response;
+
+  ProfileSuccessState({required this.response});
 }
 
 class AlumniRegisterSuccessState extends RegisterStates {

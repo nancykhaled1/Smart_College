@@ -1,4 +1,6 @@
 import 'package:dartz/dartz.dart';
+import 'package:smart_college/Models/Request/CompleteProfileRequest.dart';
+import 'package:smart_college/Models/Response/CompleteProfileResponse.dart';
 
 import '../Models/Request/studentRegisterRequest.dart';
 import '../Models/Response/StudentRegisterResponse.dart';
@@ -13,5 +15,10 @@ class StudentRepository {
   Future<Either<RegisterError, StudentRegisterResponse>> registerStudent(
       StudentRegisterRequest request) {
     return remoteDataSource.registerStudent(request);
+  }
+
+  Future<Either<RegisterError, CompleteProfileResponse>> completeProfile(
+      CompleteProfileRequest request) {
+    return remoteDataSource.completeProfile(request);
   }
 }

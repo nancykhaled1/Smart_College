@@ -9,12 +9,12 @@ import 'package:smart_college/Models/Response/SendEmailResponse.dart';
 import 'package:smart_college/Repositories/LoginRepository.dart';
 import 'package:smart_college/Repositories/SendEmailRepository.dart';
 import '../../../services/local/sharedPreference.dart';
-import 'States.dart';
+import '../../States/States.dart';
 
-class ForgetPassScreenCubit extends Cubit<LoginStates> {
+class ForgetPassScreenCubit extends Cubit<States> {
   final SendEmailRepository repository;
 
-  ForgetPassScreenCubit(this.repository) : super(LoginInitialState());
+  ForgetPassScreenCubit(this.repository) : super(InitialState());
 
   var formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
@@ -22,7 +22,7 @@ class ForgetPassScreenCubit extends Cubit<LoginStates> {
 
   Future<void> sendEmail() async {
     if (formKey.currentState!.validate()) {
-      emit(LoginLoadingState(loadingMessage: "Loading..."));
+      emit(LoadingState(loadingMessage: "Loading..."));
 
       final request = SendEmailRequest(
         email: emailController.text,
@@ -33,7 +33,7 @@ class ForgetPassScreenCubit extends Cubit<LoginStates> {
 
       response.fold(
             (error) {
-          emit(LoginErrorState(errorMessage: error.error!.message));
+          emit(ErrorState(errorMessage: error.error!.message));
         },
             (data) async {
 

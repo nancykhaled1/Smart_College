@@ -1,46 +1,80 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:smart_college/Cubits/Auth/Login/GoogleViewModel.dart';
 import 'package:smart_college/Cubits/Auth/Login/forget_passViewModel.dart';
 import 'package:smart_college/Cubits/Auth/Login/loginScreenViewModel.dart';
 import 'package:smart_college/Cubits/Auth/Login/re-passViewModel.dart';
 import 'package:smart_college/Cubits/Auth/Login/send_codeViewModel.dart';
+import 'package:smart_college/Cubits/Home/ChatScreenViewModel.dart';
+import 'package:smart_college/Cubits/Home/NotificationDetailsViewModel.dart';
+import 'package:smart_college/Cubits/Students/ExamsScreenViewModel.dart';
+import 'package:smart_college/Models/Response/NotificationDetailsResponse.dart';
 import 'package:smart_college/Repositories/ChangePasswordRepository.dart';
+import 'package:smart_college/Repositories/ChatRepository.dart';
+import 'package:smart_college/Repositories/ExamsRepository.dart';
 import 'package:smart_college/Repositories/GoogleRepository.dart';
+import 'package:smart_college/Repositories/NotificationDetailsRepository.dart';
+import 'package:smart_college/Repositories/NotificationRepository.dart';
 import 'package:smart_college/Repositories/ResetPasswordRepository.dart';
 import 'package:smart_college/Repositories/SendEmailRepository.dart';
+import 'package:smart_college/Repositories/UserMessagesRepository.dart';
 import 'package:smart_college/Repositories/VerifyEmailRepository.dart';
 import 'package:smart_college/View/Auth/Login/forget_pass.dart';
-import 'package:smart_college/View/Auth/Login/re_pass.dart';
-import 'package:smart_college/View/Auth/Login/send_code.dart';
 import 'package:smart_college/View/Auth/Register/alumniRegister.dart';
 import 'package:smart_college/View/Auth/Register/roleselection.dart';
 import 'package:smart_college/View/Auth/Register/studentRegister.dart';
-import 'package:smart_college/View/Auth/Register/verifyEmail.dart';
 import 'package:smart_college/View/Graduated/home/graduatedHomeScreen.dart';
+import 'package:smart_college/View/Onboarding/onboarding.dart';
+import 'package:smart_college/View/SmartChat/SmartChat.dart';
+import 'package:smart_college/View/Student/Home/StudentHomeScreen.dart';
+import 'package:smart_college/View/Student/Materials&Exams/ExamScreen.dart';
+import 'package:smart_college/services/local/sharedPreference.dart';
 import 'package:smart_college/services/remote/apiManager.dart';
 import 'package:smart_college/sources/AlumniRegisterDataSource.dart';
 import 'package:smart_college/sources/ChangePasswordDataSource.dart';
+import 'package:smart_college/sources/ChatDataSource.dart';
+import 'package:smart_college/sources/CounterDataSource.dart';
+import 'package:smart_college/sources/ExamsDataSource.dart';
 import 'package:smart_college/sources/GoogleDataSource.dart';
 import 'package:smart_college/sources/LoginDataSource.dart';
+import 'package:smart_college/sources/NotificationDataSource.dart';
+import 'package:smart_college/sources/NotificationDetailsDataSource.dart';
 import 'package:smart_college/sources/ResetPasswordDataSource.dart';
 import 'package:smart_college/sources/SendEmailDataSource.dart';
 import 'package:smart_college/sources/StudentRegisterDataSource.dart';
 import 'package:smart_college/sources/VerifyEmailDataSource.dart';
+import 'package:smart_college/sources/getNotificationDataSource.dart';
 import 'package:smart_college/utils/colors.dart';
-
 import 'Cubits/Auth/Register/AlumniRegisterViewModel.dart';
 import 'Cubits/Auth/Register/SyudentRegisterViewModel.dart';
 import 'Cubits/Auth/Register/VerifyemailViewModel.dart';
+import 'Cubits/Home/GetNotificationViewModel.dart';
+import 'Cubits/Home/NotificationViewModel.dart';
+import 'Cubits/Students/ExamDetailsViewModel.dart';
 import 'Repositories/AlumniRegisterRepository.dart';
+import 'Repositories/CounterRepository.dart';
+import 'Repositories/GetNotificationRepository.dart';
 import 'Repositories/LoginRepository.dart';
 import 'Repositories/StudentRegisterRepository.dart';
 import 'View/Auth/Login/login.dart';
+import 'View/SmartChat/Socket.dart';
+import 'View/Splash/SplashScreen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await Hive.initFlutter();
+
+  // افتحي بوكس للرسائل
+  await Hive.openBox('messages');
+
   final apiManager = ApiManager();
   final studentRemoteDataSource = StudentRemoteDataSource(apiManager);
   final studentRepository = StudentRepository(studentRemoteDataSource);
@@ -72,6 +106,37 @@ void main() {
   //google
   final googleDataSource = GoogleDataSource(apiManager);
   final google = GoogleRepository(googleDataSource);
+
+  //notification
+  final notificationDataSource = NotificationRemoteDataSource(apiManager);
+  final notification = NotificationRepository(notificationDataSource);
+  final getNotificationDataSource = GetNotificationRemoteDataSource(apiManager);
+  final getnotification = GetNotificationRepository(getNotificationDataSource);
+
+  final NotificationDataSource = NotificationDetailsRemoteDataSource(apiManager);
+  final notificationDetails = NotificationDetailsRepository(NotificationDataSource);
+
+  // Counter repo
+  final counterRepository = CounterRemoteDataSource(apiManager);
+  final counter = CounterRepository(counterRepository);
+
+  //chat repo
+  final chatRepository = ChatRemoteDataSource(apiManager);
+  final chat = ChatRepository(chatRepository);
+
+  final examsDataSource = ExamsRemoteDataSource(apiManager);
+  final exams = ExamsRepository(examsDataSource);
+
+  final savedToken = await TokenStorage.getToken();
+  print("token${savedToken}");
+
+
+  final savedchat = await TokenStorage.getChat();
+  print("token${savedchat}");
+
+
+
+
 
   runApp(
     MultiRepositoryProvider(
@@ -105,9 +170,37 @@ void main() {
         RepositoryProvider<ChangePasswordRepository>(
           create: (context) => changePass,
         ),
+        RepositoryProvider<NotificationRepository>(
+          create: (context) => notification,
+        ),
+        RepositoryProvider<GetNotificationRepository>(
+          create: (context) => getnotification,
+        ),
+
+        RepositoryProvider<NotificationDetailsRepository>(
+          create: (context) => notificationDetails,
+        ),
+        RepositoryProvider<CounterRepository>(
+          create: (context) => counter,
+        ),
+        RepositoryProvider<ChatRepository>(
+          create: (context) => chat,
+        ),
+
+        RepositoryProvider<ExamsRepository>(
+          create: (context) => exams,
+        ),
+
       ],
+
       child: MultiBlocProvider(
         providers: [
+          BlocProvider(
+            create: (context) => ChatCubit(
+              token: savedToken?? '', // التوكن بعد اللوجين
+              chatRepository: context.read<ChatRepository>(),
+            ),
+          ),
 
           BlocProvider(
             create: (context) => GoogleCubit(
@@ -155,6 +248,41 @@ void main() {
               context.read<ChangePasswordRepository>(),
             ),
           ),
+
+          BlocProvider(
+            create: (context) => NotificationCubit(
+              context.read<NotificationRepository>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => NotificationScreenViewModel(
+              context.read<GetNotificationRepository>(),
+            ),
+          ),
+
+          BlocProvider(
+            create: (context) => NotificationDetailsViewModel(
+              context.read<NotificationDetailsRepository>(),
+              context.read<CounterRepository>(),
+            ),
+          ),
+          // BlocProvider(
+          //   create: (context) => SendMessageCubit(
+          //     context.read<ChatRepository>(),
+          //   ),
+          // ),
+
+          BlocProvider(
+            create: (context) => ExamsScreenViewModel(
+              context.read<ExamsRepository>(),
+            ),
+          ),
+
+          BlocProvider(
+            create: (context) => ExamDetailsViewModel(
+              context.read<ExamsRepository>(),
+            ),
+          ),
         ],
         child: const MyApp(),
       ),
@@ -189,19 +317,25 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
 
-          initialRoute: RoleSelectionScreen.routeName,
+          initialRoute: SplashScreen.routeName,
           routes: {
+            SplashScreen.routeName : (context) => SplashScreen(),
             LoginScreen.routeName: (context) => LoginScreen(),
             StudentRegisterScreen.routeName : (context) => StudentRegisterScreen(role: '',),
             AlumniRegisterScreen.routeName : (context) => AlumniRegisterScreen(role: '',),
             ForgetPassScreen.routeName : (context) => ForgetPassScreen(),
             //SendCode.routeName : (context) => SendCode(),
             //RePassword.routeName : (context) => RePassword(),
-            RoleSelectionScreen.routeName : (context) => RoleSelectionScreen(),
+            AccountType.routeName : (context) => AccountType(),
             GraduatedHomeScreen.routeName : (context) => GraduatedHomeScreen(),
            // VerifyEmail.routeName : (context) => VerifyEmail(userId: userId)
-
-          },
+           // NotificationScreen.routeName : (context) => NotificationScreen(),
+            OnBoarding.routeName : (context) => OnBoarding(),
+          //  NotificationDetailsScreen.routeName : (context) => NotificationDetailsScreen(notificationId: notificationId)
+            ChatScreen.routeName : (context) => ChatScreen(),
+            StudentHomeScreen.routeName : (context) => StudentHomeScreen(),
+            Examscreen.routeName : (context) => Examscreen(),
+        },
         );
       },
     );
