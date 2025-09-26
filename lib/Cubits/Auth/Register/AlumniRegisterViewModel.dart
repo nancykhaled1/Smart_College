@@ -12,6 +12,7 @@ import '../../../Models/Request/studentRegisterRequest.dart';
 import '../../../Models/Response/StudentRegisterResponse.dart';
 import '../../../Models/Response/registerError.dart';
 import '../../../Repositories/StudentRegisterRepository.dart';
+import '../../../services/local/sharedPreference.dart';
 import 'States.dart';
 
 
@@ -110,8 +111,26 @@ class AlumniRegisterCubit extends Cubit<RegisterStates> {
           (error) {
         emit(RegisterErrorState(errorMessage: error.error!.message));
       },
-          (data) {
-        emit(AlumniRegisterSuccessState(response: data));
+          (data) async {
+            // final token = data.data?; // تأكدي إن اسم الفيلد هو token
+            // print("Full login response: ${data.toJson()}"); // لو عامل toJson
+            // print("Token field: ${data.data?.token}");
+
+
+            // // خزنه محليًا
+            // await TokenStorage.saveToken(token!);
+            // final savedToken = await TokenStorage.getToken();
+            // print("Saved token locally: $savedToken");
+
+            final savedRole = await TokenStorage.getRole();
+            print("Saved role locally: $savedRole");
+
+
+            await TokenStorage.saveId(data.data!.userId!);
+            final savedUserId = await TokenStorage.getUserId();
+            print("Saved token locally: $savedUserId");
+
+            emit(AlumniRegisterSuccessState(response: data));
       },
     );
   }

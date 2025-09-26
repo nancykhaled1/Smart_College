@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "813623514492",
+    "project_id": "smart-88ba5",
+    "storage_bucket": "smart-88ba5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813623514492:android:56145d42c63a62bf3600f9",
+        "android_client_info": {
+          "package_name": "com.example.smart_college"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "813623514492-jibeig9a2l5a4gap63um33chv4navsq0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1i66S6rN_XZKi9vMl5p6To8TgGMlQCno"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "813623514492-jibeig9a2l5a4gap63um33chv4navsq0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
