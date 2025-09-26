@@ -14,9 +14,9 @@ class MyColors{
   static const Color softYellowColor = Color(0xC7404040);
  static const Color pnkcolor =Color(0XFFFBAA95);
   static const Color pnkcolor2 =Color(0XFFE6BDB3);
-
   static const Color shadGreyColor = Color(0x40AAAAAB);
-
+  static const Color backgroundColor= Color(0XFF00838F);
+   
 
 
 }

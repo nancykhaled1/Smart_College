@@ -21,6 +21,9 @@ import 'package:smart_college/View/Auth/Register/roleselection.dart';
 import 'package:smart_college/View/Auth/Register/studentRegister.dart';
 import 'package:smart_college/View/Auth/Register/verifyEmail.dart';
 import 'package:smart_college/View/Graduated/home/graduatedHomeScreen.dart';
+import 'package:smart_college/View/Student/studentHomeScreen.dart';
+import 'package:smart_college/View/home/splashScreen.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/services/remote/apiManager.dart';
 import 'package:smart_college/sources/AlumniRegisterDataSource.dart';
 import 'package:smart_college/sources/ChangePasswordDataSource.dart';
@@ -39,7 +42,7 @@ import 'Repositories/AlumniRegisterRepository.dart';
 import 'Repositories/LoginRepository.dart';
 import 'Repositories/StudentRegisterRepository.dart';
 import 'View/Auth/Login/login.dart';
-
+import 'package:smart_college/View/home/accountType.dart';
 void main() {
   final apiManager = ApiManager();
   final studentRemoteDataSource = StudentRemoteDataSource(apiManager);
@@ -48,7 +51,6 @@ void main() {
   // Alumni repo
   final alumniRemoteDataSource = AlumniRemoteDataSource(apiManager);
   final alumniRepository = AlumniRepository(alumniRemoteDataSource);
-
 
   final verifyEmailRemoteDataSource = VerifyEmailRemoteDataSource(apiManager);
   final verifyEmail = VerifyEmailRepository(verifyEmailRemoteDataSource);
@@ -62,7 +64,9 @@ void main() {
   final sendEmail = SendEmailRepository(sendEmailRemoteDataSource);
 
   //sendcode
-  final resetPasswordRemoteDataSource = ResetPasswordRemoteDataSource(apiManager);
+  final resetPasswordRemoteDataSource = ResetPasswordRemoteDataSource(
+    apiManager,
+  );
   final sendCode = ResetPasswordRepository(resetPasswordRemoteDataSource);
 
   //changepass
@@ -76,9 +80,7 @@ void main() {
   runApp(
     MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<GoogleRepository>(
-          create: (context) => google,
-        ),
+        RepositoryProvider<GoogleRepository>(create: (context) => google),
         RepositoryProvider<StudentRepository>(
           create: (context) => studentRepository,
         ),
@@ -94,9 +96,7 @@ void main() {
           create: (context) => loginRepository,
         ),
 
-        RepositoryProvider<SendEmailRepository>(
-          create: (context) => sendEmail,
-        ),
+        RepositoryProvider<SendEmailRepository>(create: (context) => sendEmail),
 
         RepositoryProvider<ResetPasswordRepository>(
           create: (context) => sendCode,
@@ -108,52 +108,47 @@ void main() {
       ],
       child: MultiBlocProvider(
         providers: [
-
           BlocProvider(
-            create: (context) => GoogleCubit(
-              context.read<GoogleRepository>(),
-            ),
+            create: (context) => GoogleCubit(context.read<GoogleRepository>()),
           ),
           BlocProvider(
-            create: (context) => RegisterCubit(
-              context.read<StudentRepository>(),
-            ),
+            create:
+                (context) => RegisterCubit(context.read<StudentRepository>()),
           ),
 
           BlocProvider(
-            create: (context) => AlumniRegisterCubit(
-              context.read<AlumniRepository>(),
-            ),
+            create:
+                (context) =>
+                    AlumniRegisterCubit(context.read<AlumniRepository>()),
           ),
 
           BlocProvider(
-            create: (context) => VerifyEmailCubit(
-              context.read<VerifyEmailRepository>(),
-            ),
+            create:
+                (context) =>
+                    VerifyEmailCubit(context.read<VerifyEmailRepository>()),
           ),
 
           BlocProvider(
-            create: (context) => LoginScreenCubit(
-              context.read<LoginRepository>(),
-            ),
+            create:
+                (context) => LoginScreenCubit(context.read<LoginRepository>()),
           ),
 
           BlocProvider(
-            create: (context) => ForgetPassScreenCubit(
-              context.read<SendEmailRepository>(),
-            ),
+            create:
+                (context) =>
+                    ForgetPassScreenCubit(context.read<SendEmailRepository>()),
           ),
 
           BlocProvider(
-            create: (context) => SendCodeCubit(
-              context.read<ResetPasswordRepository>(),
-            ),
+            create:
+                (context) =>
+                    SendCodeCubit(context.read<ResetPasswordRepository>()),
           ),
 
           BlocProvider(
-            create: (context) => RePasswordCubit(
-              context.read<ChangePasswordRepository>(),
-            ),
+            create:
+                (context) =>
+                    RePasswordCubit(context.read<ChangePasswordRepository>()),
           ),
         ],
         child: const MyApp(),
@@ -162,17 +157,13 @@ void main() {
   );
 }
 
-
-
-
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(360, 690),
+      designSize: const Size(393, 805),
       minTextAdapt: true,
       splitScreenMode: true,
 
@@ -189,18 +180,23 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
 
-          initialRoute: RoleSelectionScreen.routeName,
+          initialRoute: GraduatedHomeScreen.routeName,
           routes: {
             LoginScreen.routeName: (context) => LoginScreen(),
-            StudentRegisterScreen.routeName : (context) => StudentRegisterScreen(role: '',),
-            AlumniRegisterScreen.routeName : (context) => AlumniRegisterScreen(role: '',),
-            ForgetPassScreen.routeName : (context) => ForgetPassScreen(),
+            StudentRegisterScreen.routeName:
+                (context) => StudentRegisterScreen(role: ''),
+            AlumniRegisterScreen.routeName:
+                (context) => AlumniRegisterScreen(role: ''),
+            ForgetPassScreen.routeName: (context) => ForgetPassScreen(),
             //SendCode.routeName : (context) => SendCode(),
             //RePassword.routeName : (context) => RePassword(),
-            RoleSelectionScreen.routeName : (context) => RoleSelectionScreen(),
-            GraduatedHomeScreen.routeName : (context) => GraduatedHomeScreen(),
-           // VerifyEmail.routeName : (context) => VerifyEmail(userId: userId)
-
+            RoleSelectionScreen.routeName: (context) => RoleSelectionScreen(),
+            GraduatedHomeScreen.routeName: (context) => GraduatedHomeScreen(),
+            // VerifyEmail.routeName : (context) => VerifyEmail(userId: userId)
+            splashScreen.routeName: (context) => splashScreen(),
+               account_type.routeName: (context) => account_type(),
+            HomeScreen.routeName: (context) => HomeScreen(),
+            studentHomescreen.routeName: (context) => studentHomescreen(),
           },
         );
       },
