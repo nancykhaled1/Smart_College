@@ -1,9 +1,10 @@
-class NewsModel {
+  class NewsModel {
   final String id;
   final String title;
   final String content;
   final String mainImage;
   final List<String> images;
+  final List<String> optional;
   final String type;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -14,6 +15,7 @@ class NewsModel {
     required this.content,
     required this.mainImage,
     required this.images,
+    required this.optional,
     required this.type,
     this.createdAt,
     this.updatedAt,
@@ -27,6 +29,9 @@ class NewsModel {
       content: json['content'] ?? '',
       mainImage: json['mainImage'] ?? '',
       images: (json['images'] as List<dynamic>?)
+          ?.map((item) => item.toString())
+          .toList() ?? [],
+      optional: (json['optional'] as List<dynamic>?)
           ?.map((item) => item.toString())
           .toList() ?? [],
       type: json['type'] ?? 'news',
@@ -47,6 +52,7 @@ class NewsModel {
       'content': content,
       'mainImage': mainImage,
       'images': images,
+      'optional': optional,
       'type': type,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
@@ -70,6 +76,7 @@ class NewsModel {
     String? content,
     String? mainImage,
     List<String>? images,
+    List<String>? optional,
     String? type,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -80,6 +87,7 @@ class NewsModel {
       content: content ?? this.content,
       mainImage: mainImage ?? this.mainImage,
       images: images ?? this.images,
+      optional: optional ?? this.optional,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -88,7 +96,7 @@ class NewsModel {
 
   @override
   String toString() {
-    return 'NewsModel(id: $id, title: $title, content: $content, mainImage: $mainImage, images: $images, type: $type, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'NewsModel(id: $id, title: $title, content: $content, mainImage: $mainImage, images: $images, optional: $optional, type: $type, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -100,6 +108,7 @@ class NewsModel {
         other.content == content &&
         other.mainImage == mainImage &&
         other.images == images &&
+        other.optional == optional &&
         other.type == type &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
@@ -112,6 +121,7 @@ class NewsModel {
         content.hashCode ^
         mainImage.hashCode ^
         images.hashCode ^
+        optional.hashCode ^
         type.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode;

@@ -17,9 +17,8 @@ class CommonBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
-      children: [
-        // Bottom Navigation
-        Container(
+      children: [ 
+ Container(
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
@@ -36,7 +35,7 @@ class CommonBottomNavigation extends StatelessWidget {
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             selectedItemColor: MyColors.primaryColor,
-            unselectedItemColor: MyColors.greyColor,
+            unselectedItemColor: MyColors.textColor,
             selectedLabelStyle: TextStyle(
               fontFamily: "Noto Kufi Arabic",
               fontSize: 10.sp,
@@ -61,14 +60,14 @@ class CommonBottomNavigation extends StatelessWidget {
               ),
               BottomNavigationBarItem(
                 icon: SvgPicture.asset(
-                  "assets/images/studies.svg",
+                  "assets/images/subject.svg",
                   width: 24.w,
                   height: 24.h,
                   color: currentIndex == 1
                       ? MyColors.primaryColor
                       : MyColors.textColor,
                 ),
-                label: 'دراسات عليا',
+                label: ' المواد الدراسية',
               ),
               const BottomNavigationBarItem(
                 icon: SizedBox.shrink(), // مكان فاضي لزر الشات
@@ -76,25 +75,25 @@ class CommonBottomNavigation extends StatelessWidget {
               ),
               BottomNavigationBarItem(
                 icon: SvgPicture.asset(
-                  "assets/images/icon.svg",
+                  "assets/images/exam.svg",
                   width: 24.w,
                   height: 24.h,
                   color: currentIndex == 3
                       ? MyColors.primaryColor
                       : MyColors.textColor,
                 ),
-                label: 'تدريبات',
+                label: 'الامتحانات',
               ),
               BottomNavigationBarItem(
                 icon: SvgPicture.asset(
-                  "assets/images/dashboard.svg",
+                  "assets/images/profile.svg",
                   width: 24.w,
                   height: 24.h,
                   color: currentIndex == 4
                       ? MyColors.primaryColor
-                      : MyColors.textColor,
+                      : MyColors.greyColor,
                 ),
-                label: 'Dashboard',
+                label: 'حسابي',
               ),
             ],
           ),

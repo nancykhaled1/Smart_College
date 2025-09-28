@@ -12,8 +12,9 @@ class NewsRemoteDataSource {
   Future<Either<NewsError, NewsListResponse>> getAllNews({
     int page = 1,
     int limit = 10,
+    bool random = true,
   }) {
-    return apiManager.getAllNews(page: page, limit: limit);
+    return apiManager.getAllNews(page: page, limit: limit, random: random);
   }
 
   Future<Either<NewsError, NewsModel>> getNewsById(String id) {
@@ -22,8 +23,9 @@ class NewsRemoteDataSource {
 
   Future<Either<NewsError, NewsListResponse>> getLatestNews({
     int count = 3,
+    bool random = true,
   }) {
-    return apiManager.getLatestNews(count: count);
+    return apiManager.getLatestNews(count: count, random: random);
   }
 
   Future<Either<NewsError, NewsListResponse>> getImportantNews() {
@@ -32,32 +34,21 @@ class NewsRemoteDataSource {
 
   Future<Either<NewsError, NewsListResponse>> searchNews({
     String? query,
-    String? category,
     int page = 1,
     int limit = 10,
   }) {
     return apiManager.searchNews(
       query: query,
-      category: category,
       page: page,
       limit: limit,
     );
   }
 
-  Future<Either<NewsError, NewsListResponse>> getNewsByCategory(
-    String category, {
-    int page = 1,
-    int limit = 10,
+
+  Future<Either<NewsError, NewsListResponse>> getRandomNews({
+    int count = 10,
   }) {
-    return apiManager.getNewsByCategory(
-      category,
-      page: page,
-      limit: limit,
-    );
-  }
-
-  Future<Either<NewsError, List<String>>> getNewsCategories() {
-    return apiManager.getNewsCategories();
+    return apiManager.getRandomNews(count: count);
   }
 }
 

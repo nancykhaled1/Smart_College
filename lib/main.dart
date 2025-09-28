@@ -180,7 +180,7 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
 
-          initialRoute: GraduatedHomeScreen.routeName,
+          initialRoute: splashScreen.routeName,
           routes: {
             LoginScreen.routeName: (context) => LoginScreen(),
             StudentRegisterScreen.routeName:

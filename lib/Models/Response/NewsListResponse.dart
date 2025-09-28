@@ -18,12 +18,23 @@ class NewsListResponse {
   });
 
   factory NewsListResponse.fromJson(Map<String, dynamic> json) {
+    // Handle the new JSON structure where data contains a "news" array
+    List<NewsModel> newsList = [];
+    if (json['data'] != null && json['data']['news'] != null) {
+      newsList = (json['data']['news'] as List<dynamic>?)
+          ?.map((item) => NewsModel.fromJson(item))
+          .toList() ?? [];
+    } else if (json['data'] is List) {
+      // Fallback for old structure
+      newsList = (json['data'] as List<dynamic>?)
+          ?.map((item) => NewsModel.fromJson(item))
+          .toList() ?? [];
+    }
+    
     return NewsListResponse(
       success: json['success'] ?? false,
-      data: (json['data'] as List<dynamic>?)
-          ?.map((item) => NewsModel.fromJson(item))
-          .toList() ?? [],
-      totalCount: json['totalCount'] ?? json['data']?.length,
+      data: newsList,
+      totalCount: json['totalCount'] ?? newsList.length,
       currentPage: json['currentPage'],
       totalPages: json['totalPages'],
       message: json['message'],
