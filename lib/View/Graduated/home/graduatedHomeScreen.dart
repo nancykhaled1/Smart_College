@@ -7,12 +7,18 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_college/View/Auth/Register/roleselection.dart';
 import 'package:smart_college/View/SmartChat/SmartChat.dart';
+import 'package:smart_college/View/Graduated/home/all_news.dart';
+import 'package:smart_college/View/Student/news_details.dart';
+import 'package:smart_college/View/widgets/common_top_search_bar.dart';
+import 'package:smart_college/View/widgets/common_bottom_navigation.dart';
 import 'package:smart_college/utils/colors.dart';
 import '../../../Cubits/States/States.dart';
 import '../../../Cubits/Home/NotificationDetailsViewModel.dart';
 import '../../../Cubits/Home/NotificationViewModel.dart';
 import '../../Notification/notification_screen.dart';
 import '../../Notification/notificationPermission.dart';
+import 'package:smart_college/Models/Response/news_model.dart';
+import 'package:smart_college/services/api_news_service.dart';
 
 class GraduatedHomeScreen extends StatefulWidget {
   static const String routeName = 'gradhome';
@@ -22,41 +28,55 @@ class GraduatedHomeScreen extends StatefulWidget {
 }
 
 class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
+  int _currentIndex = 0;
+  TextEditingController _searchController = TextEditingController();
+  late List<Widget> _pages;
 
+  // الحصول على آخر 3 أخبار من الخدمة
+  List<NewsModel> newsItems = [];
+
+  // قائمة بأسماء الشهور باللغة العربية
+  final List<String> _months = [
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _initNotifications();
-    context.read<NotificationDetailsViewModel>().getCounter();
+    // قائمة الصفحات في الـ Bottom Navigation
+    _pages = [
+      _buildGraduatedContent(), // المحتوى الحالي للخريجين
+      Container(child: Center(child: Text('دراسات عليا'))),
+      Container(child: Center(child: Text('التدريبات'))),
+      Container(child: Center(child: Text('Dashboard'))),
+    ];
+    _loadNews();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // هيتنفذ كل مرة ترجع للشاشة
-    context.read<NotificationDetailsViewModel>().getCounter();
+  // تحميل الأخبار من API
+  Future<void> _loadNews() async {
+    try {
+      final news = await ApiNewsService.getLatestNews(count: 3);
+      if (mounted) {
+        setState(() {
+          newsItems = news;
+        });
+      }
+    } catch (e) {
+      print('Error loading news: $e');
+    }
   }
-
-  Future<void> logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // مسح كل البيانات المخزنة (token, role, ...)
-
-    // رجوع لشاشة اللوجين
-    Navigator.pushReplacementNamed(context,AccountType.routeName);
-  }
-
-  Future<void> _initNotifications() async {
-    NotificationPermissionHelper.requestNotificationPermission(context);
-    context.read<NotificationCubit>().getFcmToken();
-    context.read<NotificationCubit>().sendFcmToken();
-    context.read<NotificationCubit>().listenToMessages();
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await messaging.requestPermission();
-    print("🔔 Permission status: ${settings.authorizationStatus}");
-
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -66,195 +86,370 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
         return false; // ❌ مش هيرجع
         // return true;  ✅ هيرجع
       },
-      child: SafeArea(
-        child: Scaffold(
-          body: Padding(
-            padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 25.w),
+      child: Scaffold(
+        backgroundColor: Color(0xffF5F5F5),
+        body: Column(
+          children: [
+            // شريط البحث والإشعارات - مشترك في جميع الصفحات
+            CommonTopSearchBar(controller: _searchController),
+
+            // محتوى الصفحات
+            Expanded(child: _pages[_currentIndex]),
+          ],
+        ),
+
+        // Bottom Navigation Bar
+        bottomNavigationBar: CommonBottomNavigation(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  // دالة لبناء محتوى الخريجين
+  Widget _buildGraduatedContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            // height: 200,
+            // width: 400,
+            decoration: BoxDecoration(
+              color: MyColors.whiteColor,
+              //   border: Border.all(color: Colors.blue, width: 1),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  //mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => NotificationScreen(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SvgPicture.asset(
+                        'assets/images/graduation-cap.svg',
+                      ),
+                    ),
+                    SizedBox(width: 5.w),
+                    Text(
+                      "الخريجين",
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        color: MyColors.blackColor,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Noto Kufi Arabic',
+                      ),
+                    ),
+                    Spacer(),
+                    SvgPicture.asset('assets/images/Rectangle.svg'),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildCircle("30%", "باحث عن عمل ", 0.9, [
+                      MyColors.pnkcolor,
+                      Color(0xff14B8A6),
+                    ]),
+                    _buildCircle("66%", " موظف", 0.85, [
+                      Color(0xffDA9240),
+                      MyColors.pnkcolor2,
+                    ]),
+                    Spacer(),
+                    _buildCircle("85%", "عامل حر ", 0.66, [
+                      Color(0xff7563E7),
+                      MyColors.pnkcolor2,
+                    ]),
+                    Spacer(),
+                    _buildCircle("90%", " دراسات عليا", 0.30, [
+                      Color(0xffFBAA95),
+                      MyColors.pnkcolor2,
+                    ]),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 69),
+          Container(
+            width: 345.w,
+            height: 275.h,
+            decoration: BoxDecoration(
+              color: MyColors.whiteColor,
+              //   border: Border.all(color: Colors.blue, width: 1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+
+                Text(
+                  "تدريب في تحليل البيانات",
+                  style: TextStyle(
+                    fontFamily: "Noto Kufi Arabic",
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15.sp,
+                  ),
+                ),
+                SizedBox(height: 15.h),
+                Text(
+                  "تعلم أساسيات تحليل البيانات باستخدام Python وExceتعلم أساسيات تحليل البيانات باستخدام Python وExce",
+                  style: TextStyle(
+                    fontFamily: "Noto Kufi Arabic",
+                    fontWeight: FontWeight.w500,
+                    fontSize: 10.sp,
+                    color: MyColors.greyColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 15.h),
+                Row(
+                  children: [
+                    SvgPicture.asset('assets/images/Mobile.svg'),
+                    Row(
+                      children: [
+                        SvgPicture.asset('assets/images/location.svg'),
+                        Text(
+                          "  القاهرة - مدينة نصر",
+                          style: TextStyle(
+                            fontFamily: "Noto Kufi Arabic",
+                            fontWeight: FontWeight.w500,
+                            fontSize: 10.sp,
+                            color: MyColors.greyColor,
                           ),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: MyColors.whiteColor,
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/images/notification.svg',
-                                  color: MyColors.softBlackColor,
+                        ),
+                      ]),
+                      SizedBox(height: 10.h),
+                        Row(
+                          children: [
+                            SvgPicture.asset('assets/images/calendar.svg'),
+                            Text(
+                              "  ١٥ أكتوبر ٢٠٢٥ – ١٥ نوفمبر ٢٠٢٥",
+                              style: TextStyle(
+                                fontFamily: "Noto Kufi Arabic",
+                                fontWeight: FontWeight.w500,
+                                fontSize: 10.sp,
+                                color: MyColors.greyColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                    SizedBox(height: 10.h),
+                        Row(
+                          children: [
+                            SvgPicture.asset('assets/images/building.svg'),
+                            Text(
+                              "  Wenu Start up",
+                              style: TextStyle(
+                                fontFamily: "Noto Kufi Arabic",
+                                fontWeight: FontWeight.w500,
+                                fontSize: 10.sp,
+                                color: MyColors.greyColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                    SizedBox(height: 10.h),
+                        Row(
+                          children: [
+                            SvgPicture.asset('assets/images/map.svg'),
+                            Text(
+                              " View in Map",
+                              style: TextStyle(
+                                fontFamily: "Noto Kufi Arabic",
+                                fontWeight: FontWeight.w500,
+                                fontSize: 10.sp,
+                                color: MyColors.greyColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                  ],
+                ),
+                ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 50.w,
+                        vertical: 12.h,
+                      ),
+                    ),
+                    child: Text(
+                      " قدم الان",
+                      style: TextStyle(
+                        fontFamily: "Noto Kufi Arabic",
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12.sp,
+                        color: MyColors.whiteColor,
+                      ),
+                    ),
+                ),
+                  ],
+
+
+            ),
+
+          ),
+          SizedBox(height: 20.h),
+          Divider(color: MyColors.greyColor.withOpacity(0.5), thickness: 0.5),
+          SizedBox(height: 20.h),
+          // قسم أحدث الأخبار والفعاليات
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "أحدث الفعاليات والأخبار",
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Noto Kufi Arabic",
+                  color: MyColors.blackColor,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AllNews()),
+                  );
+                },
+                child: Text(
+                  "عرض كل الأخبار",
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: "Noto Kufi Arabic",
+                    color: MyColors.primaryColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          // قائمة الأخبار
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: newsItems.length,
+            itemBuilder: (context, index) {
+              final news = newsItems[index];
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Container(
+                  color: MyColors.whiteColor,
+                  width: 350.w,
+                  height: 100.h,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child:
+                            news.mainImage.isNotEmpty
+                                ? Image.network(
+                                  news.mainImage,
+                                  width: 120.w,
+                                  height: 100.h,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 120.w,
+                                      height: 100.h,
+                                      color: Colors.grey[300],
+                                      child: Icon(Icons.image_not_supported),
+                                    );
+                                  },
+                                )
+                                : Container(
+                                  width: 120.w,
+                                  height: 100.h,
+                                  color: Colors.grey[300],
+                                  child: Icon(Icons.image_not_supported),
                                 ),
-
-                                // 🔴 البادج (Counter)
-                                Positioned(
-                                  right: 20.w,
-                                  top: -13.h,
-                                  child: BlocBuilder<NotificationDetailsViewModel, States>(
-                                    builder: (context, state) {
-                                      int counter = 0;
-                                      if (state is LoadingState) {
-                                        return Container(
-                                          padding: EdgeInsets.all(6),
-                                          decoration: BoxDecoration(
-                                            color: MyColors.primaryColor,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: SizedBox(
-                                            height: 10,
-                                            width: 10,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        );
-                                      }
-
-                                      if (state is CounterSuccessState) {
-                                        counter = state.counterData.unreadCount ?? 0;
-                                      }
-
-                                      if (counter == 0) return SizedBox(); // لو مفيش إشعارات مخليهوش يظهر
-
-                                      return Container(
-                                        padding: EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: MyColors.primaryColor,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Text(
-                                          "$counter",
-                                          style: TextStyle(
-                                            fontFamily: 'Noto Kufi Arabic',
-                                            color: Colors.white,
-                                            fontSize: 12.sp,
-                                            fontWeight: FontWeight.w400,
-                                          ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Text(
+                                news.title,
+                                style: TextStyle(
+                                  fontSize: 9.sp,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: "Noto Kufi Arabic",
+                                  color: MyColors.blackColor,
+                                ),
+                                maxLines: 2,
+                                softWrap: true,
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  news.createdAt != null
+                                      ? "${news.createdAt!.day} ${_months[news.createdAt!.month - 1]}, ${news.createdAt!.year}"
+                                      : "17 أكتوبر, 2024",
+                                  style: TextStyle(
+                                    fontSize: 7.sp,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: "Noto Kufi Arabic",
+                                    color: Color(0xffAAAAAB),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  NewsDetails(news: news),
                                         ),
                                       );
                                     },
+                                    child: Text(
+                                      "معرفة المزيد",
+                                      style: TextStyle(
+                                        fontSize: 7.sp,
+                                        fontWeight: FontWeight.w500,
+                                        fontFamily: "Noto Kufi Arabic",
+                                        color: Color(0xff14B8A6),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 50,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => ChatScreen(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: MyColors.whiteColor,
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_ios_new,
-                          color: MyColors.primaryColor,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(
-                      width: 50,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.logout),
-                      onPressed: () => logout(context),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Container(
-                 // height: 200,
-                 // width: 400,
-                  decoration: BoxDecoration(
-                    color: MyColors.whiteColor,
-                    border: Border.all(color: Colors.blue, width: 1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        //mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SvgPicture.asset('assets/images/graduation-cap.svg'),
-                          ),
-                          SizedBox(width: 5.w),
-                          Text(
-                            "الخريجين",
-                            style: TextStyle(
-                                fontSize: 15.sp,
-                                color: MyColors.softBlackColor,
-                                fontWeight: FontWeight.w500 ,
-                                fontFamily: 'Noto Kufi Arabic'
-                            ),
-                          ),
-                          Spacer(),
-                          SvgPicture.asset('assets/images/Rectangle.svg'),
-                        ],
-                      ),
-                      SizedBox(height: 20.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildCircle("30%", "دراسات عليا", 0.3,
-                              [MyColors.pnkcolor , MyColors.pnkcolor2]
-                          ),
-                          _buildCircle("66%", "عامل حر", 0.66, [MyColors.pnkcolor , MyColors.pnkcolor2]),
-                          _buildCircle("85%", "موظف", 0.85, [MyColors.pnkcolor , MyColors.pnkcolor2]),
-                          _buildCircle("90%", "باحث عن عمل", 0.9, [MyColors.pnkcolor , MyColors.pnkcolor2]),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        "عرض المزيد",
-                        style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
-                      )
                     ],
                   ),
                 ),
-        
-              ],
-            ),
-        
+              );
+            },
           ),
-        ),
+        ],
       ),
     );
   }
@@ -283,4 +478,5 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
       ],
     );
   }
+
 }

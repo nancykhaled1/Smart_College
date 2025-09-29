@@ -10,6 +10,8 @@ import 'package:smart_college/Models/Response/ResetPasswordResponse.dart';
 import 'package:smart_college/Models/Response/SendEmailResponse.dart';
 import '../../Models/Response/AllMessagesResponse.dart';
 import '../../Models/Response/GetNotificationResponse.dart';
+import '../../Models/Response/QuestionsResponse.dart';
+import '../../Models/Response/StartAttemptsResponse.dart';
 
 abstract class States{}
 
@@ -103,6 +105,41 @@ class ExamDetailsSuccessState extends States {
 
   ExamDetailsSuccessState({required this.examDetails});
 }
+
+class QuestionsSuccessState extends States {
+  final List<Questions> questions;
+
+  QuestionsSuccessState({required this.questions});
+}
+
+class QuestionUpdatedState extends States {
+  final int currentIndex;
+  final int? selectedAnswerIndex;
+  final String shortAnswer;
+
+  QuestionUpdatedState({
+    required this.currentIndex,
+    this.selectedAnswerIndex,
+    this.shortAnswer = "",
+  });
+}
+
+class ExamFinishedState extends States {}
+
+class StartAttemptSuccessState extends States {
+  final dynamic attempt;
+  final Duration remaining;
+  StartAttemptSuccessState({required this.attempt, required this.remaining});
+}
+
+class TimerTickState extends States {
+  final Duration remaining;
+  TimerTickState({required this.remaining});
+}
+
+class TimerFinishedState extends States {}
+
+
 
 class GetMessagesSuccessState extends States {
   final List<MessageData> messages;

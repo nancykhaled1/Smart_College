@@ -35,7 +35,11 @@ import 'package:smart_college/View/Onboarding/onboarding.dart';
 import 'package:smart_college/View/SmartChat/SmartChat.dart';
 import 'package:smart_college/View/Student/Home/StudentHomeScreen.dart';
 import 'package:smart_college/View/Student/Materials&Exams/ExamScreen.dart';
+import 'package:smart_college/services/local/Hive.dart';
 import 'package:smart_college/services/local/sharedPreference.dart';
+import 'package:smart_college/View/Student/studentHomeScreen.dart';
+import 'package:smart_college/View/home/splashScreen.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/services/remote/apiManager.dart';
 import 'package:smart_college/sources/AlumniRegisterDataSource.dart';
 import 'package:smart_college/sources/ChangePasswordDataSource.dart';
@@ -67,10 +71,13 @@ import 'View/Auth/Login/login.dart';
 import 'View/SmartChat/Socket.dart';
 import 'View/Splash/SplashScreen.dart';
 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await Hive.initFlutter();
+  Hive.registerAdapter(MessageAdapter()); // لازم بعد توليد الأدفانس
+
 
   // افتحي بوكس للرسائل
   await Hive.openBox('messages');
@@ -131,8 +138,8 @@ Future<void> main() async {
   print("token${savedToken}");
 
 
-  final savedchat = await TokenStorage.getChat();
-  print("token${savedchat}");
+  // final savedchat = await TokenStorage.getChat();
+  // print("token${savedchat}");
 
 
 
@@ -317,9 +324,9 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
 
-          initialRoute: SplashScreen.routeName,
+          initialRoute: splashScreen.routeName,
           routes: {
-            SplashScreen.routeName : (context) => SplashScreen(),
+            splashScreen.routeName : (context) => splashScreen(),
             LoginScreen.routeName: (context) => LoginScreen(),
             StudentRegisterScreen.routeName : (context) => StudentRegisterScreen(role: '',),
             AlumniRegisterScreen.routeName : (context) => AlumniRegisterScreen(role: '',),
@@ -333,9 +340,17 @@ class MyApp extends StatelessWidget {
             OnBoarding.routeName : (context) => OnBoarding(),
           //  NotificationDetailsScreen.routeName : (context) => NotificationDetailsScreen(notificationId: notificationId)
             ChatScreen.routeName : (context) => ChatScreen(),
-            StudentHomeScreen.routeName : (context) => StudentHomeScreen(),
+           // StudentHomeScreen.routeName : (context) => StudentHomeScreen(),
             Examscreen.routeName : (context) => Examscreen(),
-        },
+        }
+            //RoleSelectionScreen.routeName: (context) => RoleSelectionScreen(),
+           // GraduatedHomeScreen.routeName: (context) => GraduatedHomeScreen(),
+            // VerifyEmail.routeName : (context) => VerifyEmail(userId: userId)
+           // splashScreen.routeName: (context) => splashScreen(),
+             //  account_type.routeName: (context) => account_type(),
+           // HomeScreen.routeName: (context) => HomeScreen(),
+           // studentHomescreen.routeName: (context) => studentHomescreen(),
+
         );
       },
     );

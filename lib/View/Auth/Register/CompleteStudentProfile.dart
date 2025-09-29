@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:smart_college/View/Student/Home/StudentHomeScreen.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/utils/colors.dart';
 
 import '../../../Cubits/Auth/Register/States.dart';
@@ -32,7 +33,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => StudentHomeScreen(),
+              builder: (context) => HomeScreen(),
             ),
           );
         }

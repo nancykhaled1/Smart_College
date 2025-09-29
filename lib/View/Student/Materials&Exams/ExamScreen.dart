@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_college/View/Student/Home/StudentHomeScreen.dart';
 import 'package:smart_college/View/Student/Materials&Exams/ExamDialog.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/utils/colors.dart';
 
 import '../../../Cubits/States/States.dart';
@@ -34,43 +35,6 @@ class _ExamscreenState extends State<Examscreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => StudentHomeScreen(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: MyColors.whiteColor,
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_ios_new,
-                          color: MyColors.primaryColor,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 80.w,),
-                    Text('الامتحانات',
-                      style: TextStyle(
-                        fontFamily: 'Noto Kufi Arabic',
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w500,
-                        color: MyColors.softBlackColor,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 50.h),
                 Text('الامتحانات المتاحة حاليا',
                   style: TextStyle(
                     fontFamily: 'Noto Kufi Arabic',

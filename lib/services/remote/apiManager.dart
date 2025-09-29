@@ -6,11 +6,13 @@ import 'package:http/http.dart' as http;
 import 'package:smart_college/Models/Request/ChangePasswordRequest.dart';
 import 'package:smart_college/Models/Request/CompleteProfileRequest.dart';
 import 'package:smart_college/Models/Request/ResetPasswordRequest.dart';
+import 'package:smart_college/Models/Request/StartAttemptsRequest.dart';
 import 'package:smart_college/Models/Response/AllMessagesResponse.dart';
 import 'package:smart_college/Models/Response/ChangePaswwordResponse.dart';
 import 'package:smart_college/Models/Response/CompleteProfileResponse.dart';
 import 'package:smart_college/Models/Response/CounterResponse.dart';
 import 'package:smart_college/Models/Response/ExamsResponse.dart';
+import 'package:smart_college/Models/Response/QuestionsResponse.dart';
 import 'package:smart_college/Models/Response/ResetPasswordResponse.dart';
 import '../../Models/Request/AlumniRegisterRequest.dart';
 import '../../Models/Request/LoginRequest.dart';
@@ -26,12 +28,17 @@ import '../../Models/Response/LoginResponse.dart';
 import '../../Models/Response/NotificationDetailsResponse.dart';
 import '../../Models/Response/NotificationResponse.dart';
 import '../../Models/Response/SendEmailResponse.dart';
+import '../../Models/Response/StartAttemptsResponse.dart';
 import '../../Models/Response/StudentRegisterResponse.dart';
 import '../../Models/Response/UserMessagesResponse.dart';
 import '../../Models/Response/VerifyEmailError.dart';
 import '../../Models/Response/VerifyEmailResponse.dart';
 import '../../Models/Response/registerError.dart';
 import '../local/sharedPreference.dart';
+// Removed unused NewsRequest/NewsSearchRequest imports
+import '../../Models/Response/NewsListResponse.dart';
+import '../../Models/Response/NewsError.dart';
+import '../../Models/Response/news_model.dart';
 import 'apiConstants.dart';
 
 class ApiManager {
@@ -825,87 +832,7 @@ class ApiManager {
     }
   }
 
-  // Future<Either<LoginError, SendMessageResponse>> sendMessage({
-  //   required String adminId,
-  //   required String userId,
-  //   required String text,
-  // }) async {
-  //   try {
-  //     final connectivityResult = await Connectivity().checkConnectivity();
-  //
-  //     if (connectivityResult == ConnectivityResult.mobile ||
-  //         connectivityResult == ConnectivityResult.wifi) {
-  //       Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.sendMessageApi);
-  //
-  //       final savedToken = await TokenStorage.getToken();
-  //
-  //       if (savedToken == null) {
-  //         print("⚠️ No auth token saved, user might not be logged in.");
-  //         return left(
-  //           LoginError(
-  //             success: false,
-  //             error: LoginDetailsError(
-  //               code: 401,
-  //               message: "Unauthorized: No token found, please login again.",
-  //             ),
-  //           ),
-  //         );
-  //       }
-  //
-  //       var requestBody = {
-  //         "adminId": adminId,
-  //         "userId": userId,
-  //         "text": text,
-  //       };
-  //
-  //       print('Sending request to: $url');
-  //       print('Request body: $requestBody');
-  //
-  //       var response = await http.post(
-  //         url,
-  //         headers: {
-  //           "Authorization": "Bearer $savedToken",
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: jsonEncode(requestBody),
-  //       );
-  //
-  //       print('Response status: ${response.statusCode}');
-  //       print('Response body: ${response.body}');
-  //
-  //       var jsonResponse = jsonDecode(response.body);
-  //
-  //       if (response.statusCode >= 200 && response.statusCode < 300) {
-  //         var sendMessageResponse = SendMessageResponse.fromJson(jsonResponse);
-  //         return right(sendMessageResponse);
-  //       } else {
-  //         return left(LoginError.fromJson(jsonResponse));
-  //       }
-  //     } else {
-  //       return left(
-  //         LoginError(
-  //           success: false,
-  //           error: LoginDetailsError(
-  //             code: 0,
-  //             message: "No Internet Connection",
-  //           ),
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print('Exception: $e');
-  //     return left(
-  //       LoginError(
-  //         success: false,
-  //         error: LoginDetailsError(
-  //           code: -1,
-  //           message: "Unexpected Error",
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
-  //
+
   Future<Either<LoginError, AllMessagesResponse>> getMessages() async {
     final connectivityResult = await Connectivity().checkConnectivity();
 
@@ -960,63 +887,391 @@ class ApiManager {
     }
   }
 
-  //
-  // Future<Either<LoginError, DeleteMessageResponse>> deleteMessage(String msgId) async {
-  //   final connectivityResult = await Connectivity().checkConnectivity();
-  //
-  //   if (connectivityResult == ConnectivityResult.mobile ||
-  //       connectivityResult == ConnectivityResult.wifi) {
-  //     Uri url = Uri.https(ApiConstants.baseurl, "/api/user/chat/messages/$msgId");
-  //
-  //     final savedToken = await TokenStorage.getToken();
-  //
-  //     if (savedToken == null) {
-  //       print("⚠️ No auth token saved, user might not be logged in.");
-  //       return left(
-  //         LoginError(
-  //           success: false,
-  //           error: LoginDetailsError(
-  //             code: 401,
-  //             message: "Unauthorized: No token found, please login again.",
-  //           ),
-  //         ),
-  //       );
-  //     }
-  //
-  //     var response = await http.delete(
-  //       url,
-  //       headers: {
-  //         "Authorization": "Bearer $savedToken",
-  //         "Content-Type": "application/json",
-  //       },
-  //     );
-  //
-  //     print('Mark as read status: ${response.statusCode}');
-  //     print('Mark as read body: ${response.body}');
-  //
-  //     var jsonResponse = jsonDecode(response.body);
-  //
-  //     if (response.statusCode >= 200 && response.statusCode < 300) {
-  //       var deleteMessageResponse = DeleteMessageResponse.fromJson(jsonResponse);
-  //       return right(deleteMessageResponse);
-  //     } else {
-  //       return left(LoginError.fromJson(jsonResponse));
-  //     }
-  //   } else {
-  //     return left(
-  //       LoginError(
-  //         success: false,
-  //         error: LoginDetailsError(
-  //           code: 0,
-  //           message: "No Internet Connection",
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
 
 
+  Future<Either<NewsError, NewsListResponse>> getAllNews({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
 
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          ApiConstants.getAllNewsApi,
+          {'page': page.toString(), 'limit': limit.toString()}
+        );
+
+        print('Sending get all news request to: $url');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var newsResponse = NewsListResponse.fromJson(jsonResponse);
+          return right(newsResponse);
+        } else {
+          return left(NewsError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(NewsError(
+          success: false,
+          message: "No Internet Connection",
+          code: 0,
+        ));
+      }
+    } catch (e) {
+      print('Exception in getAllNews: $e');
+      return left(NewsError(
+        success: false,
+        message: "Unexpected Error",
+        code: -1,
+        details: e.toString(),
+      ));
+    }
+  }
+
+  Future<Either<NewsError, NewsModel>> getNewsById(String id) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          "${ApiConstants.getNewsByIdApi}$id"
+        );
+
+        print('Sending get news by id request to: $url');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var news = NewsModel.fromJson(jsonResponse['data'] ?? jsonResponse);
+          return right(news);
+        } else {
+          return left(NewsError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(NewsError(
+          success: false,
+          message: "No Internet Connection",
+          code: 0,
+        ));
+      }
+    } catch (e) {
+      print('Exception in getNewsById: $e');
+      return left(NewsError(
+        success: false,
+        message: "Unexpected Error",
+        code: -1,
+        details: e.toString(),
+      ));
+    }
+  }
+
+  Future<Either<NewsError, NewsListResponse>> getLatestNews({
+    int count = 3,
+  }) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          ApiConstants.getLatestNewsApi,
+          {'count': count.toString()}
+        );
+
+        print('Sending get latest news request to: $url');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var newsResponse = NewsListResponse.fromJson(jsonResponse);
+          return right(newsResponse);
+        } else {
+          return left(NewsError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(NewsError(
+          success: false,
+          message: "No Internet Connection",
+          code: 0,
+        ));
+      }
+    } catch (e) {
+      print('Exception in getLatestNews: $e');
+      return left(NewsError(
+        success: false,
+        message: "Unexpected Error",
+        code: -1,
+        details: e.toString(),
+      ));
+    }
+  }
+
+  Future<Either<NewsError, NewsListResponse>> getImportantNews() async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+
+        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.getImportantNewsApi);
+
+        print('Sending get important news request to: $url');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var newsResponse = NewsListResponse.fromJson(jsonResponse);
+          return right(newsResponse);
+        } else {
+          return left(NewsError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(NewsError(
+          success: false,
+          message: "No Internet Connection",
+          code: 0,
+        ));
+      }
+    } catch (e) {
+      print('Exception in getImportantNews: $e');
+      return left(NewsError(
+        success: false,
+        message: "Unexpected Error",
+        code: -1,
+        details: e.toString(),
+      ));
+    }
+  }
+
+  Future<Either<NewsError, NewsListResponse>> searchNews({
+    String? query,
+    String? category,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+
+        Map<String, String> queryParams = {
+          'page': page.toString(),
+          'limit': limit.toString(),
+        };
+
+        if (query != null && query.isNotEmpty) {
+          queryParams['query'] = query;
+        }
+
+        if (category != null && category.isNotEmpty) {
+          queryParams['category'] = category;
+        }
+
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          ApiConstants.searchNewsApi,
+          queryParams
+        );
+
+        print('Sending search news request to: $url');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var newsResponse = NewsListResponse.fromJson(jsonResponse);
+          return right(newsResponse);
+        } else {
+          return left(NewsError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(NewsError(
+          success: false,
+          message: "No Internet Connection",
+          code: 0,
+        ));
+      }
+    } catch (e) {
+      print('Exception in searchNews: $e');
+      return left(NewsError(
+        success: false,
+        message: "Unexpected Error",
+        code: -1,
+        details: e.toString(),
+      ));
+    }
+  }
+
+  Future<Either<NewsError, NewsListResponse>> getNewsByCategory(
+    String category, {
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          "${ApiConstants.getNewsByCategoryApi}$category",
+          {'page': page.toString(), 'limit': limit.toString()}
+        );
+
+        print('Sending get news by category request to: $url');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var newsResponse = NewsListResponse.fromJson(jsonResponse);
+          return right(newsResponse);
+        } else {
+          return left(NewsError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(NewsError(
+          success: false,
+          message: "No Internet Connection",
+          code: 0,
+        ));
+      }
+    } catch (e) {
+      print('Exception in getNewsByCategory: $e');
+      return left(NewsError(
+        success: false,
+        message: "Unexpected Error",
+        code: -1,
+        details: e.toString(),
+      ));
+    }
+  }
+
+  Future<Either<NewsError, List<String>>> getNewsCategories() async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+
+        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.getNewsCategoriesApi);
+
+        print('Sending get news categories request to: $url');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          List<String> categories = (jsonResponse['data'] as List<dynamic>?)
+              ?.map((item) => item.toString())
+              .toList() ?? [];
+          return right(categories);
+        } else {
+          return left(NewsError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(NewsError(
+          success: false,
+          message: "No Internet Connection",
+          code: 0,
+        ));
+      }
+    } catch (e) {
+      print('Exception in getNewsCategories: $e');
+      return left(NewsError(
+        success: false,
+        message: "Unexpected Error",
+        code: -1,
+        details: e.toString(),
+      ));
+    }
+  }
 
   Future<Either<LoginError, ExamsResponse>> getExams() async {
     final connectivityResult = await Connectivity().checkConnectivity();
@@ -1079,7 +1334,7 @@ class ApiManager {
 
     if (connectivityResult == ConnectivityResult.mobile ||
         connectivityResult == ConnectivityResult.wifi) {
-      Uri url = Uri.https(ApiConstants.baseurl, "/api/user/exam/$examId");
+      Uri url = Uri.https(ApiConstants.baseurl, "/api/user/exam/exams/$examId");
 
       final savedToken = await TokenStorage.getToken();
 
@@ -1127,6 +1382,141 @@ class ApiManager {
       );
     }
   }
+
+  Future<Either<LoginError, QuestionsResponse>> getQuestions(String examId) async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+
+    if (connectivityResult == ConnectivityResult.mobile ||
+        connectivityResult == ConnectivityResult.wifi) {
+      Uri url = Uri.https(ApiConstants.baseurl, "/api/user/exam/exams/$examId/questions");
+
+      final savedToken = await TokenStorage.getToken();
+
+      if (savedToken == null) {
+        print("⚠️ No auth token saved, user might not be logged in.");
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 401,
+              message: "Unauthorized: No token found, please login again.",
+            ),
+          ),
+        );
+      }
+
+      var response = await http.get(
+        url,
+        headers: {
+          "Authorization": "Bearer $savedToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      print('Mark as read status: ${response.statusCode}');
+      print('Mark as read body: ${response.body}');
+
+      var jsonResponse = jsonDecode(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        var questionsResponse = QuestionsResponse.fromJson(jsonResponse);
+        return right(questionsResponse);
+      } else {
+        return left(LoginError.fromJson(jsonResponse));
+      }
+    } else {
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: 0,
+            message: "No Internet Connection",
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<Either<LoginError, StartAttemptsResponse>> startAttempt(String examId) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.attemptApi);
+
+        var requestBody = StartAttemptsRequest(
+          examId: examId ?? '',
+
+        );
+
+        print('Sending Notification request to: $url');
+        print('Request body: ${requestBody.toJson()}');
+
+
+        final savedToken = await TokenStorage.getToken();
+
+        if (savedToken == null) {
+          print("⚠️ No auth token saved, user might not be logged in.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "Unauthorized: No token found, please login again.",
+              ),
+            ),
+          );
+        }
+
+
+        var response = await http.post(
+          url,
+          body: jsonEncode(requestBody.toJson()),
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer $savedToken",
+
+
+          },
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var startAttemptsResponse = StartAttemptsResponse.fromJson(jsonResponse);
+          return right(startAttemptsResponse);
+        } else {
+          // أخطاء من السيرفر
+          return left(LoginError.fromJson(jsonResponse));
+        }
+      } else {
+        // مفيش إنترنت
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Exception in sendNotification: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(code: -1, message: "Unexpected Error"),
+        ),
+      );
+    }
+  }
+
 
 
 }

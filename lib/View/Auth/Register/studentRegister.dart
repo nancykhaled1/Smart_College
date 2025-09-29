@@ -6,6 +6,7 @@ import 'package:smart_college/Cubits/Auth/Register/VerifyemailViewModel.dart';
 import 'package:smart_college/View/Auth/Login/login.dart';
 import 'package:smart_college/View/Auth/Register/verifyEmail.dart';
 import 'package:smart_college/View/Student/Home/StudentHomeScreen.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/utils/colors.dart';
 import 'package:smart_college/utils/text_field.dart';
 import '../../../Cubits/Auth/Login/GoogleViewModel.dart';
@@ -403,9 +404,7 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => StudentHomeScreen(
-
-                                    ),
+                                    builder: (_) => HomeScreen(),
                                   ),
                                 );
                               }

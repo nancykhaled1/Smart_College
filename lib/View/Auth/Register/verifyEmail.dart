@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/utils/colors.dart';
 import '../../../Cubits/Auth/Register/States.dart';
 import '../../../Cubits/Auth/Register/VerifyemailViewModel.dart';
@@ -43,7 +44,7 @@ class _VerifyEmailState extends State<VerifyEmail> {
                 if (role == "Student") {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (_) => StudentHomeScreen()),
+                    MaterialPageRoute(builder: (_) => HomeScreen()),
                   );
                 } else if (role == "Graduated") {
                   Navigator.pushReplacement(

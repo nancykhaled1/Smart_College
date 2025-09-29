@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_college/View/Student/Home/StudentHomeScreen.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import '../../Cubits/Home/ChatScreenViewModel.dart';
 import '../../Cubits/States/States.dart';
 import '../../utils/colors.dart';
@@ -27,7 +28,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ChatCubit>().getAllMessages();
+    context.read<ChatCubit>().connectSocket();
 
   }
 
@@ -50,7 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       Navigator.of(context).pushReplacement(
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) =>
-                              StudentHomeScreen(),
+                              HomeScreen(),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),

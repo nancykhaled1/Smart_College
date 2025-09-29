@@ -14,6 +14,8 @@ import '../../../services/local/sharedPreference.dart';
 import '../../../utils/dialog.dart';
 import '../../Onboarding/onboarding.dart';
 import '../../Student/Home/StudentHomeScreen.dart';
+import '../../Student/studentHomeScreen.dart';
+import '../../home/homeScreen.dart';
 import 'forget_pass.dart';
 
 class LoginScreen extends StatefulWidget{
@@ -44,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (role == "Student") {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => StudentHomeScreen()),
+              MaterialPageRoute(builder: (_) => HomeScreen()),
             );
           } else if (role == "Graduated") {
             Navigator.pushReplacement(
@@ -350,7 +352,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (_) => StudentHomeScreen()),
+                                      builder: (_) => HomeScreen()),
                                 );
                               } else if (role == "Graduated") {
                                 Navigator.pushReplacement(

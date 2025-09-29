@@ -16,6 +16,7 @@ import '../../../utils/dialog.dart';
 import '../../Graduated/home/graduatedHomeScreen.dart';
 import '../../Onboarding/onboarding.dart';
 import '../../Student/Home/StudentHomeScreen.dart';
+import '../../home/homeScreen.dart';
 
 class AlumniRegisterScreen extends StatefulWidget{
   static const String routeName = 'alumniRegister';
@@ -411,7 +412,7 @@ class _LoginScreenState extends State<AlumniRegisterScreen> {
                             if (role == "Student") {
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => StudentHomeScreen()),
+                                MaterialPageRoute(builder: (_) => HomeScreen()),
                               );
                             } else if (role == "Graduated") {
                               Navigator.pushReplacement(

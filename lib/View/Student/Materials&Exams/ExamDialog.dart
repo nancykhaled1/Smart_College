@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:smart_college/Cubits/Students/ExamsScreenViewModel.dart';
-import 'package:smart_college/View/Student/Materials&Exams/ExamScreen.dart';
 
 import '../../../Cubits/States/States.dart';
 import '../../../Cubits/Students/ExamDetailsViewModel.dart';
@@ -14,10 +12,9 @@ import 'QuestionsScreen.dart';
 class ExamDialog extends StatefulWidget {
   final String examId;
 
-
   const ExamDialog({
     Key? key,
-    required this.examId
+    required this.examId,
   }) : super(key: key);
 
   @override
@@ -33,19 +30,33 @@ class _ExamDialogState extends State<ExamDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: MyColors.whiteColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.r),
-      ),
-      contentPadding: EdgeInsets.symmetric(
-        vertical: 40.h,
-        horizontal: 25.w
-      ),
-      content: BlocBuilder<ExamDetailsViewModel, States>(
-        builder: (context, state) {
-          if (state is LoadingState) {
-            return SizedBox(
+    return BlocConsumer<ExamDetailsViewModel, States>(
+      listener: (context, state) {
+        if (state is StartAttemptSuccessState) {
+          final details = (context.read<ExamDetailsViewModel>().state as ExamDetailsSuccessState).examDetails;
+
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  ExamQuestionScreen(
+                    examId: state.attempt.exam ?? "",
+                    attemptId: state.attempt.id ?? "",
+                    examName: details.title ?? ''
+                  ),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
+        if (state is LoadingState) {
+          return AlertDialog(
+            backgroundColor: MyColors.whiteColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.r),
+            ),
+            content: SizedBox(
               width: 220.w,
               height: 180.h,
               child: Center(
@@ -53,13 +64,21 @@ class _ExamDialogState extends State<ExamDialog> {
                   color: MyColors.primaryColor,
                 ),
               ),
-            );
-          } else if (state is ExamDetailsSuccessState) {
-            final details = state.examDetails;
-            final parsedDate = DateTime.parse(details.createdAt!).toLocal();
-            final formattedDate = DateFormat('dd/MM/yyyy').format(parsedDate);
+            ),
+          );
+        } else if (state is ExamDetailsSuccessState) {
+          final details = state.examDetails;
+          final parsedDate = DateTime.parse(details.createdAt!).toLocal();
+          final formattedDate = DateFormat('dd/MM/yyyy').format(parsedDate);
 
-            return Column(
+          return AlertDialog(
+            backgroundColor: MyColors.whiteColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.r),
+            ),
+            contentPadding:
+            EdgeInsets.symmetric(vertical: 40.h, horizontal: 25.w),
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
@@ -67,22 +86,20 @@ class _ExamDialogState extends State<ExamDialog> {
                     Column(
                       children: [
                         Container(
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: MyColors.primaryColor,
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                            child: SvgPicture.asset('assets/images/quiz.svg')
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: MyColors.primaryColor,
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: SvgPicture.asset('assets/images/quiz.svg'),
                         ),
+                        SizedBox(height: 15.h),
                         SizedBox(
-                          height: 15.h,
-                        ),
-                        SizedBox(
-                          width: 80.w, // تحدد عرض مناسب أو سيبه مرن
+                          width: 80.w,
                           child: Text(
                             details.title ?? '',
-                            maxLines: 2, // يخلي العنوان ينزل سطرين لو طويل
-                            overflow: TextOverflow.ellipsis, // يحط "..." لو كبر أكتر
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: 'Noto Kufi Arabic',
@@ -92,35 +109,27 @@ class _ExamDialogState extends State<ExamDialog> {
                             ),
                           ),
                         ),
-
                       ],
                     ),
-                    SizedBox(
-                      width: 20.w,
-                    ),
+                    SizedBox(width: 20.w),
                     Container(
                       height: 100.h,
                       child: VerticalDivider(
                         color: MyColors.greyColor,
                         thickness: 1,
-                        width: 20, // المسافة حوالين الخط
+                        width: 20,
                       ),
                     ),
-                    SizedBox(
-                      width: 20.w,
-                    ),
+                    SizedBox(width: 20.w),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.alarm,
-                              color: MyColors.primaryColor,
-                            ),
-                            SizedBox(
-                              width: 4.w,
-                            ),
-                            Text("${details.durationMinutes ?? 0} دقيقة" ,
+                            Icon(Icons.alarm, color: MyColors.primaryColor),
+                            SizedBox(width: 4.w),
+                            Text(
+                              "${details.durationMinutes ?? 0} دقيقة",
                               style: TextStyle(
                                 fontFamily: 'Noto Kufi Arabic',
                                 fontSize: 12.sp,
@@ -130,18 +139,14 @@ class _ExamDialogState extends State<ExamDialog> {
                             ),
                           ],
                         ),
-                        SizedBox(
-                          height: 10.h,
-                        ),
+                        SizedBox(height: 10.h),
                         Row(
                           children: [
                             Icon(Icons.calendar_month,
-                              color: MyColors.primaryColor,
-                            ),
-                            SizedBox(
-                              width: 4.w,
-                            ),
-                            Text(formattedDate,
+                                color: MyColors.primaryColor),
+                            SizedBox(width: 4.w),
+                            Text(
+                              formattedDate,
                               style: TextStyle(
                                 fontFamily: 'Noto Kufi Arabic',
                                 fontSize: 12.sp,
@@ -151,18 +156,14 @@ class _ExamDialogState extends State<ExamDialog> {
                             ),
                           ],
                         ),
-                        SizedBox(
-                          height: 10.h,
-                        ),
+                        SizedBox(height: 10.h),
                         Row(
                           children: [
                             Icon(Icons.text_snippet_outlined,
-                              color: MyColors.primaryColor,
-                            ),
-                            SizedBox(
-                              width: 4.w,
-                            ),
-                            Text("${details.questions?.length ?? 0} سؤال",
+                                color: MyColors.primaryColor),
+                            SizedBox(width: 4.w),
+                            Text(
+                              " سؤال",
                               style: TextStyle(
                                 fontFamily: 'Noto Kufi Arabic',
                                 fontSize: 12.sp,
@@ -176,20 +177,14 @@ class _ExamDialogState extends State<ExamDialog> {
                     )
                   ],
                 ),
-                SizedBox(
-                  height: 30.h,
-                ),
+                SizedBox(height: 30.h),
                 Row(
                   children: [
                     ElevatedButton(
-                      onPressed: (){
-                        Navigator.of(context).pushReplacement(
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => ExamQuestionScreen(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
+                      onPressed: () {
+                        context
+                            .read<ExamDetailsViewModel>()
+                            .startAttempt(widget.examId);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: MyColors.primaryColor,
@@ -202,18 +197,8 @@ class _ExamDialogState extends State<ExamDialog> {
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                       ),
-                      // child: state is LoadingState
-                      //     ? SizedBox(
-                      //   width: 20.w,
-                      //   height: 20.w,
-                      //   child: CircularProgressIndicator(
-                      //     strokeWidth: 2,
-                      //     valueColor: AlwaysStoppedAnimation<Color>(MyColors.whiteColor),
-                      //   ),
-                      // )
-                      //     :
-                      child:Text(
-                        "ابدا الان",
+                      child: Text(
+                        "ابدأ الآن",
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontFamily: "Noto Kufi Arabic",
@@ -221,11 +206,9 @@ class _ExamDialogState extends State<ExamDialog> {
                         ),
                       ),
                     ),
-                    SizedBox(
-                      width: 37.w,
-                    ),
+                    SizedBox(width: 37.w),
                     ElevatedButton(
-                      onPressed: (){
+                      onPressed: () {
                         Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
@@ -237,23 +220,13 @@ class _ExamDialogState extends State<ExamDialog> {
                         ),
                         shape: RoundedRectangleBorder(
                           side: BorderSide(
-                            color: MyColors.primaryColor, // لون البوردر
-                            width: 1.w, // سمك البوردر
+                            color: MyColors.primaryColor,
+                            width: 1.w,
                           ),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                       ),
-                      // child: state is LoadingState
-                      //     ? SizedBox(
-                      //   width: 20.w,
-                      //   height: 20.w,
-                      //   child: CircularProgressIndicator(
-                      //     strokeWidth: 2,
-                      //     valueColor: AlwaysStoppedAnimation<Color>(MyColors.whiteColor),
-                      //   ),
-                      // )
-                      //     :
-                      child:Text(
+                      child: Text(
                         "رجوع",
                         style: TextStyle(
                           fontSize: 13.sp,
@@ -265,16 +238,22 @@ class _ExamDialogState extends State<ExamDialog> {
                   ],
                 )
               ],
-
-            );
-          } else if (state is ErrorState) {
-            return SizedBox(
+            ),
+          );
+        } else if (state is ErrorState) {
+          return AlertDialog(
+            backgroundColor: MyColors.whiteColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.r),
+            ),
+            content: SizedBox(
               width: 220.w,
               height: 180.h,
               child: Column(
                 children: [
                   Center(
-                    child: Text("${state.errorMessage}",
+                    child: Text(
+                      state.errorMessage ?? "حدث خطأ",
                       style: TextStyle(
                         fontFamily: 'Noto Kufi Arabic',
                         fontSize: 16.sp,
@@ -285,7 +264,7 @@ class _ExamDialogState extends State<ExamDialog> {
                   ),
                   Spacer(),
                   ElevatedButton(
-                    onPressed: (){
+                    onPressed: () {
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
@@ -299,7 +278,7 @@ class _ExamDialogState extends State<ExamDialog> {
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
-                    child:Text(
+                    child: Text(
                       "رجوع",
                       style: TextStyle(
                         fontSize: 13.sp,
@@ -310,17 +289,12 @@ class _ExamDialogState extends State<ExamDialog> {
                   ),
                 ],
               ),
-            );
-          } else {
-            return const SizedBox();
-          }
-        },
-      ),
-
-
-
-
-
+            ),
+          );
+        } else {
+          return const SizedBox();
+        }
+      },
     );
   }
 }

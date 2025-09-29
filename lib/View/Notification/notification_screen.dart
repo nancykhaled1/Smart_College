@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:smart_college/Cubits/States/States.dart';
 import 'package:smart_college/View/Graduated/home/graduatedHomeScreen.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import '../../../../Cubits/Home/GetNotificationViewModel.dart';
 import '../../../../utils/colors.dart';
 import 'NotificationDetails.dart';
@@ -47,7 +48,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       onTap: () {
                         Navigator.of(context).pushReplacement(
                           PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => GraduatedHomeScreen(),
+                            pageBuilder: (context, animation, secondaryAnimation) => HomeScreen(),
                             transitionDuration: Duration.zero,
                             reverseTransitionDuration: Duration.zero,
                           ),
@@ -137,7 +138,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SvgPicture.asset(
-                                  'assets/images/icon.svg',
+                                  'assets/images/notification-slash.svg',
                                   width: 238,
                                   height: 238,
                                 ),

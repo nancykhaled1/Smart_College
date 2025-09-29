@@ -21,14 +21,4 @@ class MyColors{
 
 
 
-
-
-
-
-
-
-
-
-
-
 }
