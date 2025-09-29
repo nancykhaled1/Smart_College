@@ -58,19 +58,13 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
               height: 38.h,
               decoration: BoxDecoration(
                 color: MyColors.whiteColor,
-                borderRadius: BorderRadius.circular(9),
                 border: Border.all(
-                //  color: MyColors.greyColor.withOpacity(0.2),
+                  color: MyColors.whiteColor,
                   width: 1,
                 ),
-                boxShadow: [
-                    BoxShadow(
-                      color: MyColors.blackColor.withOpacity(0.15),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+                borderRadius: BorderRadius.circular(9),
+                
+                
               ),
               child: Center(
                 child: SvgPicture.asset(
@@ -82,7 +76,7 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
               ),
             ),
           ),
-
+          
           // شريط البحث
           Expanded(
             child: Container(
@@ -92,17 +86,10 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
                 color: MyColors.whiteColor,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: MyColors.greyColor.withOpacity(0.3),
+                 color: MyColors.whiteColor,
                   width: 1,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: MyColors.blackColor.withOpacity(0.15),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                
               ),
               child: TextField(
                 controller: widget.controller,
@@ -128,7 +115,7 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
               ),
             ),
           ),
-
+          
           // أيقونة الإشعارات
           GestureDetector(
             onTap: () async {
@@ -151,23 +138,16 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
                 color: MyColors.whiteColor,
                 borderRadius: BorderRadius.circular(9),
                 border: Border.all(
-                  color: MyColors.greyColor.withOpacity(0.2),
+                  color: MyColors.whiteColor,
                   width: 1,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: MyColors.blackColor.withOpacity(0.1),
-                    blurRadius: 3,
-                    spreadRadius: 1,
-                    offset: Offset(0, 1),
-                  ),
-                ],
+               
               ),
               child: Center(
-                child: SvgPicture.asset(
-                  "assets/images/Notification.svg",
-                  width: 20.w,
-                  height: 20.h,
+                child: Image.asset(
+                  "assets/images/Notification.png",
+                  width: 40.w,
+                  height: 40.h,
                   fit: BoxFit.contain,
                 ),
               ),

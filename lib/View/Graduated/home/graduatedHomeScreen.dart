@@ -18,7 +18,7 @@ import '../../../Cubits/Home/NotificationViewModel.dart';
 import '../../Notification/notification_screen.dart';
 import '../../Notification/notificationPermission.dart';
 import 'package:smart_college/Models/Response/news_model.dart';
-import 'package:smart_college/services/api_news_service.dart';
+import 'package:smart_college/services/news_manager.dart';
 
 class GraduatedHomeScreen extends StatefulWidget {
   static const String routeName = 'gradhome';
@@ -32,10 +32,10 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
   TextEditingController _searchController = TextEditingController();
   late List<Widget> _pages;
 
-  // الحصول على آخر 3 أخبار من الخدمة
-  List<NewsModel> newsItems = [];
 
-  // قائمة بأسماء الشهور باللغة العربية
+  NewsModel? currentNews;
+
+
   final List<String> _months = [
     'يناير',
     'فبراير',
@@ -64,13 +64,13 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
     _loadNews();
   }
 
-  // تحميل الأخبار من API
+  // تحميل آخر خبر من API
   Future<void> _loadNews() async {
     try {
-      final news = await ApiNewsService.getLatestNews(count: 3);
+      final news = await NewsManager.getLatestNews();
       if (mounted) {
         setState(() {
-          newsItems = news;
+          currentNews = news;
         });
       }
     } catch (e) {
@@ -119,8 +119,8 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            // height: 200,
-            // width: 400,
+            height: 200.h,
+            width: 400.w,
             decoration: BoxDecoration(
               color: MyColors.whiteColor,
               //   border: Border.all(color: Colors.blue, width: 1),
@@ -152,156 +152,237 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
                   ],
                 ),
                 SizedBox(height: 20.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildCircle("30%", "باحث عن عمل ", 0.9, [
-                      MyColors.pnkcolor,
-                      Color(0xff14B8A6),
-                    ]),
-                    _buildCircle("66%", " موظف", 0.85, [
-                      Color(0xffDA9240),
-                      MyColors.pnkcolor2,
-                    ]),
-                    Spacer(),
-                    _buildCircle("85%", "عامل حر ", 0.66, [
-                      Color(0xff7563E7),
-                      MyColors.pnkcolor2,
-                    ]),
-                    Spacer(),
-                    _buildCircle("90%", " دراسات عليا", 0.30, [
-                      Color(0xffFBAA95),
-                      MyColors.pnkcolor2,
-                    ]),
-                  ],
-                ),
+               Expanded(
+                 child: Row(
+                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                   children: [
+                     _buildCircle(
+                       "30%",
+                       "باحث عن عمل",
+                       0.9,
+                       [MyColors.pnkcolor, Color(0xff14B8A6)],
+                       textColor: Color(0xFFAAAAAB), // لون النص
+                     ),
+                   //  SizedBox(width:5.h ), // مسافة
+                     _buildCircle(
+                       "66%",
+                       "موظف",
+                       0.85,
+                       [Color(0xffDA9240), MyColors.pnkcolor2],
+                       textColor: Color(0xFFAAAAAB),
+                     ),
+                    // SizedBox(width: 4), // مسافة
+                     _buildCircle(
+                       "85%",
+                       "عامل حر",
+                       0.66,
+                       [Color(0xff7563E7), MyColors.pnkcolor2],
+                       textColor: Color(0xFFAAAAAB),
+                     ),
+                    // SizedBox(width: 16), // مسافة
+                     _buildCircle(
+                       "90%",
+                       "دراسات عليا",
+                       0.30,
+                       [Color(0xffFBAA95), MyColors.pnkcolor2],
+                       textColor: Color(0xFFAAAAAB),
+                     ),
+                   ],
+                 ),
+               )
+
               ],
             ),
           ),
           SizedBox(height: 69),
           Container(
-            width: 345.w,
-            height: 275.h,
-            decoration: BoxDecoration(
-              color: MyColors.whiteColor,
-              //   border: Border.all(color: Colors.blue, width: 1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
+  width: 345.w,
+  padding: EdgeInsets.all(12.w),
+  decoration: BoxDecoration(
+    color: MyColors.whiteColor,
+    borderRadius: BorderRadius.circular(10),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black12,
+        blurRadius: 4,
+        offset: Offset(0, 2),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      /// الصف الأول: الأيقونة على الشمال والنصوص على اليمين
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// الأيقونة
+          // SvgPicture.asset(
+          //   'assets/images/Mobile.svg',
+          //   width: 60.w,
+          //   height: 60.h,
+          // ),
+          SizedBox(width: 10.w),
 
+          /// النصوص
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
                   "تدريب في تحليل البيانات",
                   style: TextStyle(
                     fontFamily: "Noto Kufi Arabic",
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                     color: MyColors.blackColor,
                   ),
                 ),
-                SizedBox(height: 15.h),
+                SizedBox(height: 6.h),
                 Text(
-                  "تعلم أساسيات تحليل البيانات باستخدام Python وExceتعلم أساسيات تحليل البيانات باستخدام Python وExce",
+                  "تعلم أساسيات تحليل البيانات باستخدام Python وExcel تعلم أساسيات تحليل البيانات باستخدام Python وExcel",
                   style: TextStyle(
                     fontFamily: "Noto Kufi Arabic",
                     fontWeight: FontWeight.w500,
                     fontSize: 10.sp,
-                    color: MyColors.greyColor,
+                    color: MyColors.textColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 15.h),
-                Row(
-                  children: [
-                    SvgPicture.asset('assets/images/Mobile.svg'),
-                    Row(
-                      children: [
-                        SvgPicture.asset('assets/images/location.svg'),
-                        Text(
-                          "  القاهرة - مدينة نصر",
-                          style: TextStyle(
-                            fontFamily: "Noto Kufi Arabic",
-                            fontWeight: FontWeight.w500,
-                            fontSize: 10.sp,
-                            color: MyColors.greyColor,
-                          ),
-                        ),
-                      ]),
-                      SizedBox(height: 10.h),
-                        Row(
-                          children: [
-                            SvgPicture.asset('assets/images/calendar.svg'),
-                            Text(
-                              "  ١٥ أكتوبر ٢٠٢٥ – ١٥ نوفمبر ٢٠٢٥",
-                              style: TextStyle(
-                                fontFamily: "Noto Kufi Arabic",
-                                fontWeight: FontWeight.w500,
-                                fontSize: 10.sp,
-                                color: MyColors.greyColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                    SizedBox(height: 10.h),
-                        Row(
-                          children: [
-                            SvgPicture.asset('assets/images/building.svg'),
-                            Text(
-                              "  Wenu Start up",
-                              style: TextStyle(
-                                fontFamily: "Noto Kufi Arabic",
-                                fontWeight: FontWeight.w500,
-                                fontSize: 10.sp,
-                                color: MyColors.greyColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                    SizedBox(height: 10.h),
-                        Row(
-                          children: [
-                            SvgPicture.asset('assets/images/map.svg'),
-                            Text(
-                              " View in Map",
-                              style: TextStyle(
-                                fontFamily: "Noto Kufi Arabic",
-                                fontWeight: FontWeight.w500,
-                                fontSize: 10.sp,
-                                color: MyColors.greyColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                  ],
-                ),
-                ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: MyColors.primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 50.w,
-                        vertical: 12.h,
-                      ),
-                    ),
-                    child: Text(
-                      " قدم الان",
-                      style: TextStyle(
-                        fontFamily: "Noto Kufi Arabic",
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12.sp,
-                        color: MyColors.whiteColor,
-                      ),
-                    ),
-                ),
-                  ],
-
-
+              ],
             ),
+          ),
+        ],
+      ),
+
+      SizedBox(height: 15.h),
+
+      /// باقي التفاصيل
+
+               Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    /// الصورة على الشمال
+
+
+    SizedBox(width: 12.w),
+
+    /// العمود اللي فيه الأربع صفوف
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SvgPicture.asset('assets/images/location.svg'),
+              SizedBox(width: 5.w),
+              Text(
+                "القاهرة - مدينة نصر",
+                style: TextStyle(
+                  fontFamily: "Noto Kufi Arabic",
+                  fontWeight: FontWeight.w500,
+                  fontSize: 10.sp,
+                  color: MyColors.greyColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+
+          Row(
+            children: [
+              SvgPicture.asset('assets/images/calendar.svg'),
+              SizedBox(width: 5.w),
+              Text(
+                "١٥ أكتوبر ٢٠٢٥ – ١٥ نوفمبر ٢٠٢٥",
+                style: TextStyle(
+                  fontFamily: "Noto Kufi Arabic",
+                  fontWeight: FontWeight.w500,
+                  fontSize: 10.sp,
+                  color: MyColors.greyColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+
+          Row(
+            children: [
+              SvgPicture.asset('assets/images/building.svg'),
+              SizedBox(width: 5.w),
+              Text(
+                "Wenu Start up",
+                style: TextStyle(
+                  fontFamily: "Noto Kufi Arabic",
+                  fontWeight: FontWeight.w500,
+                  fontSize: 10.sp,
+                  color: MyColors.greyColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+
+          Row(
+            children: [
+              SvgPicture.asset('assets/images/map.svg'),
+              SizedBox(width: 5.w),
+              Text(
+                "View in Map",
+                style: TextStyle(
+                  fontFamily: "Noto Kufi Arabic",
+                  fontWeight: FontWeight.w500,
+                  fontSize: 10.sp,
+                  color: MyColors.greyColor,
+                ),
+              ),
+
+// Container(
+//       width: 60.w,
+//       height: 80.h,
+//       child: SvgPicture.asset("assets/images/Mobile.svg",  fit: BoxFit.contain,),
+
+//       ),
+
+            ],
 
           ),
+        ],
+      ),
+    ),
+  ],
+),
+
+
+      SizedBox(height: 20.h),
+
+      /// زر التقديم
+      ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: MyColors.primaryColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: 60.w,
+            vertical: 12.h,
+          ),
+        ),
+        child: Text(
+          "قدم الآن",
+          style: TextStyle(
+            fontFamily: "Noto Kufi Arabic",
+            fontWeight: FontWeight.w700,
+            fontSize: 15.sp,
+            color: MyColors.whiteColor,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
           SizedBox(height: 20.h),
           Divider(color: MyColors.greyColor.withOpacity(0.5), thickness: 0.5),
           SizedBox(height: 20.h),
@@ -340,110 +421,116 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
             ],
           ),
           SizedBox(height: 10.h),
-          // قائمة الأخبار
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: newsItems.length,
-            itemBuilder: (context, index) {
-              final news = newsItems[index];
-              return Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Container(
-                  color: MyColors.whiteColor,
-                  width: 350.w,
-                  height: 100.h,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child:
-                            news.mainImage.isNotEmpty
-                                ? Image.network(
-                                  news.mainImage,
-                                  width: 120.w,
-                                  height: 100.h,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 120.w,
-                                      height: 100.h,
-                                      color: Colors.grey[300],
-                                      child: Icon(Icons.image_not_supported),
-                                    );
-                                  },
-                                )
-                                : Container(
+          // عرض آخر خبر
+          if (currentNews != null)
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Container(
+                color: MyColors.whiteColor,
+                width: 350.w,
+                height: 100.h,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: currentNews!.mainImage.isNotEmpty
+                          ? Image.network(
+                              currentNews!.mainImage,
+                              width: 120.w,
+                              height: 100.h,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
                                   width: 120.w,
                                   height: 100.h,
                                   color: Colors.grey[300],
                                   child: Icon(Icons.image_not_supported),
-                                ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Text(
-                                news.title,
+                                );
+                              },
+                            )
+                          : Container(
+                              width: 120.w,
+                              height: 100.h,
+                              color: Colors.grey[300],
+                              child: Icon(Icons.image_not_supported),
+                            ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              currentNews!.title,
+                              style: TextStyle(
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: "Noto Kufi Arabic",
+                                color: MyColors.blackColor,
+                              ),
+                              maxLines: 2,
+                              softWrap: true,
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                currentNews!.createdAt != null
+                                    ? "${currentNews!.createdAt!.day} ${_months[currentNews!.createdAt!.month - 1]}, ${currentNews!.createdAt!.year}"
+                                    : "17 أكتوبر, 2024",
                                 style: TextStyle(
-                                  fontSize: 9.sp,
+                                  fontSize: 7.sp,
                                   fontWeight: FontWeight.w500,
                                   fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.blackColor,
+                                  color: Color(0xffAAAAAB),
                                 ),
-                                maxLines: 2,
-                                softWrap: true,
                               ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  news.createdAt != null
-                                      ? "${news.createdAt!.day} ${_months[news.createdAt!.month - 1]}, ${news.createdAt!.year}"
-                                      : "17 أكتوبر, 2024",
-                                  style: TextStyle(
-                                    fontSize: 7.sp,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: "Noto Kufi Arabic",
-                                    color: Color(0xffAAAAAB),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  NewsDetails(news: news),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      "معرفة المزيد",
-                                      style: TextStyle(
-                                        fontSize: 7.sp,
-                                        fontWeight: FontWeight.w500,
-                                        fontFamily: "Noto Kufi Arabic",
-                                        color: Color(0xff14B8A6),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            NewsDetails(news: currentNews!),
                                       ),
+                                    );
+                                  },
+                                  child: Text(
+                                    "معرفة المزيد",
+                                    style: TextStyle(
+                                      fontSize: 7.sp,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: "Noto Kufi Arabic",
+                                      color: Color(0xff14B8A6),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            Container(
+              height: 100.h,
+              child: Center(
+                child: Text(
+                  "لا توجد أخبار متاحة",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey,
+                    fontFamily: "Noto Kufi Arabic",
                   ),
                 ),
               );
@@ -454,29 +541,44 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
     );
   }
 
-  Widget _buildCircle(String percentText, String label, double percent, List<Color> gradientColors) {
-    return Column(
-      children: [
-        CircularPercentIndicator(
-          radius: 40.0,
-          lineWidth: 6.0,
-          percent: percent,
-          center: Text(
-            percentText,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+ Widget _buildCircle(
+  String percentText,
+  String label,
+  double percent,
+  List<Color> gradientColors, {
+  Color textColor = const Color(0xFFAAAAAB), // لون النص الافتراضي
+}) {
+  return Column(
+    children: [
+      CircularPercentIndicator(
+        radius: 40.0,
+        lineWidth: 6.0,
+        percent: percent,
+        center: Text(
+          percentText,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: textColor, // لون النسبة
           ),
-          linearGradient: LinearGradient(
-            colors: gradientColors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          backgroundColor: Colors.grey.shade300,
-          circularStrokeCap: CircularStrokeCap.round,
         ),
-        SizedBox(height: 8),
-        Text(label, style: TextStyle(fontSize: 12)),
-      ],
-    );
-  }
-
+        linearGradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        backgroundColor: Colors.grey.shade300,
+        circularStrokeCap: CircularStrokeCap.round,
+      ),
+      SizedBox(height: 8),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: textColor, // لون اللابل
+        ),
+      ),
+    ],
+  );
 }

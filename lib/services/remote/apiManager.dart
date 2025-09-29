@@ -42,8 +42,6 @@ import '../../Models/Response/news_model.dart';
 import 'apiConstants.dart';
 
 class ApiManager {
-  static const String baseUrl =
-      "https://smartcollgeapp-production.up.railway.app/api"; // عدلي اللينك بتاع سيرفرك
 
   Future<Either<RegisterError, StudentRegisterResponse>> studentRegister(
     String name,
@@ -889,6 +887,25 @@ class ApiManager {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // News API Methods
+
   Future<Either<NewsError, NewsListResponse>> getAllNews({
     int page = 1,
     int limit = 10,
@@ -899,10 +916,21 @@ class ApiManager {
       if (connectivityResult == ConnectivityResult.mobile ||
           connectivityResult == ConnectivityResult.wifi) {
 
+
+        Map<String, String> queryParams = {
+          'page': page.toString(),
+          'limit': limit.toString(),
+        };
+
+        // Add random parameter if requested
+        if (random) {
+          queryParams['random'] = 'true';
+        }
+
         Uri url = Uri.https(
           ApiConstants.baseurl,
           ApiConstants.getAllNewsApi,
-          {'page': page.toString(), 'limit': limit.toString()}
+          queryParams
         );
 
         print('Sending get all news request to: $url');
@@ -954,6 +982,9 @@ class ApiManager {
         Uri url = Uri.https(
           ApiConstants.baseurl,
           "${ApiConstants.getNewsByIdApi}$id"
+          ApiConstants.baseurl,
+          ApiConstants.getAllNewsApi,
+          {'id': id}
         );
 
         print('Sending get news by id request to: $url');
@@ -972,7 +1003,24 @@ class ApiManager {
         var jsonResponse = jsonDecode(response.body);
 
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          var news = NewsModel.fromJson(jsonResponse['data'] ?? jsonResponse);
+          // Handle the new JSON structure where data contains a "news" array
+          NewsModel news;
+          if (jsonResponse['data'] != null && jsonResponse['data']['news'] != null) {
+            // New structure: data.news[0]
+            var newsList = jsonResponse['data']['news'] as List<dynamic>?;
+            if (newsList != null && newsList.isNotEmpty) {
+              news = NewsModel.fromJson(newsList[0]);
+            } else {
+              return left(NewsError(
+                success: false,
+                message: "News not found",
+                code: 404,
+              ));
+            }
+          } else {
+            // Fallback for old structure or direct news object
+            news = NewsModel.fromJson(jsonResponse['data'] ?? jsonResponse);
+          }
           return right(news);
         } else {
           return left(NewsError.fromJson(jsonResponse));
@@ -997,6 +1045,7 @@ class ApiManager {
 
   Future<Either<NewsError, NewsListResponse>> getLatestNews({
     int count = 3,
+    bool random = true,
   }) async {
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
@@ -1004,10 +1053,23 @@ class ApiManager {
       if (connectivityResult == ConnectivityResult.mobile ||
           connectivityResult == ConnectivityResult.wifi) {
 
+
+        Map<String, String> queryParams = {
+          'count': count.toString(),
+        };
+
+        // Add random parameter if requested
+        if (random) {
+          queryParams['random'] = 'true';
+        }
+
         Uri url = Uri.https(
           ApiConstants.baseurl,
           ApiConstants.getLatestNewsApi,
           {'count': count.toString()}
+          ApiConstants.baseurl,
+          ApiConstants.getAllNewsApi,
+          queryParams
         );
 
         print('Sending get latest news request to: $url');
@@ -1057,6 +1119,12 @@ class ApiManager {
           connectivityResult == ConnectivityResult.wifi) {
 
         Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.getImportantNewsApi);
+
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          ApiConstants.getAllNewsApi,
+          {'important': 'true'}
+        );
 
         print('Sending get important news request to: $url');
 
@@ -1124,7 +1192,7 @@ class ApiManager {
 
         Uri url = Uri.https(
           ApiConstants.baseurl,
-          ApiConstants.searchNewsApi,
+          ApiConstants.getAllNewsApi,
           queryParams
         );
 
@@ -1167,24 +1235,25 @@ class ApiManager {
     }
   }
 
-  Future<Either<NewsError, NewsListResponse>> getNewsByCategory(
-    String category, {
-    int page = 1,
-    int limit = 10,
+
+
+  // Get random news - dedicated method for random news
+  Future<Either<NewsError, NewsListResponse>> getRandomNews({
+    int count = 10,
   }) async {
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
 
       if (connectivityResult == ConnectivityResult.mobile ||
           connectivityResult == ConnectivityResult.wifi) {
-
+        
         Uri url = Uri.https(
-          ApiConstants.baseurl,
-          "${ApiConstants.getNewsByCategoryApi}$category",
-          {'page': page.toString(), 'limit': limit.toString()}
+          ApiConstants.baseurl, 
+          ApiConstants.getAllNewsApi,
+          {'count': count.toString(), 'random': 'true'}
         );
 
-        print('Sending get news by category request to: $url');
+        print('Sending get random news request to: $url');
 
         var response = await http.get(
           url,
@@ -1213,57 +1282,7 @@ class ApiManager {
         ));
       }
     } catch (e) {
-      print('Exception in getNewsByCategory: $e');
-      return left(NewsError(
-        success: false,
-        message: "Unexpected Error",
-        code: -1,
-        details: e.toString(),
-      ));
-    }
-  }
-
-  Future<Either<NewsError, List<String>>> getNewsCategories() async {
-    try {
-      final connectivityResult = await Connectivity().checkConnectivity();
-
-      if (connectivityResult == ConnectivityResult.mobile ||
-          connectivityResult == ConnectivityResult.wifi) {
-
-        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.getNewsCategoriesApi);
-
-        print('Sending get news categories request to: $url');
-
-        var response = await http.get(
-          url,
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-        );
-
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
-        var jsonResponse = jsonDecode(response.body);
-
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          List<String> categories = (jsonResponse['data'] as List<dynamic>?)
-              ?.map((item) => item.toString())
-              .toList() ?? [];
-          return right(categories);
-        } else {
-          return left(NewsError.fromJson(jsonResponse));
-        }
-      } else {
-        return left(NewsError(
-          success: false,
-          message: "No Internet Connection",
-          code: 0,
-        ));
-      }
-    } catch (e) {
-      print('Exception in getNewsCategories: $e');
+      print('Exception in getRandomNews: $e');
       return left(NewsError(
         success: false,
         message: "Unexpected Error",

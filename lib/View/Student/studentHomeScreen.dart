@@ -6,8 +6,11 @@ import 'package:smart_college/Models/Response/news_model.dart';
 import 'package:smart_college/View/Student/all_news.dart';
 import 'package:smart_college/View/Student/news_details.dart';
 import 'package:smart_college/utils/colors.dart';
+import 'package:smart_college/services/news_manager.dart';
+import 'package:smart_college/View/widgets/common_top_search_bar.dart';
+import 'package:smart_college/View/widgets/student_bottom_navigation.dart';
 
-import 'package:smart_college/services/news_service.dart';
+
 
 class studentHomescreen extends StatefulWidget {
   static const String routeName = 'studentHomescreen';
@@ -19,10 +22,48 @@ class studentHomescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<studentHomescreen> {
+  int _currentIndex = 0;
+  TextEditingController _searchController = TextEditingController();
+  late List<Widget> _pages;
+
   DateTime _currentDate = DateTime.now();
   
-  // الحصول على آخر 3 أخبار من الخدمة
-  List<NewsModel> get newsItems => NewsService.getLatestNews(count: 3);
+  // الحصول على آخر خبر من الخدمة
+  NewsModel? currentNews;
+  bool isLoading = true;
+
+ @override
+  void initState() {
+    super.initState();
+    // قائمة الصفحات في الـ Bottom Navigation
+    _pages = [
+  
+      Container(child: Center(child: Text(' المواد الدراسية'))),
+      Container(child: Center(child: Text('الامتحانات'))),
+      Container(child: Center(child: Text('بروفايل'))),
+    ];
+    _loadNews();
+  }
+
+  // تحميل آخر خبر من API
+  Future<void> _loadNews() async {
+    try {
+      final news = await NewsManager.getLatestNews();
+      if (mounted) {
+        setState(() {
+          currentNews = news;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading news: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   // قائمة بالأيام باللغة العربية
   final List<String> _weekDays = [
@@ -55,17 +96,22 @@ class _HomescreenState extends State<studentHomescreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF5F5F5),
-      body: Padding(
-        padding: EdgeInsets.only(
-          right: 30.w,
-          left: 30.w,
-          top: 20.h,
-          bottom: 5.h,
-        ),
-        child: SingleChildScrollView(
+      bottomNavigationBar: CommonBottomNavigation(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
+      body: Column(
+        children: [
+          CommonTopSearchBar(controller: _searchController),
+          Expanded(
+            child: SingleChildScrollView(
           child: Column(
             children: [
-             // SizedBox(height: 5.h),
+         
 
               // الكالندر
               SingleChildScrollView(child: _buildCalendar()),
@@ -73,13 +119,16 @@ class _HomescreenState extends State<studentHomescreen> {
               SizedBox(height: 20.h),
               Row(
                 children: [
-                  Text(
-                    " اليوم",
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: "Noto Kufi Arabic",
-                      color: MyColors.blackColor,
+                  Padding(
+                    padding: const EdgeInsets.only(right: 20.0),
+                    child: Text(
+                      " اليوم",
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: "Noto Kufi Arabic",
+                        color: MyColors.blackColor,
+                      ),
                     ),
                   ),
                 ],
@@ -235,16 +284,19 @@ class _HomescreenState extends State<studentHomescreen> {
                      Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                        children: [
-                         Text(
-                                    "  احدث الفعاليات و الاخبار",
-                                    style: TextStyle(
-                                      fontSize: 15.sp,
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: "Noto Kufi Arabic",
-                                      color: MyColors.blackColor,
+                         Padding(
+                           padding: const EdgeInsets.only(right: 15.0),
+                           child: Text(
+                                      "  احدث الفعاليات و الاخبار",
+                                      style: TextStyle(
+                                        fontSize: 15.sp,
+                                        fontWeight: FontWeight.w500,
+                                        fontFamily: "Noto Kufi Arabic",
+                                        color: MyColors.blackColor,
+                                      ),
+                                      overflow: TextOverflow.ellipsis, // لو النص طول
                                     ),
-                                    overflow: TextOverflow.ellipsis, // لو النص طول
-                                  ),
+                         ),
                                   
                    SizedBox(width: 20 .h),
                                   TextButton(
@@ -270,109 +322,131 @@ class _HomescreenState extends State<studentHomescreen> {
  //SizedBox(height:  .h),
   SizedBox(
     height: 400.h,
-    child: ListView.builder(
-  itemCount: newsItems.length,
-  itemBuilder: (context, index) {
-    final news = newsItems[index];
-    return Card(
-     // margin: EdgeInsets.all(8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      //elevation: 3,
-      child: Container(
-        color: MyColors.whiteColor,
-        width: 350.w,   // العرض
-        height: 100.h,  // الطول
-      //  padding: EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Image.asset(
-                news.mainImage,
-                width: 120.w,
-                height: 100.h,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(width: 12),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(news.title,style: TextStyle(
-                  fontSize:9.sp,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: "Noto Kufi Arabic",
-                  
-                  color: MyColors.blackColor,
-                  ),
-                maxLines: 2,
-  softWrap: true,
-  //overflow: TextOverflow.visible, // يبان كله في سطرين     // يخلي النص يلف على السطر التاني
- 
-  ),
+    child: isLoading
+        ? Center(child: CircularProgressIndicator())
+        : currentNews != null
+            ? Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                   children: [
-                    Text(
-                      news.createdAt != null 
-                          ? "${news.createdAt!.day} ${_months[news.createdAt!.month - 1]}, ${news.createdAt!.year}"
-                          : "17 أكتوبر, 2024",
-                      style: TextStyle(
-                        fontSize:7.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: "Noto Kufi Arabic",
-                        color: Color(0xffAAAAAB),
-                      )
-                    ),
-                  SizedBox(width:125.w ,),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                          onTap: () {
+                child: Container(
+                  color: MyColors.whiteColor,
+                  width: 350.w,
+                  height: 100.h,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: currentNews!.mainImage.isNotEmpty
+                            ? Image.network(
+                                currentNews!.mainImage,
+                                width: 120.w,
+                                height: 100.h,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 120.w,
+                                    height: 100.h,
+                                    color: Colors.grey[300],
+                                    child: Icon(Icons.image_not_supported),
+                                  );
+                                },
+                              )
+                            : Container(
+                                width: 120.w,
+                                height: 100.h,
+                                color: Colors.grey[300],
+                                child: Icon(Icons.image_not_supported),
+                              ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Text(
+                                currentNews!.title,
+                                style: TextStyle(
+                                  fontSize: 9.sp,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: "Noto Kufi Arabic",
+                                  color: MyColors.blackColor,
+                                ),
+                                maxLines: 2,
+                                softWrap: true,
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  currentNews!.createdAt != null
+                                      ? "${currentNews!.createdAt!.day} ${_months[currentNews!.createdAt!.month - 1]}, ${currentNews!.createdAt!.year}"
+                                      : "17 أكتوبر, 2024",
+                                  style: TextStyle(
+                                    fontSize: 7.sp,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: "Noto Kufi Arabic",
+                                    color: Color(0xffAAAAAB),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: GestureDetector(
+                                    onTap: () {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => NewsDetails(news: news),
+                                          builder: (context) => NewsDetails(news: currentNews!),
                                         ),
                                       );
                                     },
-                          child: Text("معرفة المزيد",style: TextStyle(
-                                            fontSize: 7.sp,
-                                            fontWeight: FontWeight.w500,
-                                            fontFamily: "Noto Kufi Arabic",
-                                            
-                                            color: Color(0xff14B8A6)),),
-                                            
-
-                                        
+                                    child: Text(
+                                      "معرفة المزيد",
+                                      style: TextStyle(
+                                        fontSize: 7.sp,
+                                        fontWeight: FontWeight.w500,
+                                        fontFamily: "Noto Kufi Arabic",
+                                        color: Color(0xff14B8A6),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                   ],
-                 ),
-
-              ],
-            ),
-
-          ],
-        ),
-      ),
-    );
-  },
-)
-
+                    ],
+                  ),
+                ),
+              )
+            : Center(
+                child: Text(
+                  "لا توجد أخبار متاحة",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey,
+                    fontFamily: "Noto Kufi Arabic",
+                  ),
+                ),
+              ),
   ),
                 ],  
 
               ),
             
           ),
+        
+          )
+    ] , 
         ),
+          );
+       
       
-    );
+    
+    
   }
 
   // دالة إنشاء الكالندر

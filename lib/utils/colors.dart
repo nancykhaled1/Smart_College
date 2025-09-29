@@ -12,6 +12,9 @@ class MyColors{
   static const Color pnkcolor2 =Color(0XFFE6BDB3);
   static const Color backgroundColor = Color(0xFFF5F5F5);
   static const Color shadGreyColor = Color(0x40AAAAAB);
+  static const Color backgroundColor= Color(0XFF00838F);
+  static const Color textColor= Color(0XFF545454);
+
   static const Color shadowGreyColor = Color(0xFFCBCBCB);
   static const Color shadowColor = Color(0xFF7A7A7A);
   static const Color blackColor = Color(0xFF000000);
