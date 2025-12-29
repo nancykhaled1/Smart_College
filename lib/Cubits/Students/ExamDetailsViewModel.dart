@@ -71,6 +71,12 @@ class ExamDetailsViewModel extends Cubit<States> {
     });
   }
 
+  void stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+
   @override
   Future<void> close() {
     _timer?.cancel();

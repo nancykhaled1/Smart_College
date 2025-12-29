@@ -21,7 +21,7 @@ class GoogleCubit extends Cubit<States> {
   GoogleCubit(this.repository) : super(InitialState());
 
   Future<void> signInWithGoogle({String? role}) async {
-    emit(LoadingState(loadingMessage: 'Loading........'));
+    emit(LoadingState(loadingMessage: 'Loading...'));
     try {
       await _googleSignIn.signOut();
 

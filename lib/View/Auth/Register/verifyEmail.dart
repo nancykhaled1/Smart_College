@@ -37,7 +37,7 @@ class _VerifyEmailState extends State<VerifyEmail> {
           child: BlocConsumer<VerifyEmailCubit, RegisterStates>(
             listener: (context, state) async {
               if (state is VerifyEmailSuccessState) {
-                showOverlayMessage(context, state.response.message!, isError: false);
+                showOverlayMessage(context, state.response.data.message, isError: false);
 
                 final role = await TokenStorage.getRole();
 
@@ -75,7 +75,7 @@ class _VerifyEmailState extends State<VerifyEmail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Center(
-                          child: SvgPicture.asset('assets/images/code-pass.svg')),
+                          child: SvgPicture.asset('assets/images/email-verify.svg')),
                       SizedBox(height: 50.h),
                       Text(
                         'ارجع الي البريد الالكتروني الخاص بك!',

@@ -12,8 +12,9 @@ class MyColors{
   static const Color pnkcolor2 =Color(0XFFE6BDB3);
   static const Color backgroundColor = Color(0xFFF5F5F5);
   static const Color shadGreyColor = Color(0x40AAAAAB);
-  static const Color backgroundColor= Color(0XFF00838F);
   static const Color textColor= Color(0XFF545454);
+  static const Color resultColor = Color(0xFFAAAAAB);
+  static const Color deleteColor = Color(0xFFD9D9D9);
 
   static const Color shadowGreyColor = Color(0xFFCBCBCB);
   static const Color shadowColor = Color(0xFF7A7A7A);
@@ -21,6 +22,11 @@ class MyColors{
   static const Color softPrimaryColor = Color(0xFFB8E4E0);
   static const Color darkGreenColor = Color(0xFF033D36);
   static const Color yellowColor = Color(0xFFFFA000);
+  static const Color redColor = Color(0xFFFF3D00);
+
+
+
+
 
 
 

@@ -22,6 +22,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   void initState() {
     super.initState();
     context.read<NotificationScreenViewModel>().getNotification();
+
   }
 
   @override
@@ -92,7 +93,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             color: MyColors.primaryColor,
                           ),
                         );
-                      } else if (state is ErrorState) {
+                      }
+                      else if (state is ErrorState) {
                         final error = state.errorMessage;
 
                         if (error == "No Internet Connection") {
@@ -128,7 +130,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           );
                         }
 
-                      } else if (state is GetNotificationSuccessState) {
+                      }
+                      else if (state is GetNotificationSuccessState) {
                         final notifications = state.notifications;
 
                         if (notifications.isEmpty) {

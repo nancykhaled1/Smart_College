@@ -1,3 +1,5 @@
+import 'SaveAnswersResponse.dart';
+
 /// success : true
 /// data : {"attempt":{"exam":"68d3df73e36996af7725097e","student":"68ca7ac4604923e139462899","answers":[],"totalPoints":0,"correctCount":0,"wrongCount":0,"status":"in-progress","startedAt":"2025-09-28T23:26:23.859Z","endAt":"2025-09-29T01:26:23.859Z","_id":"68d9c41fc865b2cba60b13b3","createdAt":"2025-09-28T23:26:23.861Z","updatedAt":"2025-09-28T23:26:23.861Z","__v":0}}
 
@@ -78,7 +80,11 @@ class Attempt {
   Attempt.fromJson(dynamic json) {
     exam = json['exam'];
     student = json['student'];
-    answers = json['answers'] != null ? List<dynamic>.from(json['answers']) : [];
+    if (json['answers'] != null) {
+      answers = (json['answers'] as List)
+          .map((e) => Answers.fromJson(e))
+          .toList();
+    }
     totalPoints = json['totalPoints'];
     correctCount = json['correctCount'];
     wrongCount = json['wrongCount'];
@@ -92,7 +98,7 @@ class Attempt {
   }
   String? exam;
   String? student;
-  List<dynamic>? answers;
+  List<Answers>? answers;
   int? totalPoints;
   int? correctCount;
   int? wrongCount;
@@ -125,3 +131,4 @@ class Attempt {
   }
 
 }
+

@@ -32,17 +32,16 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        top: 50.h,
-        left: 25.w,
-        right: 25.w,
-        bottom: 20.h,
+        top: 20.h,
+        left: 15.w,
+        right: 15.w,
+       // bottom: 20.h,
       ),
       decoration: BoxDecoration(
         color: Color(0xffF5F5F5),
       ),
       child: Row(
         children: [
-          // أيقونة القائمة
           GestureDetector(
             onTap: () {
               Navigator.of(context).pushReplacement(
@@ -119,16 +118,16 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
           // أيقونة الإشعارات
           GestureDetector(
             onTap: () async {
-              final savedToken = await TokenStorage.getToken();
-              print("Token used: $savedToken");
-
-              Navigator.of(context).pushReplacement(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => ChatScreen(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              );
+              // final savedToken = await TokenStorage.getToken();
+              // print("Token used: $savedToken");
+              //
+              // Navigator.of(context).pushReplacement(
+              //   PageRouteBuilder(
+              //     pageBuilder: (context, animation, secondaryAnimation) => ChatScreen(),
+              //     transitionDuration: Duration.zero,
+              //     reverseTransitionDuration: Duration.zero,
+              //   ),
+              // );
 
             },
             child: Container(

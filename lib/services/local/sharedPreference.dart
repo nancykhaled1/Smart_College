@@ -7,6 +7,20 @@ class TokenStorage {
   static const String _convIdKey = "conversation_id";
   static const String _IsNewKey = "true";
   static const String _chatKey = "chat";
+  static const String _key = 'notifications_enabled';
+
+
+  ///////////////notification///////////////
+  static Future<void> saveNotificationPreference(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', enabled);
+  }
+
+  static Future<bool> getNotificationPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('notifications_enabled') ?? true; // الافتراضى: مفتوح
+  }
+
 
 
 

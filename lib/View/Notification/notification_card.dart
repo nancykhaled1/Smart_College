@@ -54,7 +54,7 @@ class NotificationCard extends StatelessWidget {
               ),
               child: Center(
                 child: SvgPicture.asset(
-                  'assets/images/notification.svg',
+                  'assets/images/notification2.svg',
                 ),
               ),
             ),

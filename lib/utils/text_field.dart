@@ -13,6 +13,7 @@ class buildTextField extends StatelessWidget {
   Widget? prefixIcon;
   void Function()? suffixIconFunction;
   bool readonly;
+  String label;
 
 
   buildTextField({
@@ -26,6 +27,7 @@ class buildTextField extends StatelessWidget {
     this.isobscure = false,
     this.suffixIconFunction,
     this.readonly = false,
+    this.label = '',
 
   });
 
@@ -36,18 +38,26 @@ class buildTextField extends StatelessWidget {
       textAlign: TextAlign.right,
       controller: controller,
       style: TextStyle(
-          color: Color(0xFF7A7A7A), fontSize: 14.sp // جعله أكثر وضوحًا
+        color: MyColors.greyColor, // 🔹 لون النص
+        fontFamily: 'Noto Kufi Arabic',
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w500,
       ),
+
       validator: validator,
       keyboardType: keyboardType,
       obscureText: isPassword,
       decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: MyColors.primaryColor, fontSize: 12.sp,
+            fontFamily: "Noto Kufi Arabic" , fontWeight: FontWeight.w500),
         contentPadding: EdgeInsets.symmetric(horizontal: 23.w, vertical: 13.h),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         fillColor: MyColors.softWhiteColor,
         filled: true,
         hintText: hint,
-        hintStyle: TextStyle(color: MyColors.primaryColor, fontSize: 12.sp, fontFamily: "Noto Kufi Arabic" , fontWeight: FontWeight.w400),
+        hintStyle: TextStyle(color: MyColors.primaryColor, fontSize: 12.sp,
+            fontFamily: "Noto Kufi Arabic" , fontWeight: FontWeight.w400),
         prefixIcon: prefixIcon,
         suffixIcon:
         suffixIcon != null

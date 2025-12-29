@@ -3,11 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_college/utils/colors.dart';
 
-class CommonBottomNavigation extends StatelessWidget {
+class BottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const CommonBottomNavigation({
+  const BottomNavigation({
     super.key,
     required this.currentIndex,
     required this.onTap,

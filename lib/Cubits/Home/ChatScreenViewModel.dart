@@ -1,489 +1,219 @@
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:socket_io_client/socket_io_client.dart' as IO;
-// import '../../services/local/sharedPreference.dart';
-// import '../States/States.dart';
-// import '../../Repositories/ChatRepository.dart';
-// import '../../Models/Response/AllMessagesResponse.dart';
-//
-// class ChatCubit extends Cubit<States> {
-//   late IO.Socket socket;
-//   final String token;
-//   String? chatId; // خليها متغيرة مش final
-//   final ChatRepository chatRepository;
-//
-//   List<MessageData> allMessages = [];
-//   bool isConnected = false;
-//
-//   ChatCubit({
-//     required this.token,
-//     required this.chatRepository,
-//   }) : super(ChatInitial());
-//
-//   void _connectSocket() {
-//     if (isConnected) return;
-//
-//     emit(ChatConnecting());
-//
-//     socket = IO.io(
-//       "https://smartcollgeapp-production.up.railway.app",
-//       IO.OptionBuilder()
-//           .setTransports(['websocket'])
-//           .disableAutoConnect()
-//           .setAuth({"token": token})
-//           .build(),
-//     );
-//
-//     socket.connect();
-//
-//     socket.onConnect((_) {
-//       isConnected = true;
-//       emit(ChatConnected());
-//
-//       if (chatId != null) {
-//         socket.emit("join_chat", {"chatId": chatId});
-//       }
-//     });
-//
-//     socket.on("chat_history", (data) {
-//       if (data is Map && data["messages"] is List) {
-//         final list = data["messages"] as List;
-//         allMessages = list.map((e) => MessageData.fromJson(e)).toList();
-//         chatId = data["chatId"];
-//         emit(GetMessagesSuccessState(messages: allMessages));
-//       } else {
-//         // لو السيرفر ما رجعش history → استعمل API كـ fallback
-//         getAllMessages();
-//       }
-//     });
-//
-//     socket.off("message");
-//     socket.on("message", (msg) {
-//       allMessages.add(MessageData.fromJson(msg));
-//       emit(GetMessagesSuccessState(messages: List.from(allMessages)));
-//     });
-//
-//     socket.onDisconnect((_) {
-//       isConnected = false;
-//       emit(ChatDisconnected());
-//     });
-//   }
-//
-//   /// fallback API call
-//   Future<void> getAllMessages() async {
-//     emit(LoadingState(loadingMessage: "جارى تحميل الرسائل..."));
-//
-//     var either = await chatRepository.getMessages();
-//
-//     either.fold(
-//           (failure) {
-//         emit(ErrorState(errorMessage: failure.error?.message ?? "حدث خطأ"));
-//       },
-//           (response) async {
-//         allMessages = response.data ?? [];
-//         if (allMessages.isNotEmpty) {
-//           chatId = allMessages.first.chat;
-//           await TokenStorage.saveChat(chatId!);
-//           _connectSocket();
-//         }
-//
-//         emit(GetMessagesSuccessState(messages: allMessages));
-//       },
-//     );
-//   }
-//
-//
-//   void sendMessage(String text) {
-//     if (text.isEmpty || chatId == null) return;
-//     socket.emit("send_message", {
-//       "chatId": chatId,
-//       "content": text,
-//     });
-//   }
-//
-//   void setTyping(bool typing) {
-//     if (chatId == null) return;
-//     socket.emit("typing", {
-//       "chatId": chatId,
-//       "isTyping": typing,
-//     });
-//   }
-//
-//   @override
-//   Future<void> close() {
-//     socket.dispose();
-//     return super.close();
-//   }
-//
-//   // /// ✅ استدعاء API للرسائل القديمة
-//   // Future<void> getAllMessages() async {
-//   //   emit(LoadingState(loadingMessage: "جارى تحميل الرسائل..."));
-//   //
-//   //   var either = await chatRepository.getMessages();
-//   //
-//   //   either.fold(
-//   //         (failure) {
-//   //       emit(ErrorState(errorMessage: failure.error?.message ?? "حدث خطأ"));
-//   //     },
-//   //         (response) async {
-//   //       allMessages = response.data ?? [];
-//   //
-//   //       if (allMessages.isNotEmpty) {
-//   //         chatId = allMessages.first.chat; // ✅ خزّني chatId هنا
-//   //         await TokenStorage.saveChat(chatId!);
-//   //
-//   //         // بعد ما جهزنا chatId نعمل اتصال
-//   //         _connectSocket();
-//   //       }
-//   //
-//   //       emit(GetMessagesSuccessState(messages: allMessages));
-//   //     },
-//   //   );
-//   // }
-// }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-//
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_college/Cubits/States/States.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import '../../services/local/sharedPreference.dart';
-import '../States/States.dart';
-import '../../Repositories/ChatRepository.dart';
-import '../../Models/Response/AllMessagesResponse.dart';
 
-class ChatCubit extends Cubit<States> {
-  late IO.Socket socket;
+class ChatCubit extends Cubit<ChatStates> {
+  IO.Socket? socket;
   final String token;
-  final ChatRepository chatRepository;
+  final String adminId;
+  String? currentChatId;
 
-  List<MessageData> allMessages = [];
-  bool isConnected = false;
+  // 🧩 الرسائل
+  List<MessageModel> messages = [];
 
-  ChatCubit({
-    required this.token,
-    required this.chatRepository,
-  }) : super(ChatInitial());
+  ChatCubit({required this.token, required this.adminId})
+      : super(ChatInitialState());
 
+  // 🔌 الاتصال بالسيرفر
   void connectSocket() {
-    if (isConnected) {
-      debugPrint("⚠️ Socket already connected, skipping connect...");
-      return;
-    }
+    print("🪪 Token used for socket: $token");
 
-    emit(ChatConnecting());
-    debugPrint("⏳ Trying to connect socket...");
+    print("🔌 Connecting socket...");
 
     socket = IO.io(
-      "https://smartcollgeapp-production.up.railway.app",
+      'https://smartcollgeapp-production.up.railway.app',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .enableReconnection() // ✅ ده أهم حاجة
-          .setReconnectionAttempts(10) // يحاول 10 مرات
-          .setReconnectionDelay(2000)
-          .setAuth({"token": token})
+          .enableForceNew()
+          .setAuth({'token': token})
           .build(),
     );
 
+    socket!.onConnect((_) {
+      print("✅ Socket connected");
+      joinChat();
+    });
+    socket!.emit('check_connection', {'token': token});
+    print("🧠 Sent check_connection to verify token validity");
 
 
-    socket.connect();
+    socket!.on('chat_history', (data) {
+      if (isClosed) return; // ✅ stop if cubit closed
+      print("📜 Chat history loaded: ${data['chatId']}");
 
-    socket.onConnect((_) {
-      isConnected = true;
-      debugPrint("✅ Socket connected successfully!");
-      emit(ChatConnected());
+      currentChatId = data['chatId'];
 
-      socket.emit("join_chat");
-      debugPrint("📩 join_chat event emitted");
+      final List<MessageModel> history = (data['messages'] as List)
+          .map((msg) => MessageModel.fromJson(msg))
+          .toList();
+
+      messages = history;
+      emit(ChatMessagesUpdated(List.from(messages)));
     });
 
-    socket.on("connect_error", (data) {
-      debugPrint("❌ Socket connect_error: $data");
-    });
+    socket!.on('message', (msg) {
+      if (isClosed) return; // ✅ stop if cubit closed
 
-    socket.on("connect_timeout", (_) {
-      debugPrint("⏱️ Socket connection timed out");
-    });
+      final newMsg = MessageModel.fromJson(msg);
+      print("💬 New message received: ${newMsg.content}");
 
-    socket.on("error", (data) {
-      debugPrint("🚨 Socket general error: $data");
-    });
+      // ✅ امنعي التكرار سواء من send أو من السيرفر
+      final exists = messages.any((m) =>
+      m.content == newMsg.content &&
+          m.senderModel == newMsg.senderModel &&
+          (DateTime.parse(m.createdAt!)
+              .difference(DateTime.parse(newMsg.createdAt!))
+              .inSeconds)
+              .abs() <
+              2);
 
-    socket.on("chat_history", (data) {
-      debugPrint("📥 chat_history received: $data");
-
-      if (data is Map && data["messages"] is List) {
-        final list = data["messages"] as List;
-        allMessages = list.map((e) => MessageData.fromJson(e)).toList();
-
-        emit(GetMessagesSuccessState(messages: allMessages));
-        debugPrint("✅ Messages loaded from chat_history: ${allMessages.length}");
-      } else {
-        debugPrint("⚠️ chat_history format invalid: $data");
+      if (!exists) {
+        messages.add(newMsg);
+        emit(ChatMessagesUpdated(List.from(messages)));
       }
     });
 
-    socket.off("message");
-    socket.on("message", (msg) {
-      debugPrint("💬 New message received: $msg");
-      final serverMessage = MessageData.fromJson(msg);
+    socket!.onDisconnect((_) {
+      print("❌ Socket disconnected");
 
-      // 🗑️ لو السيرفر رجع tempId → امسح الرسالة المؤقتة
-      if (serverMessage.tempId != null) {
-        allMessages.removeWhere((m) => m.id == serverMessage.tempId);
-      } else {
-        // fallback: لو مفيش tempId → شيل الرسالة اللي نفس الـ content ولسه Local
-        allMessages.removeWhere((m) =>
-        m.isLocal == true && m.content == serverMessage.content);
-      }
-
-      // ✅ ضيف الرسالة اللي جاية من السيرفر
-      allMessages.add(serverMessage);
-
-      emit(GetMessagesSuccessState(messages: List.from(allMessages)));
     });
 
+    socket!.onConnectError((data) {
+      print("⚠️ Socket connect error: $data");
 
-    socket.onDisconnect((_) {
-      isConnected = false;
-      debugPrint("🔌 Socket disconnected");
-      emit(ChatDisconnected());
     });
   }
 
-  void sendMessage(String text) {
-    if (text.isEmpty) {
-      debugPrint("⚠️ Tried to send empty message");
+  // 📩 الانضمام إلى الشات
+  void joinChat() {
+    print("📩 Joining chat with admin: $adminId");
+    socket?.emit('join_chat', {'adminId': adminId});
+  }
+
+  // 📤 إرسال رسالة
+  void sendMessage(String content) {
+    if (socket == null || !socket!.connected) {
+      print("⚠️ Socket not connected");
       return;
     }
 
-    final tempId = DateTime.now().millisecondsSinceEpoch.toString();
+    if (currentChatId == null) {
+      print("⚠️ No chatId yet, cannot send message");
+      return;
+    }
 
-    // 1️⃣ اعمل رسالة Optimistic
-    final optimisticMessage = MessageData(
-      id: tempId, // id مؤقت
-      content: text,
+    final newMsg = MessageModel(
+      chatId: currentChatId,
+      content: content,
       senderModel: "User",
       createdAt: DateTime.now().toIso8601String(),
-      isLocal: true, // 🔥 لازم تضيفيها في الموديل MessageData
     );
 
-    // 2️⃣ ضيفها للـ UI فورًا
-    allMessages.add(optimisticMessage);
-    emit(GetMessagesSuccessState(messages: List.from(allMessages)));
-    debugPrint("🟡 Optimistic message added: $text");
+    // ✅ أضيفيها مبدئيًا لكن من غير تكرار
+    final exists = messages.any((m) =>
+    m.content == newMsg.content &&
+        m.senderModel == newMsg.senderModel &&
+        (DateTime.parse(m.createdAt!)
+            .difference(DateTime.parse(newMsg.createdAt!))
+            .inSeconds)
+            .abs() <
+            2);
 
-    // 3️⃣ ابعتها للسيرفر ومعاها الـ tempId
-    socket.emit("send_message", {
-      "content": text,
-      "tempId": tempId,
+    if (!exists) {
+      messages.add(newMsg);
+      emit(ChatMessagesUpdated(List.from(messages)));
+    }
+
+    socket!.emit('send_message', {
+      'content': content,
+      'chatId': currentChatId,
     });
 
-    debugPrint("📤 Message sent to server: $text (tempId: $tempId)");
+    print("📤 Message sent: $content (chatId: $currentChatId)");
   }
 
+  // ❌ فصل الاتصال وتنظيف الليسنرز
+  void disconnect() {
+    print("🔌 Disconnecting socket...");
+    if (socket != null) {
+      socket!.off('message');
+      socket!.off('chat_history');
+      socket!.off('connect');
+      socket!.off('disconnect');
+      socket!.disconnect();
+      socket!.dispose();
+      socket = null;
+    }
+    messages.clear();
+    emit(ChatInitialState());
+  }
 
-
-  // void sendMessage(String text) {
-  //   if (text.isEmpty ) return;
-  //   socket.emit("send_message", {
-  //     "content": text,
-  //   });
-  // }
-
-  void setTyping(bool typing) {
-    socket.emit("typing", {
-      "isTyping": typing,
-    });
-    debugPrint("⌨️ Typing status sent: $typing");
+  // 🧹 تنظيف بيانات الشات عند اللوج أوت
+  void clearChatData() {
+    messages.clear();
+    currentChatId = null;
+    emit(ChatInitialState());
   }
 
   @override
   Future<void> close() {
-    debugPrint("🛑 Closing socket connection...");
-    socket.dispose();
+    print("🧹 Closing ChatCubit safely...");
+    disconnect();
     return super.close();
   }
 }
 
+// ----------------------------
+// 🧱 States
+// ----------------------------
+abstract class ChatStates {}
 
+class ChatInitialState extends ChatStates {}
 
+class ChatMessagesUpdated extends ChatStates {
+  final List<MessageModel> messages;
+  ChatMessagesUpdated(this.messages);
+}
 
+// ----------------------------
+// 💬 Message Model
+// ----------------------------
+class MessageModel {
+  final String? chatId;
+  final String? content;
+  final String? senderModel; // "User" or "Admin"
+  final String? createdAt;
+  final Sender? sender;
 
+  MessageModel({
+    this.chatId,
+    this.content,
+    this.senderModel,
+    this.createdAt,
+    this.sender,
+  });
 
+  factory MessageModel.fromJson(Map<String, dynamic> json) {
+    return MessageModel(
+      chatId: json['chatId']?.toString(),
+      content: json['content'] ?? '',
+      senderModel: json['senderModel'] ?? '',
+      createdAt: json['createdAt'] ?? DateTime.now().toIso8601String(),
+      sender: json['sender'] != null ? Sender.fromJson(json['sender']) : null,
+    );
+  }
+}
 
+class Sender {
+  final String? id;
+  final String? name;
 
+  Sender({this.id, this.name});
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:flutter/foundation.dart'; // عشان debugPrint
-// import 'package:socket_io_client/socket_io_client.dart' as IO;
-// import '../../services/local/Hive.dart';
-// import '../../services/local/HiveLocalService.dart';
-// import '../States/States.dart';
-// import '../../Repositories/ChatRepository.dart';
-// import 'package:smart_college/Models/Response/AllMessagesResponse.dart';
-// import 'package:smart_college/services/local/Hive.dart' ;
-//
-//
-// import 'package:bloc/bloc.dart';
-// import 'package:flutter/material.dart';
-// import 'package:meta/meta.dart';
-//
-// import 'package:socket_io_client/socket_io_client.dart' as IO;
-//
-//
-// class ChatCubit extends Cubit<States> {
-//   final ChatLocalService localService;
-//   final String chatId;
-//   late IO.Socket socket;
-//    final String token;
-//   //final ChatRepository chatRepository;
-//
-//   List<MessageData> allMessages = [];
-//
-//   ChatCubit({required this.localService, required this.chatId, required this.token})
-//       : super(ChatInitial());
-//
-//   /// 🔌 Connect socket
-//   void connectSocket() {
-//     socket = IO.io(
-//       "https://smartcollgeapp-production.up.railway.app",
-//       IO.OptionBuilder()
-//           .setTransports(['websocket'])
-//           .disableAutoConnect()
-//           .setAuth({"token": token})
-//           .build(),
-//     );
-//
-//     socket.connect();
-//
-//     socket.onConnect((_) {
-//       debugPrint("✅ Socket connected");
-//       emit(ChatConnected());
-//     });
-//
-//     socket.onDisconnect((_) {
-//       debugPrint("❌ Socket disconnected");
-//       emit(ChatDisconnected());
-//     });
-//
-//
-//     socket.on("message", (msg) async {
-//       final serverMessage = MessageData.fromJson(msg);
-//
-//       // 📝 خزّن نسخة في Hive
-//       await localService.saveMessage(chatId, serverMessage.toLocalMessage());
-//
-//       // ➕ أضف نسخة API للعرض
-//       allMessages.add(serverMessage);
-//       emit(GetMessagesSuccessState(messages: List.from(allMessages)));
-//     });
-//   }
-//
-//   /// 📥 تحميل الرسائل من التخزين المحلي (Hive)
-//   Future<void> loadLocalMessages() async {
-//     final localMsgs = await localService.getMessages(chatId);
-//
-//     allMessages = localMsgs.map((e) => e.toApiMessage()).toList();
-//     emit(GetMessagesSuccessState(messages: allMessages));
-//   }
-//
-//   /// 📤 إرسال رسالة (Optimistic UI)
-//   void sendMessage(String text) {
-//     final tempId = DateTime.now().millisecondsSinceEpoch.toString();
-//
-//     final optimistic = MessageData(
-//       id: tempId,
-//       content: text,
-//       senderModel: "User",
-//       createdAt: DateTime.now().toIso8601String(),
-//       isLocal: true,
-//       tempId: tempId,
-//     );
-//
-//     // ➕ أضف للـ UI مباشرة
-//     allMessages.add(optimistic);
-//     emit(GetMessagesSuccessState(messages: List.from(allMessages)));
-//
-//     // 📝 خزن في Hive
-//     localService.saveMessage(chatId, optimistic.toLocalMessage());
-//
-//     // 📡 ابعت للسيرفر
-//     socket.emit("send_message", {
-//       "chatId": chatId,
-//       "content": text,
-//       "tempId": tempId,
-//     });
-//   }
-//
-//
-//   void setTyping(bool typing) {
-//     socket.emit("typing", {
-//       "isTyping": typing,
-//     });
-//   }
-//
-//   @override
-//   Future<void> close() {
-//     socket.dispose();
-//     return super.close();
-//   }
-// }
-//
-//
-//
-// extension MessageMapper on MessageData {
-//   Message toLocalMessage() {
-//     return Message(
-//       id: id ?? "",
-//       content: content ?? "",
-//       senderModel: senderModel ?? "User",
-//       createdAt: createdAt ?? DateTime.now().toIso8601String(),
-//       isLocal: isLocal,
-//       tempId: tempId,
-//     );
-//   }
-// }
-//
-// extension LocalMessageMapper on Message {
-//   MessageData toApiMessage() {
-//     return MessageData(
-//       id: id,
-//       chat: null, // دي ممكن تسيبها فاضية لأن الـ Hive مش بيخزن الـ chatId
-//       senderModel: senderModel,
-//       sender: null, // مش متخزن عندك
-//       content: content,
-//       readBy: [],
-//       createdAt: createdAt,
-//       updatedAt: null,
-//       isLocal: isLocal,
-//       tempId: tempId,
-//     );
-//   }
-// }
-
+  factory Sender.fromJson(Map<String, dynamic> json) {
+    return Sender(
+      id: json['_id']?.toString(),
+      name: json['name'] ?? '',
+    );
+  }
+}

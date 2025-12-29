@@ -37,6 +37,29 @@ class ApiConstants{
 
   static const String attemptApi = "/api/user/exam/attempt/start";
 
+  static const String saveAnsApi = "/api/user/exam/attempt/save-answer";
+
+  static const String submitApi = "/api/user/exam/attempt/submit";
+
+  static const String myAttemptApi = "/api/user/exam/attempts";
+
+  static const String profileApi = "/api/user/auth/local/profile";
+
+  static const String updateDataApi = "/api/user/auth/local/update";
+
+  static const String updateImageApi = "/api/user/auth/local/update-image";
+
+  static const String deleteApi = "/api/user/auth/local/delete";
+
+  static const String levelApi = "/api/user/level";
+
+  static const String departmentApi = "/api/user/department";
+
+
+
+
+
+
   static const String getMessagesApi = "/api/user/chat/messages";
 
 

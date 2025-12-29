@@ -58,18 +58,10 @@ class _CompleteProfileState extends State<CompleteProfile> {
                         padding: EdgeInsets.only(top: 50.h,bottom: 20.h),
                         child: SvgPicture.asset('assets/images/logo.svg'),
                       ),
-                      // Text('مرحبا بك !',
-                      //   style: TextStyle(
-                      //       fontSize: 24.sp,
-                      //       color: MyColors.softBlackColor,
-                      //       fontFamily: 'Noto Kufi Arabic',
-                      //       fontWeight: FontWeight.w400
-                      //   ),
-                      // ),
                       SizedBox(
                         height: 15.h,
                       ),
-                      Text('قم بتكملة بيانتك لانشاء حسابك',
+                      Text('قم بتكملة بياناتك لانشاء حسابك',
                         style: TextStyle(
                             fontSize: 14.sp,
                             color: MyColors.greyColor,
@@ -181,14 +173,12 @@ class _CompleteProfileState extends State<CompleteProfile> {
                 return null;
               },
               prefixIcon: Padding(
-                padding: EdgeInsets.all(10.sp),
-                child: SvgPicture.asset(
-                  'assets/images/location.svg',
-
-                  // colorFilter: ColorFilter.mode(
-                  //   Color(0xFF7A7A7A),
-                  //   BlendMode.srcIn,
-                  // ),
+                padding: EdgeInsets.all(14),
+                child:
+                SvgPicture.asset(
+                  'assets/images/level.svg',
+                  width: 10.sp,
+                  height: 10.sp,
                 ),
               ),
             ),
@@ -199,40 +189,39 @@ class _CompleteProfileState extends State<CompleteProfile> {
         if (viewModel.showDropdownlevel)
           Column(
             children:
-            viewModel.level.map((status) {
+            viewModel.levelsList.map((item) {
               return GestureDetector(
                 onTap: () {
                   setState(() {
-                    viewModel.levelController.text = status.toString();
+                    viewModel.levelController.text = item.levelNumber.toString();
                     viewModel.showDropdownlevel = false;
                   });
                 },
-
 
                 child: Container(
                   width: double.infinity,
                   padding: EdgeInsets.all(15),
                   decoration: BoxDecoration(
-                    border: Border.symmetric(horizontal: BorderSide(
-                        color: MyColors.softGreyColor
-                    )),
+                    border: Border.symmetric(
+                      horizontal: BorderSide(color: MyColors.softGreyColor),
+                    ),
                     // borderRadius: BorderRadius.circular(10.r),
                     color: MyColors.softWhiteColor,
                   ),
                   child: Row(
                     children: [
-                      // SvgPicture.asset(
-                      //   'assets/images/globe-alt.svg',
-                      //   width: 18.sp,
-                      //   height: 18.sp,
-                      //   // colorFilter: ColorFilter.mode(
-                      //   //   Color(0xFF7A7A7A),
-                      //   //   BlendMode.srcIn,
-                      //   // ),
-                      // ),
+                      SvgPicture.asset(
+                        'assets/images/level.svg',
+                        width: 15.sp,
+                        height: 15.sp,
+                        colorFilter: ColorFilter.mode(
+                          Color(0xFF7A7A7A),
+                          BlendMode.srcIn,
+                        ),
+                      ),
                       SizedBox(width: 20.w),
                       Text(
-                        status.toString(),
+                        item.levelNumber.toString(),
                         style: TextStyle(
                           color: MyColors.greyColor,
                           fontFamily: "Noto Kufi Arabic",
@@ -285,12 +274,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
               prefixIcon: Padding(
                 padding: EdgeInsets.all(10.sp),
                 child: SvgPicture.asset(
-                  'assets/images/location.svg',
+                  'assets/images/book-open.svg',
 
-                  // colorFilter: ColorFilter.mode(
-                  //   Color(0xFF7A7A7A),
-                  //   BlendMode.srcIn,
-                  // ),
                 ),
               ),
             ),
@@ -305,7 +290,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
               return GestureDetector(
                 onTap: () {
                   setState(() {
-                    viewModel.departmentController.text = status;
+                    viewModel.departmentController.text = status.name ?? '';
                     viewModel.showDropdowndepartment = false;
                   });
                 },
@@ -333,7 +318,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                       // ),
                       SizedBox(width: 20.w),
                       Text(
-                        status,
+                        status.name ??'',
                         style: TextStyle(
                           color: MyColors.greyColor,
                           fontFamily: "Noto Kufi Arabic",

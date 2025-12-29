@@ -36,12 +36,12 @@ class _HomescreenState extends State<studentHomescreen> {
   void initState() {
     super.initState();
     // قائمة الصفحات في الـ Bottom Navigation
-    _pages = [
-  
-      Container(child: Center(child: Text(' المواد الدراسية'))),
-      Container(child: Center(child: Text('الامتحانات'))),
-      Container(child: Center(child: Text('بروفايل'))),
-    ];
+    // _pages = [
+    //
+    //   Container(child: Center(child: Text(' المواد الدراسية'))),
+    //   Container(child: Center(child: Text('الامتحانات'))),
+    //   Container(child: Center(child: Text('بروفايل'))),
+    // ];
     _loadNews();
   }
 
@@ -96,346 +96,345 @@ class _HomescreenState extends State<studentHomescreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF5F5F5),
-      bottomNavigationBar: CommonBottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
+      // bottomNavigationBar: CommonBottomNavigation(
+      //   currentIndex: _currentIndex,
+      //   onTap: (index) {
+      //     setState(() {
+      //       _currentIndex = index;
+      //     });
+      //   },
+      // ),
       body: Column(
         children: [
-          CommonTopSearchBar(controller: _searchController),
+         // CommonTopSearchBar(controller: _searchController),
           Expanded(
             child: SingleChildScrollView(
-          child: Column(
-            children: [
-         
-
-              // الكالندر
-              SingleChildScrollView(child: _buildCalendar()),
-
-              SizedBox(height: 20.h),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 20.0),
-                    child: Text(
-                      " اليوم",
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: "Noto Kufi Arabic",
-                        color: MyColors.blackColor,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 30.h,horizontal: 15.w),
+            child: Column(
+              children: [
+                // الكالندر
+                SingleChildScrollView(child: _buildCalendar()),
+                SizedBox(height: 20.h),
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Text(
+                        " اليوم",
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: "Noto Kufi Arabic",
+                          color: MyColors.blackColor,
+                        ),
                       ),
                     ),
+                  ],
                   ),
-                ],
-                )
-                ,
-                  SizedBox(height: 10.h),
-                  Container(
-                    width: 343.w,
-                    height: 80.h,
-                    decoration: BoxDecoration(
-                      color: MyColors.whiteColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 10.w),
-                        SvgPicture.asset("assets/images/book-open.svg"),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                        
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                " محاضرة فيزيكس",
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.blackColor,
-                                ),
-                                overflow: TextOverflow.ellipsis, // لو النص طول
-                              ),
-                              SizedBox(height: 5.h),
-                              Text(
-                            "10:00ص-11:00ص",
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.greyColor,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      
-                     ]
-                  ),
-                  ),
-                   SizedBox(height: 10.h),
-                  Container(
-                    width: 343.w,
-                    height: 80.h,
-                    decoration: BoxDecoration(
-                      color: MyColors.whiteColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 10.w),
-                        SvgPicture.asset("assets/images/Lab.svg"),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                        
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                " محاضرة فيزيكس",
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.blackColor,
-                                ),
-                                overflow: TextOverflow.ellipsis, // لو النص طول
-                              ),
-                              SizedBox(height: 5.h),
-                              Text(
-                            "10:00ص-11:00ص",
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.greyColor,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      
-                     ]
-                  ),
-                  ),
-                   SizedBox(height: 10.h),
-                  Container(
-                    width: 343.w,
-                    height: 80.h,
-                    decoration: BoxDecoration(
-                      color: MyColors.whiteColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 10.w),
-                        SvgPicture.asset("assets/images/book-open.svg"),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                        
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                " محاضرة فيزيكس",
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.blackColor,
-                                ),
-                                overflow: TextOverflow.ellipsis, // لو النص طول
-                              ),
-                              SizedBox(height: 5.h),
-                              Text(
-                            "10:00ص-11:00ص",
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.greyColor,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      
-                     ]
-                  ),
-                  ),
-                   SizedBox(height: 10.h),
-                   Divider(
-                    //height:343.w,
-                    color: MyColors.greyColor.withOpacity(0.5),
-                    thickness: .5,),
-                     SizedBox(height: 40.h),
-                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                       children: [
-                         Padding(
-                           padding: const EdgeInsets.only(right: 15.0),
-                           child: Text(
-                                      "  احدث الفعاليات و الاخبار",
-                                      style: TextStyle(
-                                        fontSize: 15.sp,
-                                        fontWeight: FontWeight.w500,
-                                        fontFamily: "Noto Kufi Arabic",
-                                        color: MyColors.blackColor,
-                                      ),
-                                      overflow: TextOverflow.ellipsis, // لو النص طول
-                                    ),
-                         ),
-                                  
-                   SizedBox(width: 20 .h),
-                                  TextButton(
-                                    onPressed: () { 
-                                     Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AllNews()), 
-    );
-                                     },
-                                    child: Text(
-                                      "    عرض كل الاخبار",
-                                      style: TextStyle(
-                                        fontSize: 10.sp,
-                                        fontWeight: FontWeight.w500,
-                                        fontFamily: "Noto Kufi Arabic",
-                                        color: MyColors.primaryColor,
-                                      ),
-                                      overflow: TextOverflow.ellipsis, // لو النص طول
-                                    ),
-                                  ),
-                       ],
-                     ),
- //SizedBox(height:  .h),
-  SizedBox(
-    height: 400.h,
-    child: isLoading
-        ? Center(child: CircularProgressIndicator())
-        : currentNews != null
-            ? Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Container(
-                  color: MyColors.whiteColor,
-                  width: 350.w,
-                  height: 100.h,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: currentNews!.mainImage.isNotEmpty
-                            ? Image.network(
-                                currentNews!.mainImage,
-                                width: 120.w,
-                                height: 100.h,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 120.w,
-                                    height: 100.h,
-                                    color: Colors.grey[300],
-                                    child: Icon(Icons.image_not_supported),
-                                  );
-                                },
-                              )
-                            : Container(
-                                width: 120.w,
-                                height: 100.h,
-                                color: Colors.grey[300],
-                                child: Icon(Icons.image_not_supported),
-                              ),
+                    SizedBox(height: 10.h),
+                    Container(
+                      width: 343.w,
+                      height: 80.h,
+                      decoration: BoxDecoration(
+                        color: MyColors.whiteColor,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Text(
-                                currentNews!.title,
-                                style: TextStyle(
-                                  fontSize: 9.sp,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.blackColor,
-                                ),
-                                maxLines: 2,
-                                softWrap: true,
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Row(
+                        children: [
+                          SizedBox(width: 10.w),
+                          SvgPicture.asset("assets/images/book-open.svg"),
+                          SizedBox(width: 10.w),
+                          Expanded(
+
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  currentNews!.createdAt != null
-                                      ? "${currentNews!.createdAt!.day} ${_months[currentNews!.createdAt!.month - 1]}, ${currentNews!.createdAt!.year}"
-                                      : "17 أكتوبر, 2024",
+                                  " محاضرة فيزيكس",
                                   style: TextStyle(
-                                    fontSize: 7.sp,
+                                    fontSize: 12.sp,
                                     fontWeight: FontWeight.w500,
                                     fontFamily: "Noto Kufi Arabic",
-                                    color: Color(0xffAAAAAB),
+                                    color: MyColors.blackColor,
                                   ),
+                                  overflow: TextOverflow.ellipsis, // لو النص طول
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => NewsDetails(news: currentNews!),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      "معرفة المزيد",
-                                      style: TextStyle(
-                                        fontSize: 7.sp,
-                                        fontWeight: FontWeight.w500,
-                                        fontFamily: "Noto Kufi Arabic",
-                                        color: Color(0xff14B8A6),
-                                      ),
-                                    ),
+                                SizedBox(height: 5.h),
+                                Text(
+                              "10:00ص-11:00ص",
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w400,
+                                    fontFamily: "Noto Kufi Arabic",
+                                    color: MyColors.greyColor,
                                   ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            : Center(
-                child: Text(
-                  "لا توجد أخبار متاحة",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey,
-                    fontFamily: "Noto Kufi Arabic",
-                  ),
-                ),
-              ),
-  ),
-                ],  
+                          ),
 
+                       ]
+                    ),
+                    ),
+                     SizedBox(height: 10.h),
+                    Container(
+                      width: 343.w,
+                      height: 80.h,
+                      decoration: BoxDecoration(
+                        color: MyColors.whiteColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 10.w),
+                          SvgPicture.asset("assets/images/Lab.svg"),
+                          SizedBox(width: 10.w),
+                          Expanded(
+
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  " محاضرة فيزيكس",
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: "Noto Kufi Arabic",
+                                    color: MyColors.blackColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis, // لو النص طول
+                                ),
+                                SizedBox(height: 5.h),
+                                Text(
+                              "10:00ص-11:00ص",
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w400,
+                                    fontFamily: "Noto Kufi Arabic",
+                                    color: MyColors.greyColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                       ]
+                    ),
+                    ),
+                     SizedBox(height: 10.h),
+                    Container(
+                      width: 343.w,
+                      height: 80.h,
+                      decoration: BoxDecoration(
+                        color: MyColors.whiteColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 10.w),
+                          SvgPicture.asset("assets/images/book-open.svg"),
+                          SizedBox(width: 10.w),
+                          Expanded(
+
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  " محاضرة فيزيكس",
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: "Noto Kufi Arabic",
+                                    color: MyColors.blackColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis, // لو النص طول
+                                ),
+                                SizedBox(height: 5.h),
+                                Text(
+                              "10:00ص-11:00ص",
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w400,
+                                    fontFamily: "Noto Kufi Arabic",
+                                    color: MyColors.greyColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                       ]
+                    ),
+                    ),
+                     SizedBox(height: 10.h),
+                     Divider(
+                      //height:343.w,
+                      color: MyColors.greyColor.withOpacity(0.5),
+                      thickness: .5,),
+                       SizedBox(height: 40.h),
+                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                         children: [
+                           Padding(
+                             padding: const EdgeInsets.only(right: 15.0),
+                             child: Text(
+                                        "  احدث الفعاليات و الاخبار",
+                                        style: TextStyle(
+                                          fontSize: 15.sp,
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: "Noto Kufi Arabic",
+                                          color: MyColors.blackColor,
+                                        ),
+                                        overflow: TextOverflow.ellipsis, // لو النص طول
+                                      ),
+                           ),
+
+                     SizedBox(width: 20 .h),
+                                    TextButton(
+                                      onPressed: () {
+                                       Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AllNews()),
+                );
+                                       },
+                                      child: Text(
+                                        "    عرض كل الاخبار",
+                                        style: TextStyle(
+                                          fontSize: 10.sp,
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: "Noto Kufi Arabic",
+                                          color: MyColors.primaryColor,
+                                        ),
+                                        overflow: TextOverflow.ellipsis, // لو النص طول
+                                      ),
+                                    ),
+                         ],
+                       ),
+             //SizedBox(height:  .h),
+              SizedBox(
+                height: 400.h,
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : currentNews != null
+              ? Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Container(
+                    color: MyColors.whiteColor,
+                    width: 350.w,
+                    height: 100.h,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: currentNews!.mainImage.isNotEmpty
+                              ? Image.network(
+                                  currentNews!.mainImage,
+                                  width: 120.w,
+                                  height: 100.h,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 120.w,
+                                      height: 100.h,
+                                      color: Colors.grey[300],
+                                      child: Icon(Icons.image_not_supported),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  width: 120.w,
+                                  height: 100.h,
+                                  color: Colors.grey[300],
+                                  child: Icon(Icons.image_not_supported),
+                                ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: Text(
+                                  currentNews!.title,
+                                  style: TextStyle(
+                                    fontSize: 9.sp,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: "Noto Kufi Arabic",
+                                    color: MyColors.blackColor,
+                                  ),
+                                  maxLines: 2,
+                                  softWrap: true,
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    currentNews!.createdAt != null
+                                        ? "${currentNews!.createdAt!.day} ${_months[currentNews!.createdAt!.month - 1]}, ${currentNews!.createdAt!.year}"
+                                        : "17 أكتوبر, 2024",
+                                    style: TextStyle(
+                                      fontSize: 7.sp,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: "Noto Kufi Arabic",
+                                      color: Color(0xffAAAAAB),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => NewsDetails(news: currentNews!),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        "معرفة المزيد",
+                                        style: TextStyle(
+                                          fontSize: 7.sp,
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: "Noto Kufi Arabic",
+                                          color: Color(0xff14B8A6),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Center(
+                  child: Text(
+                    "لا توجد أخبار متاحة",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey,
+                      fontFamily: "Noto Kufi Arabic",
+                    ),
+                  ),
+                ),
               ),
+                  ],
+
+                ),
+          ),
             
           ),
         

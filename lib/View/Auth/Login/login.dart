@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_college/Cubits/States/States.dart';
 import 'package:smart_college/Cubits/Auth/Login/loginScreenViewModel.dart';
+import 'package:smart_college/View/Auth/Register/alumniRegister.dart';
 import 'package:smart_college/View/Auth/Register/studentRegister.dart';
 import 'package:smart_college/View/Graduated/home/graduatedHomeScreen.dart';
 import 'package:smart_college/utils/colors.dart';
@@ -38,9 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
         else if (state is LoginSuccessState) {
           showOverlayMessage(
               context, state.response.data!.message!, isError: false);
-          final id = await TokenStorage.getUserId();
 
-         // context.read<SendMessageCubit>().connectSocket();
 
           final role = await TokenStorage.getRole();
           if (role == "Student") {
@@ -285,11 +284,28 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fontWeight: FontWeight.w400
                               ),
                             ),
-                            TextButton(onPressed: (){
-                              Navigator.pushReplacementNamed(
-                                context,
-                                StudentRegisterScreen.routeName,
-                              );
+                            TextButton(onPressed: () async {
+                              final role = await TokenStorage.getRole();
+                              if (role == "Student") {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => StudentRegisterScreen(role: role?? '')),
+                                );
+                              } else if (role == "Graduated") {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => AlumniRegisterScreen(role:  role ?? '')),
+                                );
+                              } else {
+                                // default fallback
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => OnBoarding()),
+                                );
+                              }
                             },
                               child: Text('سجل الان',
                                 style: TextStyle(

@@ -433,7 +433,6 @@ class _LoginScreenState extends State<AlumniRegisterScreen> {
                             onPressed: state is LoadingState
                                 ? null
                                 : () async{
-                              final role = await TokenStorage.getRole();
 
                               context.read<GoogleCubit>().signInWithGoogle(
                                   role:widget.role
@@ -489,7 +488,6 @@ class _LoginScreenState extends State<AlumniRegisterScreen> {
 
   Widget _buildResumeUploadField(AlumniRegisterCubit viewModel) {
     return buildTextField(
-
       hint: 'السيرة الذاتية',
       controller: viewModel.cvController,
       validator: (text) {
