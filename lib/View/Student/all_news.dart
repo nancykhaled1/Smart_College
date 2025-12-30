@@ -1,11 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:smart_college/Models/Response/news_model.dart';
+
 import 'package:smart_college/utils/colors.dart';
-import 'package:smart_college/services/news_manager.dart';
+import 'package:smart_college/Cubits/News/NewsCubit.dart';
+import 'package:smart_college/Cubits/News/NewsStates.dart';
 import 'package:smart_college/View/Student/news_details.dart';
+import 'package:smart_college/View/Auth/Login/login.dart';
 
 class AllNews extends StatefulWidget {
   AllNews({super.key});
@@ -15,34 +18,12 @@ class AllNews extends StatefulWidget {
 }
 
 class _AllNewsState extends State<AllNews> {
-  NewsModel? currentNews;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNews();
-  }
-
-  // تحميل آخر خبر من API
-  Future<void> _loadNews() async {
-    try {
-      final news = await NewsManager.getRandomNews();
-      if (mounted) {
-        setState(() {
-          currentNews = news;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading news: $e');
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  }
+   @override
+   void initState() {
+     super.initState();
+     // Fetch news when screen loads
+     context.read<NewsCubit>().getNews();
+   }
 
   // قائمة بأسماء الشهور باللغة العربية
   final List<String> _months = [
@@ -67,7 +48,12 @@ class _AllNewsState extends State<AllNews> {
       body: Stack(
         children: [
           // الخلفية
-          Positioned.fill(
+          Positioned.fill(   
+                  
+
+
+
+                           
             child: SvgPicture.asset(
               "assets/images/Background.svg", 
               fit: BoxFit.cover,
@@ -129,26 +115,131 @@ class _AllNewsState extends State<AllNews> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: isLoading
-                ? Center(child: CircularProgressIndicator())
-                : currentNews != null
-                    ? SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(horizontal: 25.w),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+            child: BlocBuilder<NewsCubit, NewsStates>(
+              builder: (context, state) {
+                // Debug: Print current state
+                print("News State: ${state.runtimeType}");
+                
+                if (state is NewsLoadingState) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          color: MyColors.primaryColor,
+                        ),
+                        SizedBox(height: 20.h),
+                        Text(
+                          state.loadingMessage ?? "جاري تحميل الأخبار...",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontFamily: "Noto Kufi Arabic",
+                            color: MyColors.greyColor,
                           ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (state is NewsErrorState) {
+                  // Debug: Print error details
+                  print("News Error: ${state.errorMessage}");
+                  
+                  return Center(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 25.w),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red, size: 50),
+                          SizedBox(height: 15.h),
+                          Text(
+                            "حدث خطأ",
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontFamily: "Noto Kufi Arabic",
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 10.h),
+                          Text(
+                            state.errorMessage ?? "حدث خطأ غير معروف",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontFamily: "Noto Kufi Arabic",
+                              color: Colors.red[700],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 20.h),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              print("Retrying news fetch...");
+                              context.read<NewsCubit>().getNews();
+                            },
+                            icon: Icon(Icons.refresh),
+                            label: Text(
+                              "إعادة المحاولة",
+                              style: TextStyle(fontFamily: "Noto Kufi Arabic"),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: MyColors.primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                } else if (state is NewsSuccessState) {
+                  final newsList = state.response.data;
+                  if (newsList.isEmpty) {
+                    return Center(
+                      child: Text(
+                        "لا توجد أخبار متاحة",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: Colors.grey,
+                          fontFamily: "Noto Kufi Arabic",
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 25.w, vertical: 10.h),
+                    itemCount: newsList.length,
+                    itemBuilder: (context, index) {
+                      final news = newsList[index];
+                      return Card(
+                        margin: EdgeInsets.only(bottom: 15.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NewsDetails(
+                                  newsList: newsList,
+                                  initialIndex: index,
+                                ),
+                              ),
+                            );
+                          },
                           child: Container(
                             color: MyColors.whiteColor,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // صورة الخبر
-                                if (currentNews!.mainImage.isNotEmpty)
+                                if (news.mainImage.isNotEmpty)
                                   ClipRRect(
                                     borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                                     child: Image.network(
-                                      currentNews!.mainImage,
+                                      news.mainImage,
                                       width: double.infinity,
                                       height: 200.h,
                                       fit: BoxFit.cover,
@@ -171,7 +262,7 @@ class _AllNewsState extends State<AllNews> {
                                     children: [
                                       // عنوان الخبر
                                       Text(
-                                        currentNews!.title,
+                                        news.title,
                                         style: TextStyle(
                                           fontSize: 16.sp,
                                           fontWeight: FontWeight.w600,
@@ -186,7 +277,9 @@ class _AllNewsState extends State<AllNews> {
                                       
                                       // محتوى الخبر
                                       Text(
-                                        currentNews!.content,
+                                        news.content.length > 100 
+                                            ? news.content.substring(0, 100) + "..."
+                                            : news.content,
                                         style: TextStyle(
                                           fontSize: 14.sp,
                                           fontWeight: FontWeight.w400,
@@ -199,14 +292,12 @@ class _AllNewsState extends State<AllNews> {
                                       
                                       SizedBox(height: 15.h),
                                       
-                                      // تاريخ الخبر وزر المزيد
+                                     
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            currentNews!.createdAt != null
-                                                ? "${currentNews!.createdAt!.day} ${_months[currentNews!.createdAt!.month - 1]}, ${currentNews!.createdAt!.year}"
-                                                : "17 أكتوبر, 2024",
+                                            "${news.createdAt.day} ${_months[news.createdAt.month - 1]}, ${news.createdAt.year}",
                                             style: TextStyle(
                                               fontSize: 12.sp,
                                               fontWeight: FontWeight.w500,
@@ -214,23 +305,13 @@ class _AllNewsState extends State<AllNews> {
                                               color: Color(0xffAAAAAB),
                                             ),
                                           ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => NewsDetails(news: currentNews!),
-                                                ),
-                                              );
-                                            },
-                                            child: Text(
-                                              "معرفة المزيد",
-                                              style: TextStyle(
-                                                fontSize: 12.sp,
-                                                fontWeight: FontWeight.w500,
-                                                fontFamily: "Noto Kufi Arabic",
-                                                color: MyColors.primaryColor,
-                                              ),
+                                          Text(
+                                            "معرفة المزيد",
+                                            style: TextStyle(
+                                              fontSize: 12.sp,
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: "Noto Kufi Arabic",
+                                              color: MyColors.primaryColor,
                                             ),
                                           ),
                                         ],
@@ -242,17 +323,32 @@ class _AllNewsState extends State<AllNews> {
                             ),
                           ),
                         ),
-                      )
-                    : Center(
-                        child: Text(
-                          "لا توجد أخبار متاحة",
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            color: Colors.grey,
-                            fontFamily: "Noto Kufi Arabic",
-                          ),
+                      );
+                    },
+                  );
+                }
+                // Initial state - show loading or fetch news
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        color: MyColors.primaryColor,
+                      ),
+                      SizedBox(height: 20.h),
+                      Text(
+                        "جاري تحميل الأخبار...",
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontFamily: "Noto Kufi Arabic",
+                          color: MyColors.greyColor,
                         ),
                       ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

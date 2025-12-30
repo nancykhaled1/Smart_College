@@ -32,7 +32,9 @@ class CommonBottomNavigation extends StatelessWidget {
           ),
           child: BottomNavigationBar(
             currentIndex: currentIndex,
-            onTap: onTap,
+        onTap: (index) {
+          onTap(index);
+        },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             selectedItemColor: MyColors.primaryColor,

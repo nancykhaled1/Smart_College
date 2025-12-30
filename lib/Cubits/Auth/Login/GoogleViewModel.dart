@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_college/Repositories/GoogleRepository.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_college/services/local/sharedPreference.dart';
 
 import '../../../Models/Request/GoogleRequest.dart';
 import 'States.dart';
@@ -40,8 +40,10 @@ class GoogleCubit extends Cubit<LoginStates> {
         // لو Success
             (googleResponse) async {
           if (googleResponse.token != null) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString("authToken", googleResponse.token!);
+            // Use TokenStorage to save token with the correct key
+            await TokenStorage.saveToken(googleResponse.token!);
+            final savedToken = await TokenStorage.getToken();
+            print("Saved Google token locally: $savedToken");
 
             emit(GoogleSuccessState(response: googleResponse));
           } else {

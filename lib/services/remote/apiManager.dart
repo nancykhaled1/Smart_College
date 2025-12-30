@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart'
     show Connectivity, ConnectivityResult;
@@ -7,6 +8,9 @@ import 'package:smart_college/Models/Request/ChangePasswordRequest.dart';
 import 'package:smart_college/Models/Request/ResetPasswordRequest.dart';
 import 'package:smart_college/Models/Response/ChangePaswwordResponse.dart';
 import 'package:smart_college/Models/Response/ResetPasswordResponse.dart';
+import 'package:smart_college/Models/Response/newsModel.dart';
+import 'package:smart_college/Models/Response/subject_model.dart';
+import 'package:smart_college/services/local/sharedPreference.dart';
 import '../../Models/Request/AlumniRegisterRequest.dart';
 import '../../Models/Request/LoginRequest.dart';
 import '../../Models/Request/SendEmailRequest.dart';
@@ -20,9 +24,7 @@ import '../../Models/Response/StudentRegisterResponse.dart';
 import '../../Models/Response/VerifyEmailError.dart';
 import '../../Models/Response/VerifyEmailResponse.dart';
 import '../../Models/Response/registerError.dart';
-import '../../Models/Response/NewsListResponse.dart';
-import '../../Models/Response/NewsError.dart';
-import '../../Models/Response/news_model.dart';
+
 import 'apiConstants.dart';
 
 
@@ -324,13 +326,12 @@ class ApiManager {
          ),
        ));
      }
-
-
-
-
+   
+    
+   
    }
 
-
+      
 
    Future<Either<VerifyError, ResetPasswordResponse>> resetPassword(
        ResetPasswordRequest request,
@@ -513,399 +514,329 @@ class ApiManager {
     }
   }
 
+  // lecture api //////////////////////////
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // News API Methods
-
-  Future<Either<NewsError, NewsListResponse>> getAllNews({
-    int page = 1,
-    int limit = 10,
-    bool random = false,
-  }) async {
+  Future<Either<LoginError, LectureResponseModel>> getLectures() async {
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
-
+      
       if (connectivityResult == ConnectivityResult.mobile ||
           connectivityResult == ConnectivityResult.wifi) {
         
-        Map<String, String> queryParams = {
-          'page': page.toString(), 
-          'limit': limit.toString(),
-        };
+        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.lecturesApi);
+        print('📡 Fetching lectures from: $url');
         
-        // Add random parameter if requested
-        if (random) {
-          queryParams['random'] = 'true';
+        final savedToken = await TokenStorage.getToken();
+        
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
         }
         
-        Uri url = Uri.https(
-          ApiConstants.baseurl, 
-          ApiConstants.getAllNewsApi,
-          queryParams
-        );
-
-        print('Sending get all news request to: $url');
-
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
+        
         var response = await http.get(
           url,
           headers: {
+            "Authorization": "Bearer $savedToken",
             "Content-Type": "application/json",
             "Accept": "application/json",
           },
         );
-
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
+        
+        print('📥 Lectures API Response status: ${response.statusCode}');
+        print('📥 Lectures API Response body: ${response.body}');
+        
         var jsonResponse = jsonDecode(response.body);
-
+        
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          var newsResponse = NewsListResponse.fromJson(jsonResponse);
-          return right(newsResponse);
+          var lectureResponse = LectureResponseModel.fromJson(jsonResponse);
+          print('✅ Lectures fetched successfully: ${lectureResponse.data.length} lectures');
+          return right(lectureResponse);
         } else {
-          return left(NewsError.fromJson(jsonResponse));
+          print('❌ Lectures API Error: ${jsonResponse.toString()}');
+          return left(LoginError.fromJson(jsonResponse));
         }
       } else {
-        return left(NewsError(
-          success: false,
-          message: "No Internet Connection",
-          code: 0,
-        ));
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
       }
     } catch (e) {
-      print('Exception in getAllNews: $e');
-      return left(NewsError(
-        success: false,
-        message: "Unexpected Error",
-        code: -1,
-        details: e.toString(),
-      ));
+      print('❌ Exception in getLectures: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
     }
   }
 
-  Future<Either<NewsError, NewsModel>> getNewsById(String id) async {
+  // Get Lecture By ID
+  Future<Either<LoginError, LectureDetailResponse>> getLectureById(String lectureId) async {
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
-
+      
       if (connectivityResult == ConnectivityResult.mobile ||
           connectivityResult == ConnectivityResult.wifi) {
         
-        Uri url = Uri.https(
-          ApiConstants.baseurl, 
-          ApiConstants.getAllNewsApi,
-          {'id': id}
-        );
-
-        print('Sending get news by id request to: $url');
-
+        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.lectureByIdApi(lectureId));
+        print('📡 Fetching lecture details from: $url');
+        
+        final savedToken = await TokenStorage.getToken();
+        
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
+        }
+        
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
+        
         var response = await http.get(
           url,
           headers: {
+            "Authorization": "Bearer $savedToken",
             "Content-Type": "application/json",
             "Accept": "application/json",
           },
         );
-
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
+        
+        print('📥 Lecture details API Response status: ${response.statusCode}');
+        print('📥 Lecture details API Response body: ${response.body}');
+        
         var jsonResponse = jsonDecode(response.body);
-
+        
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          // Handle the new JSON structure where data contains a "news" array
-          NewsModel news;
-          if (jsonResponse['data'] != null && jsonResponse['data']['news'] != null) {
-            // New structure: data.news[0]
-            var newsList = jsonResponse['data']['news'] as List<dynamic>?;
-            if (newsList != null && newsList.isNotEmpty) {
-              news = NewsModel.fromJson(newsList[0]);
-            } else {
-              return left(NewsError(
-                success: false,
-                message: "News not found",
-                code: 404,
-              ));
-            }
-          } else {
-            // Fallback for old structure or direct news object
-            news = NewsModel.fromJson(jsonResponse['data'] ?? jsonResponse);
-          }
-          return right(news);
+          var lectureDetailResponse = LectureDetailResponse.fromJson(jsonResponse);
+          print('✅ Lecture details fetched successfully');
+          return right(lectureDetailResponse);
         } else {
-          return left(NewsError.fromJson(jsonResponse));
+          print('❌ Lecture details API Error: ${jsonResponse.toString()}');
+          return left(LoginError.fromJson(jsonResponse));
         }
       } else {
-        return left(NewsError(
-          success: false,
-          message: "No Internet Connection",
-          code: 0,
-        ));
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
       }
     } catch (e) {
-      print('Exception in getNewsById: $e');
-      return left(NewsError(
-        success: false,
-        message: "Unexpected Error",
-        code: -1,
-        details: e.toString(),
-      ));
+      print('❌ Exception in getLectureById: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
     }
   }
 
-  Future<Either<NewsError, NewsListResponse>> getLatestNews({
-    int count = 3,
-    bool random = true,
-  }) async {
+  Future<Either<LoginError, NewsResponse>> getNews() async {
+    try {
+    final connectivityResult = await Connectivity().checkConnectivity();
+
+    if (connectivityResult == ConnectivityResult.mobile ||
+        connectivityResult == ConnectivityResult.wifi) {
+
+      Uri url = Uri.https(
+        ApiConstants.baseurl,
+        ApiConstants.NewsApi,
+      );
+
+      print('📡 Fetching news from: $url');
+
+      final savedToken = await TokenStorage.getToken();
+
+      if (savedToken == null || savedToken.isEmpty) {
+        print("⚠️ No auth token found. User needs to login first.");
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 401,
+              message: "يرجى تسجيل الدخول أولاً",
+            ),
+          ),
+        );
+      }
+
+      print('✅ Token found: ${savedToken.substring(0, 20)}...');
+
+      var response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $savedToken',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      print('📥 News API Response status: ${response.statusCode}');
+      print('📥 News API Response body: ${response.body}');
+
+      var jsonResponse = jsonDecode(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        var newsResponse = NewsResponse.fromJson(jsonResponse);
+        print('✅ News fetched successfully: ${newsResponse.data.length} news items');
+        return right(newsResponse);
+      } else {
+        print('❌ News API Error: ${jsonResponse.toString()}');
+        return left(LoginError.fromJson(jsonResponse));
+      }
+    } else {
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: 0,
+            message: "No Internet Connection",
+          ),
+        ),
+      );
+    }
+  } catch (e) {
+    print('❌ Exception in getNews: $e');
+    return left(
+      LoginError(
+        success: false,
+        error: LoginDetailsError(
+          code: -1,
+          message: "حدث خطأ غير متوقع: ${e.toString()}",
+        ),
+      ),
+    );
+    
+  }
+
+  // Get News By ID
+ 
+}
+
+ Future<Either<LoginError, NewsDetailResponse>> getNewsById(String newsId) async {
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
-
+      
       if (connectivityResult == ConnectivityResult.mobile ||
           connectivityResult == ConnectivityResult.wifi) {
         
-        Map<String, String> queryParams = {
-          'count': count.toString(),
-        };
+        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.newsByIdApi(newsId));
+        print('📡 Fetching news details from: $url');
         
-        // Add random parameter if requested
-        if (random) {
-          queryParams['random'] = 'true';
+        final savedToken = await TokenStorage.getToken();
+        
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
         }
         
-        Uri url = Uri.https(
-          ApiConstants.baseurl, 
-          ApiConstants.getAllNewsApi,
-          queryParams
-        );
-
-        print('Sending get latest news request to: $url');
-
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
+        
         var response = await http.get(
           url,
           headers: {
+            "Authorization": "Bearer $savedToken",
             "Content-Type": "application/json",
             "Accept": "application/json",
           },
         );
-
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
+        
+        print('📥 News details API Response status: ${response.statusCode}');
+        print('📥 News details API Response body: ${response.body}');
+        
         var jsonResponse = jsonDecode(response.body);
-
+        
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          var newsResponse = NewsListResponse.fromJson(jsonResponse);
-          return right(newsResponse);
+          var newsDetailResponse = NewsDetailResponse.fromJson(jsonResponse);
+          print('✅ News details fetched successfully');
+          return right(newsDetailResponse);
         } else {
-          return left(NewsError.fromJson(jsonResponse));
+          print('❌ News details API Error: ${jsonResponse.toString()}');
+          return left(LoginError.fromJson(jsonResponse));
         }
       } else {
-        return left(NewsError(
-          success: false,
-          message: "No Internet Connection",
-          code: 0,
-        ));
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
       }
     } catch (e) {
-      print('Exception in getLatestNews: $e');
-      return left(NewsError(
-        success: false,
-        message: "Unexpected Error",
-        code: -1,
-        details: e.toString(),
-      ));
-    }
-  }
-
-  Future<Either<NewsError, NewsListResponse>> getImportantNews() async {
-    try {
-      final connectivityResult = await Connectivity().checkConnectivity();
-
-      if (connectivityResult == ConnectivityResult.mobile ||
-          connectivityResult == ConnectivityResult.wifi) {
-        
-        Uri url = Uri.https(
-          ApiConstants.baseurl, 
-          ApiConstants.getAllNewsApi,
-          {'important': 'true'}
-        );
-
-        print('Sending get important news request to: $url');
-
-        var response = await http.get(
-          url,
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-        );
-
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
-        var jsonResponse = jsonDecode(response.body);
-
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          var newsResponse = NewsListResponse.fromJson(jsonResponse);
-          return right(newsResponse);
-        } else {
-          return left(NewsError.fromJson(jsonResponse));
-        }
-      } else {
-        return left(NewsError(
+      print('❌ Exception in getNewsById: $e');
+      return left(
+        LoginError(
           success: false,
-          message: "No Internet Connection",
-          code: 0,
-        ));
-      }
-    } catch (e) {
-      print('Exception in getImportantNews: $e');
-      return left(NewsError(
-        success: false,
-        message: "Unexpected Error",
-        code: -1,
-        details: e.toString(),
-      ));
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
     }
-  }
-
-  Future<Either<NewsError, NewsListResponse>> searchNews({
-    String? query,
-    int page = 1,
-    int limit = 10,
-  }) async {
-    try {
-      final connectivityResult = await Connectivity().checkConnectivity();
-
-      if (connectivityResult == ConnectivityResult.mobile ||
-          connectivityResult == ConnectivityResult.wifi) {
-        
-        Map<String, String> queryParams = {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        };
-        
-        if (query != null && query.isNotEmpty) {
-          queryParams['query'] = query;
-        }
-
-        Uri url = Uri.https(
-          ApiConstants.baseurl, 
-          ApiConstants.getAllNewsApi,
-          queryParams
-        );
-
-        print('Sending search news request to: $url');
-
-        var response = await http.get(
-          url,
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-        );
-
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
-        var jsonResponse = jsonDecode(response.body);
-
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          var newsResponse = NewsListResponse.fromJson(jsonResponse);
-          return right(newsResponse);
-        } else {
-          return left(NewsError.fromJson(jsonResponse));
-        }
-      } else {
-        return left(NewsError(
-          success: false,
-          message: "No Internet Connection",
-          code: 0,
-        ));
-      }
-    } catch (e) {
-      print('Exception in searchNews: $e');
-      return left(NewsError(
-        success: false,
-        message: "Unexpected Error",
-        code: -1,
-        details: e.toString(),
-      ));
-    }
-  }
+  } 
+     
 
 
 
-  // Get random news - dedicated method for random news
-  Future<Either<NewsError, NewsListResponse>> getRandomNews({
-    int count = 10,
-  }) async {
-    try {
-      final connectivityResult = await Connectivity().checkConnectivity();
 
-      if (connectivityResult == ConnectivityResult.mobile ||
-          connectivityResult == ConnectivityResult.wifi) {
-        
-        Uri url = Uri.https(
-          ApiConstants.baseurl, 
-          ApiConstants.getAllNewsApi,
-          {'count': count.toString(), 'random': 'true'}
-        );
 
-        print('Sending get random news request to: $url');
 
-        var response = await http.get(
-          url,
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-        );
 
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
 
-        var jsonResponse = jsonDecode(response.body);
 
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          var newsResponse = NewsListResponse.fromJson(jsonResponse);
-          return right(newsResponse);
-        } else {
-          return left(NewsError.fromJson(jsonResponse));
-        }
-      } else {
-        return left(NewsError(
-          success: false,
-          message: "No Internet Connection",
-          code: 0,
-        ));
-      }
-    } catch (e) {
-      print('Exception in getRandomNews: $e');
-      return left(NewsError(
-        success: false,
-        message: "Unexpected Error",
-        code: -1,
-        details: e.toString(),
-      ));
-    }
-  }
+
+
+
 
 }
 
 
+  /////////////////////////
+ 

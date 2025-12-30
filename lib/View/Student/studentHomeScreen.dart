@@ -1,14 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:smart_college/Models/Response/news_model.dart';
-import 'package:smart_college/View/Student/all_news.dart';
-import 'package:smart_college/View/Student/news_details.dart';
 import 'package:smart_college/utils/colors.dart';
-import 'package:smart_college/services/news_manager.dart';
 import 'package:smart_college/View/widgets/common_top_search_bar.dart';
 import 'package:smart_college/View/widgets/student_bottom_navigation.dart';
+import 'package:smart_college/Cubits/News/NewsCubit.dart';
+import 'package:smart_college/Cubits/News/NewsStates.dart';
+import 'package:smart_college/Models/Response/newsModel.dart';
+import 'package:smart_college/View/Student/all_news.dart';
+import 'package:smart_college/View/Student/news_details.dart';
 
 
 
@@ -27,42 +31,19 @@ class _HomescreenState extends State<studentHomescreen> {
   late List<Widget> _pages;
 
   DateTime _currentDate = DateTime.now();
-  
-  // الحصول على آخر خبر من الخدمة
-  NewsModel? currentNews;
-  bool isLoading = true;
 
- @override
+  @override
   void initState() {
     super.initState();
     // قائمة الصفحات في الـ Bottom Navigation
     _pages = [
-  
+
       Container(child: Center(child: Text(' المواد الدراسية'))),
       Container(child: Center(child: Text('الامتحانات'))),
       Container(child: Center(child: Text('بروفايل'))),
     ];
-    _loadNews();
-  }
-
-  // تحميل آخر خبر من API
-  Future<void> _loadNews() async {
-    try {
-      final news = await NewsManager.getLatestNews();
-      if (mounted) {
-        setState(() {
-          currentNews = news;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading news: $e');
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
+    // Fetch news when screen loads
+    context.read<NewsCubit>().getNews();
   }
 
   // قائمة بالأيام باللغة العربية
@@ -297,14 +278,14 @@ class _HomescreenState extends State<studentHomescreen> {
                                       overflow: TextOverflow.ellipsis, // لو النص طول
                                     ),
                          ),
-                                  
-                   SizedBox(width: 30 .h),
+
+                  // SizedBox(width: 30 .h),
                                   TextButton(
-                                    onPressed: () { 
-                                     Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AllNews()), 
-    );
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => AllNews()),
+                                      );
                                      },
                                     child: Text(
                                       "    عرض كل الاخبار",
@@ -321,119 +302,239 @@ class _HomescreenState extends State<studentHomescreen> {
                      ),
  //SizedBox(height:  .h),
   SizedBox(
-    height: 400.h,
-    child: isLoading
-        ? Center(child: CircularProgressIndicator())
-        : currentNews != null
-            ? Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+    height: 350.h,
+    child: BlocBuilder<NewsCubit, NewsStates>(
+      builder: (context, state) {
+        if (state is NewsLoadingState) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: MyColors.primaryColor,
+            ),
+          );
+        } else if (state is NewsErrorState) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red, size: 40),
+                SizedBox(height: 10.h),
+                Text(
+                  state.errorMessage ?? "حدث خطأ",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: "Noto Kufi Arabic",
+                    color: Colors.red,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                child: Container(
-                  color: MyColors.whiteColor,
-                  width: 350.w,
+                SizedBox(height: 10.h),
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<NewsCubit>().getNews();
+                  },
+                  child: Text("إعادة المحاولة", style: TextStyle(fontFamily: "Noto Kufi Arabic")),
+                ),
+              ],
+            ),
+          );
+        } else if (state is NewsSuccessState) {
+          final newsList = state.response.data;
+          if (newsList.isEmpty) {
+            return Center(
+              child: Text(
+                "لا توجد أخبار متاحة",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontFamily: "Noto Kufi Arabic",
+                  color: MyColors.greyColor,
+                ),
+              ),
+            );
+          }
+          // Replace your existing ListView.builder code with this:
+
+return SizedBox(
+  height: 100.h,
+  child: ListView.builder(
+    scrollDirection: Axis.horizontal,
+    itemCount: newsList.length,
+    padding: EdgeInsets.symmetric(horizontal: 16.w),
+    itemBuilder: (context, index) {
+      final news = newsList[index];
+      
+      // Helper function to check if image is base64
+      bool isBase64(String str) => str.startsWith('data:image');
+      
+      // Helper function to build image widget
+      Widget buildImageWidget() {
+        if (news.mainImage.isEmpty) {
+          return Container(
+            width: 120.w,
+            height: 100.h,
+            color: Colors.grey[300],
+            child: Icon(Icons.image_not_supported, size: 30),
+          );
+        }
+
+        if (isBase64(news.mainImage)) {
+          try {
+            final base64String = news.mainImage.split(',')[1];
+           final bytes = base64Decode(base64String);
+            return Image.memory(
+              bytes,
+              width: 120.w,
+              height: 100.h,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 120.w,
                   height: 100.h,
-                  child: Row(
+                  color: Colors.grey[300],
+                  child: Icon(Icons.image_not_supported, size: 30),
+                );
+              },
+            );
+          } catch (e) {
+            return Container(
+              width: 120.w,
+              height: 100.h,
+              color: Colors.grey[300],
+              child: Icon(Icons.image_not_supported, size: 30),
+            );
+          }
+        }
+
+        return Image.network(
+          news.mainImage,
+          width: 120.w,
+          height: 100.h,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 120.w,
+              height: 100.h,
+              color: Colors.grey[300],
+              child: Icon(Icons.image_not_supported, size: 30),
+            );
+          },
+        );
+      }
+
+      return Container(
+        width: 343.w,
+        margin: EdgeInsets.only(left: index == 0 ? 0 : 10.w, right: 10.w),
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Container(
+            color: MyColors.whiteColor,
+            child: Row(
+              children: [
+                // News Image
+                ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                  ),
+                  child: buildImageWidget(),
+                ),
+                SizedBox(width: 12),
+                // News Content
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: currentNews!.mainImage.isNotEmpty
-                            ? Image.network(
-                                currentNews!.mainImage,
-                                width: 120.w,
-                                height: 100.h,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 120.w,
-                                    height: 100.h,
-                                    color: Colors.grey[300],
-                                    child: Icon(Icons.image_not_supported),
-                                  );
-                                },
-                              )
-                            : Container(
-                                width: 120.w,
-                                height: 100.h,
-                                color: Colors.grey[300],
-                                child: Icon(Icons.image_not_supported),
-                              ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10, right: 8),
+                        child: Text(
+                          news.title,
+                          style: TextStyle(
+                            fontSize: 9.sp,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: "Noto Kufi Arabic",
+                            color: MyColors.blackColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Text(
-                                currentNews!.title,
-                                style: TextStyle(
-                                  fontSize: 9.sp,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: "Noto Kufi Arabic",
-                                  color: MyColors.blackColor,
-                                ),
-                                maxLines: 2,
-                                softWrap: true,
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8, bottom: 8),
+                        child: Text(
+                          news.content.length > 50 
+                              ? news.content.substring(0, 50) + "..."
+                              : news.content,
+                          style: TextStyle(
+                            fontSize: 7.sp,
+                            fontFamily: "Noto Kufi Arabic",
+                            color: MyColors.greyColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Text(
+                              "${news.createdAt.day} ${_months[news.createdAt.month - 1]}, ${news.createdAt.year}",
+                              style: TextStyle(
+                                fontSize: 7.sp,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: "Noto Kufi Arabic",
+                                color: Color(0xffAAAAAB),
                               ),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  currentNews!.createdAt != null
-                                      ? "${currentNews!.createdAt!.day} ${_months[currentNews!.createdAt!.month - 1]}, ${currentNews!.createdAt!.year}"
-                                      : "17 أكتوبر, 2024",
-                                  style: TextStyle(
-                                    fontSize: 7.sp,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: "Noto Kufi Arabic",
-                                    color: Color(0xffAAAAAB),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => NewsDetails(news: currentNews!),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      "معرفة المزيد",
-                                      style: TextStyle(
-                                        fontSize: 7.sp,
-                                        fontWeight: FontWeight.w500,
-                                        fontFamily: "Noto Kufi Arabic",
-                                        color: Color(0xff14B8A6),
-                                      ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => NewsDetails(
+                                      newsList: newsList,
+                                      initialIndex: index,
                                     ),
                                   ),
+                                );
+                              },
+                              child: Text(
+                                "معرفة المزيد",
+                                style: TextStyle(
+                                  fontSize: 7.sp,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: "Noto Kufi Arabic",
+                                  color: Color(0xff14B8A6),
                                 ),
-                              ],
+                              ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              )
-            : Center(
-                child: Text(
-                  "لا توجد أخبار متاحة",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey,
-                    fontFamily: "Noto Kufi Arabic",
-                  ),
-                ),
-              ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
   ),
-                ],  
+);
+
+        }
+        return SizedBox.shrink();
+      },
+    ),
+  ),
+                ],
 
               ),
             

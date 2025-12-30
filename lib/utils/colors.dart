@@ -17,6 +17,7 @@ class MyColors{
   static const Color shadGreyColor = Color(0x40AAAAAB);
   static const Color backgroundColor= Color(0XFF00838F);
   static const Color textColor= Color(0XFF545454);
+  static const Color scaffoldcolor= Color(0XFFF5F5F5);
    
 
 
