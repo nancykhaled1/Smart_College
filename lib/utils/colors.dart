@@ -13,6 +13,8 @@ class MyColors{
   static const Color backgroundColor = Color(0xFFF5F5F5);
   static const Color shadGreyColor = Color(0x40AAAAAB);
   static const Color textColor= Color(0XFF545454);
+  static const Color scaffoldcolor= Color(0XFFF5F5F5);
+   
   static const Color resultColor = Color(0xFFAAAAAB);
   static const Color deleteColor = Color(0xFFD9D9D9);
 

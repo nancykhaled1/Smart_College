@@ -15,13 +15,14 @@ class ApiConstants{
   static const String resetPassApi = "/api/user/auth/local/verify-code";
 
   static const String changePassApi = "/api/user/auth/local/reset-password";
+static const String googleLoginApi = "/api/user/auth/google";
+static const String NewsApi = "/api/user/news";
+static String newsByIdApi(String id) => '/api/user/news/$id';
 
-  static const String googleLoginApi = "/api/user/auth/google";
+ static String lectureByIdApi(String id) => '/api/user/lecture/$id';
 
-  // News API endpoints
-  static const String getAllNewsApi = "/api/user/news";
-  
- 
+ static const String lecturesApi = "/api/user/lecture";
+
 
   static const String notificationApi = "/api/user/auth/local/fcm-token";
 
