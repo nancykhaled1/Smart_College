@@ -237,7 +237,7 @@ class __TrainingPage extends State<TrainingPage> {
           ),
         ],
       ),
-      bottomNavigationBar: CommonBottomNavigation(
+      bottomNavigationBar: BottomNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index != _currentIndex) {

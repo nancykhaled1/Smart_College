@@ -146,7 +146,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
       ),
-      bottomNavigationBar: CommonBottomNavigation(
+      bottomNavigationBar: BottomNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index != _currentIndex) {
