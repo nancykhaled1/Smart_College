@@ -1,19 +1,13 @@
-
-
-
-
 // ignore_for_file: camel_case_types
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:smart_college/View/widgets/common_top_search_bar.dart';
 import 'package:smart_college/Models/Response/subject_model.dart';
 import 'package:smart_college/Cubits/lectures/LectureCubit.dart';
 import 'package:smart_college/Cubits/lectures/lectureState.dart';
 import 'package:smart_college/utils/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 
 class Subjects_Screen extends StatefulWidget {
   static const String routeName = 'subjectsScreen';
@@ -24,18 +18,18 @@ class Subjects_Screen extends StatefulWidget {
 }
 
 class Subjects_ScreenState extends State<Subjects_Screen> {
-  // Track expanded state for each subject week
+  // Track expanded state for each week
   Map<String, bool> expandedWeeks = {};
 
   @override
   void initState() {
     super.initState();
-    // Fetch lectures from API when screen loads
     context.read<LectureCubit>().getLectures();
   }
 
   // Group lectures by subject name and week number
-  Map<String, Map<int, List<LectureModel>>> _getGroupedLectures(List<LectureModel> lectures) {
+  Map<String, Map<int, List<LectureModel>>> _getGroupedLectures(
+      List<LectureModel> lectures) {
     Map<String, Map<int, List<LectureModel>>> grouped = {};
     for (var lecture in lectures) {
       grouped.putIfAbsent(lecture.subName, () => {});
@@ -45,11 +39,24 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
     return grouped;
   }
 
-  // Format week number to Arabic string
+  // Format week number to Arabic
   String _getWeekString(int weekNumber) {
     const weeks = [
-      'الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن', 'التاسع', 'العاشر',
-      'الحادي عشر', 'الثاني عشر', 'الثالث عشر', 'الرابع عشر', 'الخامس عشر', 'السادس عشر', 'السابع عشر', 'الثامن عشر', 'التاسع عشر', 'العشرون'
+      'الأول',
+      'الثاني',
+      'الثالث',
+      'الرابع',
+      'الخامس',
+      'السادس',
+      'السابع',
+      'الثامن',
+      'التاسع',
+      'العاشر',
+      'الحادي عشر',
+      'الثاني عشر',
+      'الثالث عشر',
+      'الرابع عشر',
+      'الخامس عشر'
     ];
     if (weekNumber > 0 && weekNumber <= weeks.length) {
       return 'الأسبوع ${weeks[weekNumber - 1]}';
@@ -57,207 +64,190 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
     return 'الأسبوع $weekNumber';
   }
 
-  // Format date to Arabic format
+  // Format date
   String _formatDate(DateTime date) {
-    final months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-    ];
-    return '${date.day} ${months[date.month - 1]}, ${date.year}';
+    return '${date.day}/${date.month}/${date.year}';
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MyColors.scaffoldcolor,
-      body: Column(
-        children: [
-          CommonTopSearchBar(),
-          Expanded(
-            child: BlocConsumer<LectureCubit, LectureState>(
-              listener: (context, state) {
-                // Handle side effects if needed (snackbars, navigation, etc.)
-              },
-              builder: (context, state) {
-                if (state is LectureLoading) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 50.h),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(
-                            color: MyColors.primaryColor,
-                          ),
-                          SizedBox(height: 20.h),
-                          Text(
-                            'جاري تحميل المحاضرات...',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontFamily: 'Noto Kufi Arabic',
-                              color: MyColors.greyColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                } else if (state is LectureError) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 50.h, horizontal: 20.w),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 50.sp,
-                            color: Colors.red,
-                          ),
-                          SizedBox(height: 16.h),
-                          Text(
-                            'فشل في تحميل المحاضرات',
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Noto Kufi Arabic',
-                              color: Colors.red,
-                            ),
-                          ),
-                          SizedBox(height: 8.h),
-                          Text(
-                            state.message,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey[600],
-                              fontFamily: 'Noto Kufi Arabic',
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 16.h),
-                          ElevatedButton(
-                            onPressed: () {
-                              context.read<LectureCubit>().getLectures();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: MyColors.primaryColor,
-                              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                            ),
-                            child: Text(
-                              'إعادة المحاولة',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontFamily: 'Noto Kufi Arabic',
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                } else if (state is LectureSuccess) {
-                  final lectures = state.lectures;
-                  if (lectures.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'لا توجد محاضرات متاحة',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontFamily: 'Noto Kufi Arabic',
-                          color: Colors.grey,
-                        ),
-                      ),
-                    );
-                  }
-                  
-                  return SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 20.h),
-                        // Display lectures grouped by subject and week
-                        ..._getGroupedLectures(lectures).entries.map((subjectEntry) {
-                          String subName = subjectEntry.key;
-                          var weeksMap = subjectEntry.value;
-                          
-                          return Column(
-                            children: [
-                              // Subject Title
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                                child: Text(
-                                  'مادة: $subName',
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: 'Noto Kufi Arabic',
-                                  ),
-                                ),
-                              ),
-                              // Weeks for this subject
-                              ...weeksMap.entries.map((weekEntry) {
-                                int weekNum = weekEntry.key;
-                                List<LectureModel> weekLectures = weekEntry.value;
-                                
-                                // Get date from first lecture in the week
-                                String dateStr = weekLectures.isNotEmpty 
-                                    ? _formatDate(weekLectures.first.date)
-                                    : '';
-                                
-                                return _buildWeekCard(
-                                  weekNumber: _getWeekString(weekNum),
-                                  date: dateStr,
-                                  lectures: weekLectures,
-                                );
-                              }).toList(),
-                              SizedBox(height: 24.h),
-                            ],
-                          );
-                        }).toList(),
-                        SizedBox(height: 80.h),
-                      ],
-                    ),
-                  );
-                }
-                
-                // Initial state
-                return Center(
-                  child: Text(
-                    'جاري التحميل...',
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          'المواد الدراسية',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Noto Kufi Arabic',
+            color: Colors.black,
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Colors.black, size: 20.sp),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: BlocConsumer<LectureCubit, LectureState>(
+        listener: (context, state) {
+          // Handle side effects if needed
+        },
+        builder: (context, state) {
+          if (state is LectureLoading) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF00BFA5),
+              ),
+            );
+          } else if (state is LectureError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 60.sp, color: Colors.red),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'حدث خطأ في تحميل البيانات',
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 16.sp,
                       fontFamily: 'Noto Kufi Arabic',
-                      color: Colors.grey,
                     ),
                   ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    state.message,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                      fontFamily: 'Noto Kufi Arabic',
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<LectureCubit>().getLectures();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF00BFA5),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32.w,
+                        vertical: 12.h,
+                      ),
+                    ),
+                    child: Text(
+                      'إعادة المحاولة',
+                      style: TextStyle(
+                        fontFamily: 'Noto Kufi Arabic',
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else if (state is LectureSuccess) {
+            final lectures = state.lectures;
+            if (lectures.isEmpty) {
+              return Center(
+                child: Text(
+                  'لا توجد محاضرات متاحة',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontFamily: 'Noto Kufi Arabic',
+                    color: Colors.grey,
+                  ),
+                ),
+              );
+            }
+
+            final groupedLectures = _getGroupedLectures(lectures);
+
+            return ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              itemCount: groupedLectures.length,
+              itemBuilder: (context, index) {
+                final subjectEntry = groupedLectures.entries.elementAt(index);
+                final subjectName = subjectEntry.key;
+                final weeksMap = subjectEntry.value;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Subject Header
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 12.h, right: 8.w),
+                      child: Text(
+                        'مادة: $subjectName',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Noto Kufi Arabic',
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+
+                    // Weeks for this subject
+                    ...weeksMap.entries.map((weekEntry) {
+                      final weekNum = weekEntry.key;
+                      final weekLectures = weekEntry.value;
+                      final weekKey = '${subjectName}_week_$weekNum';
+                      final isExpanded = expandedWeeks[weekKey] ?? false;
+
+                      // Get first lecture for date
+                      final firstLecture = weekLectures.first;
+                      final dateStr = _formatDate(firstLecture.date);
+
+                      return _buildWeekCard(
+                        weekKey: weekKey,
+                        weekNumber: _getWeekString(weekNum),
+                        date: dateStr,
+                        isExpanded: isExpanded,
+                        lecture: firstLecture,
+                      );
+                    }).toList(),
+
+                    SizedBox(height: 24.h),
+                  ],
                 );
               },
+            );
+          }
+
+          return Center(
+            child: Text(
+              'جاري التحميل...',
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontFamily: 'Noto Kufi Arabic',
+                color: Colors.grey,
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildWeekCard({
+    required String weekKey,
     required String weekNumber,
     required String date,
-    required List<LectureModel> lectures,
+    required bool isExpanded,
+    required LectureModel lecture,
   }) {
-    final String weekKey = '${weekNumber}_$date';
-    final bool isExpanded = expandedWeeks[weekKey] ?? false;
-
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: MyColors.whiteColor,
-        borderRadius: BorderRadius.circular(10),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
             offset: Offset(0, 2),
           ),
         ],
@@ -271,18 +261,22 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                 expandedWeeks[weekKey] = !isExpanded;
               });
             },
+            borderRadius: BorderRadius.circular(12.r),
             child: Padding(
               padding: EdgeInsets.all(16.w),
               child: Row(
                 children: [
                   // Expand/Collapse Icon
                   Icon(
-                    isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    isExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
                     color: Color(0xFF00BFA5),
                     size: 24.sp,
                   ),
-                  SizedBox(width: 12.w),
                   
+                  SizedBox(width: 16.w),
+
                   // Week Info
                   Expanded(
                     child: Column(
@@ -291,9 +285,10 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                         Text(
                           weekNumber,
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.w500,
                             fontFamily: 'Noto Kufi Arabic',
+                            color: Colors.black87,
                           ),
                         ),
                         SizedBox(height: 4.h),
@@ -301,141 +296,187 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                           date,
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: Colors.grey,
+                            color: Colors.grey[600],
                             fontFamily: 'Noto Kufi Arabic',
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
-                  SizedBox(width: 12.w),
-                  
+
+                  SizedBox(width: 16.w),
+
                   // Book Icon
                   Container(
-                    width: 48.w,
-                    height: 48.w,
+                    width: 50.w,
+                    height: 50.w,
                     decoration: BoxDecoration(
                       color: Color(0xFF00BFA5),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Icon(
-                      Icons.menu_book,
+                      Icons.menu_book_rounded,
                       color: Colors.white,
-                      size: 24.sp,
+                      size: 26.sp,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          
-          // Expandable Content - Display lectures from API
-          if (isExpanded && lectures.isNotEmpty)
-            ...lectures.map((lecture) => _buildLectureContent(lecture)).toList(),
+
+          // Expandable Content
+          if (isExpanded) _buildExpandedContent(lecture),
         ],
       ),
     );
   }
 
-  // Build lecture content using data from API (LectureModel)
-  Widget _buildLectureContent(LectureModel lecture) {
+  Widget _buildExpandedContent(LectureModel lecture) {
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Divider(height: 1),
+          // Divider
+          Divider(height: 1, color: Colors.grey[200]),
           SizedBox(height: 16.h),
-          
-          // Lecture Info
+
+          // Title
           Text(
-            'محاضرة - ${lecture.subName}',
+            'العنوان: ${lecture.video.name.split('.').first}',
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w500,
               fontFamily: 'Noto Kufi Arabic',
+              color: Colors.black87,
             ),
+            textAlign: TextAlign.right,
           ),
-          SizedBox(height: 4.h),
-          Text(
-            'تاريخ: ${_formatDate(lecture.date)}',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.grey[600],
-              fontFamily: 'Noto Kufi Arabic',
-            ),
-          ),
-          SizedBox(height: 12.h),
-          
-          // PDF Files from API
+
+          SizedBox(height: 16.h),
+
+          // PDF Files Section
           if (lecture.pdfs.isNotEmpty) ...[
-            Text(
-              'ملفات PDF:',
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                'ملفات المحاضرة:',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                  fontFamily: 'Noto Kufi Arabic',
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+
+            // PDF Files List
+            ...lecture.pdfs.asMap().entries.map((entry) {
+              final index = entry.key;
+              final pdf = entry.value;
+              final fileName = pdf.name.split('.').first;
+
+              return _buildFileItem(
+                fileName: fileName,
+                icon: Icons.cloud_download_outlined,
+                fileUrl: pdf.url,
+                isLast: index == lecture.pdfs.length - 1,
+              );
+            }).toList(),
+
+            SizedBox(height: 16.h),
+          ],
+
+          // Video Recording Section
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'تسجيل المحاضرة:',
               style: TextStyle(
                 fontSize: 13.sp,
-                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
                 fontFamily: 'Noto Kufi Arabic',
               ),
             ),
-            SizedBox(height: 8.h),
-            ...lecture.pdfs.map((pdf) => _buildFileItem(
-              pdf.name,
-              Icons.picture_as_pdf,
-              pdf.url,
-            )).toList(),
-            SizedBox(height: 12.h),
-          ],
-
-          // Video from API
-          Text(
-            'تسجيل المحاضرة:',
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Colors.grey[600],
-              fontFamily: 'Noto Kufi Arabic',
-            ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 12.h),
+
+          // Video File
           _buildFileItem(
-            lecture.video.name,
-            Icons.play_circle_outline,
-            lecture.video.url,
+            fileName: lecture.video.name.split('.').first,
+            icon: Icons.play_circle_outline,
+            fileUrl: lecture.video.url,
+            isLast: true,
+            isVideo: true,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFileItem(String fileName, IconData icon, String url) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Icon(
-            icon,
-            color: Color(0xFF00BFA5),
-            size: 20.sp,
-          ),
-          SizedBox(width: 8.w),
-          GestureDetector(
-            onTap: () => launchUrl(Uri.parse(url)),
-            child: Text(
-              fileName,
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: Color(0xFF00BFA5),
-                fontFamily: 'Noto Kufi Arabic',
-                decoration: TextDecoration.underline,
+  Widget _buildFileItem({
+    required String fileName,
+    required IconData icon,
+    required String fileUrl,
+    required bool isLast,
+    bool isVideo = false,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 8.h),
+      child: InkWell(
+        onTap: () async {
+          final uri = Uri.parse(fileUrl);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'تعذر فتح الملف',
+                  style: TextStyle(fontFamily: 'Noto Kufi Arabic'),
+                ),
+                backgroundColor: Colors.red,
               ),
-            ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(8.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(color: Colors.grey[200]!),
           ),
-        ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  fileName,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Color(0xFF00BFA5),
+                    fontFamily: 'Noto Kufi Arabic',
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Icon(
+                icon,
+                color: Color(0xFF00BFA5),
+                size: 20.sp,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
-
-
-

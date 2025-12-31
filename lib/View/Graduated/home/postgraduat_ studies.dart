@@ -1,6 +1,11 @@
  import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:smart_college/Cubits/Templates/TemplateCubit.dart';
+import 'package:smart_college/Cubits/Templates/TemplateStates.dart';
+import 'package:smart_college/Models/Response/templateModel.dart';
+import 'package:smart_college/View/Graduated/home/template_details.dart';
 import 'package:smart_college/View/widgets/common_bottom_navigation.dart';
 import 'package:smart_college/View/widgets/common_top_search_bar.dart';
 import 'package:smart_college/utils/colors.dart';
@@ -14,8 +19,28 @@ class PostgraduatStudies extends StatefulWidget {
 }
 
 class _PostgraduatStudiesState extends State<PostgraduatStudies> {
-  int selectedIndex = 0; // للتحكم في الزر المختار
+  int selectedIndex = 0; // للتحكم في الزر المختار (0=Masters, 1=Doctorate, 2=Diploma)
   int  _currentIndex = 1; // Postgraduate Studies
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch templates when screen loads
+    context.read<TemplateCubit>().getTemplates();
+  }
+
+  String _getCategoryForIndex(int index) {
+    switch (index) {
+      case 0:
+        return 'Masters';
+      case 1:
+        return 'Doctorate';
+      case 2:
+        return 'Diploma';
+      default:
+        return 'Masters';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,144 +183,264 @@ class _PostgraduatStudiesState extends State<PostgraduatStudies> {
 
   // ✅ المحتوى حسب الزر المختار
   Widget _buildContent() {
-  // قائمة البيانات
-  final List<Map<String, String>> programs = [
-    {
-      'title': 'تدريب في تحليل البيانات',
-      'description': 'تعلم أساسيات تحليل البيانات باستخدام Python وExcel',
-      'date': '١٥ أكتوبر ٢٠٢٥ – ١٥ نوفمبر ٢٠٢٥',
-      'university': 'جامعة القاهرة',
-    },
-    {
-      'title': 'ماجستير في الذكاء الاصطناعي',
-      'description': 'برنامج متقدم في تقنيات الذكاء الاصطناعي والتعلم الآلي',
-      'date': '١ سبتمبر ٢٠٢٥ – ١ يونيو ٢٠٢٧',
-      'university': 'الجامعة الأمريكية بالقاهرة',
-    },
-    {
-      'title': 'دكتوراه في علوم الحاسب',
-      'description': 'برنامج بحثي متقدم في مجال علوم الحاسب والبرمجة',
-      'date': '١٥ سبتمبر ٢٠٢٥ – ١٥ يوليو ٢٠٢٨',
-      'university': 'جامعة عين شمس',
-    },
-  ];
+    return BlocBuilder<TemplateCubit, TemplateStates>(
+      builder: (context, state) {
+        if (state is TemplateLoadingState) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    color: MyColors.primaryColor,
+                  ),
+                  SizedBox(height: 20.h),
+                  Text(
+                    state.loadingMessage ?? "جاري تحميل القوالب...",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontFamily: "Noto Kufi Arabic",
+                      color: MyColors.greyColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else if (state is TemplateErrorState) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red, size: 50),
+                  SizedBox(height: 15.h),
+                  Text(
+                    "حدث خطأ",
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontFamily: "Noto Kufi Arabic",
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    state.errorMessage ?? "حدث خطأ غير معروف",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontFamily: "Noto Kufi Arabic",
+                      color: Colors.red[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 20.h),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      context.read<TemplateCubit>().getTemplates();
+                    },
+                    icon: Icon(Icons.refresh),
+                    label: Text(
+                      "إعادة المحاولة",
+                      style: TextStyle(fontFamily: "Noto Kufi Arabic"),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else if (state is TemplateSuccessState) {
+          // Filter templates by selected category
+          final category = _getCategoryForIndex(selectedIndex);
+          final filteredTemplates = state.response.data
+              .where((template) => template.category.toLowerCase() == category.toLowerCase())
+              .toList();
 
-  return Column(
-    children: programs.map((program) => _buildProgramCard(
-      title: program['title']!,
-      description: program['description']!,
-      date: program['date']!,
-      university: program['university']!,
-    )).toList(),
-  );
-}
+          if (filteredTemplates.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Text(
+                  "لا توجد قوالب متاحة لهذا التصنيف",
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    color: Colors.grey,
+                    fontFamily: "Noto Kufi Arabic",
+                  ),
+                ),
+              ),
+            );
+          }
 
-Widget _buildProgramCard({
-  required String title,
-  required String description,
-  required String date,
-  required String university,
-}) {
-  return Container(
-    width: double.infinity,
-    margin: EdgeInsets.only(bottom: 16.h),
-    padding: EdgeInsets.all(16.w),
-    decoration: BoxDecoration(
-      color: MyColors.whiteColor,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 4,
-          offset: Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: "Noto Kufi Arabic",
-            fontWeight: FontWeight.w600,
-            fontSize: 14.sp,
-            color: MyColors.blackColor,
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: filteredTemplates.length,
+            itemBuilder: (context, index) {
+              final template = filteredTemplates[index];
+              return _buildTemplateCard(
+                context: context,
+                template: template,
+                templateList: filteredTemplates,
+                index: index,
+              );
+            },
+          );
+        }
+        return SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildTemplateCard({
+    required BuildContext context,
+    required Template template,
+    required List<Template> templateList,
+    required int index,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 16.h),
+      decoration: BoxDecoration(
+        color: MyColors.whiteColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 2),
           ),
-        ),
-        SizedBox(height: 10.h),
-        Text(
-          description,
-          style: TextStyle(
-            fontFamily: "Noto Kufi Arabic",
-            fontWeight: FontWeight.w500,
-            fontSize: 10.sp,
-            color: MyColors.textColor,
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TemplateDetails(
+                templateList: templateList,
+                initialIndex: index,
+              ),
+            ),
+          );
+        },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Template Image
+          if (template.image != null && template.image!.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              child: Image.network(
+                template.image!,
+                width: double.infinity,
+                height: 180.h,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: double.infinity,
+                    height: 180.h,
+                    color: Colors.grey[300],
+                    child: Icon(Icons.image_not_supported, size: 40),
+                  );
+                },
+              ),
+            ),
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  template.title,
+                  style: TextStyle(
+                    fontFamily: "Noto Kufi Arabic",
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                    color: MyColors.blackColor,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  template.description,
+                  style: TextStyle(
+                    fontFamily: "Noto Kufi Arabic",
+                    fontWeight: FontWeight.w500,
+                    fontSize: 10.sp,
+                    color: MyColors.textColor,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 15.h),
+                Row(
+                  children: [
+                    SvgPicture.asset('assets/images/calendar.svg'),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        template.formattedCreatedDate,
+                        style: TextStyle(
+                          fontFamily: "Noto Kufi Arabic",
+                          fontWeight: FontWeight.w500,
+                          fontSize: 10.sp,
+                          color: MyColors.greyColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TemplateDetails(
+                              templateList: templateList,
+                              initialIndex: index,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MyColors.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 60.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                      child: Text(
+                        "قدم الآن",
+                        style: TextStyle(
+                          fontFamily: "Noto Kufi Arabic",
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15.sp,
+                          color: MyColors.whiteColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        SizedBox(height: 15.h),
-        Row(
-          children: [
-            SvgPicture.asset('assets/images/calendar.svg'),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: Text(
-                date,
-                style: TextStyle(
-                  fontFamily: "Noto Kufi Arabic",
-                  fontWeight: FontWeight.w500,
-                  fontSize: 10.sp,
-                  color: MyColors.greyColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10.h),
-        Row(
-          children: [
-            SvgPicture.asset('assets/images/building.svg'),
-            SizedBox(width: 8.w),
-            Text(
-              university,
-              style: TextStyle(
-                fontFamily: "Noto Kufi Arabic",
-                fontWeight: FontWeight.w500,
-                fontSize: 10.sp,
-                color: MyColors.greyColor,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 20.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: MyColors.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 60.w,
-                  vertical: 12.h,
-                ),
-              ),
-              child: Text(
-                "قدم الآن",
-                style: TextStyle(
-                  fontFamily: "Noto Kufi Arabic",
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15.sp,
-                  color: MyColors.whiteColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }

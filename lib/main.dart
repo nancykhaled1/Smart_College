@@ -12,6 +12,7 @@ import 'package:smart_college/Repositories/ChangePasswordRepository.dart';
 import 'package:smart_college/Repositories/GoogleRepository.dart';
 import 'package:smart_college/Repositories/ResetPasswordRepository.dart';
 import 'package:smart_college/Repositories/SendEmailRepository.dart';
+import 'package:smart_college/Repositories/TemplateRepository.dart';
 import 'package:smart_college/Repositories/VerifyEmailRepository.dart';
 import 'package:smart_college/View/Auth/Login/forget_pass.dart';
 import 'package:smart_college/View/Auth/Login/re_pass.dart';
@@ -39,6 +40,7 @@ import 'package:smart_college/sources/StudentRegisterDataSource.dart';
 import 'package:smart_college/sources/VerifyEmailDataSource.dart';
 import 'package:smart_college/sources/NewsDataSource.dart';
 import 'package:smart_college/sources/LectureDataSource.dart';
+import 'package:smart_college/sources/TemplateDataSource.dart';
 import 'package:smart_college/utils/colors.dart';
 
 import 'Cubits/Auth/Register/AlumniRegisterViewModel.dart';
@@ -46,6 +48,7 @@ import 'Cubits/Auth/Register/SyudentRegisterViewModel.dart';
 import 'Cubits/Auth/Register/VerifyemailViewModel.dart';
 import 'Cubits/News/NewsCubit.dart';
 import 'Cubits/lectures/LectureCubit.dart';
+import 'Cubits/Templates/TemplateCubit.dart';
 import 'Repositories/AlumniRegisterRepository.dart';
 import 'Repositories/LoginRepository.dart';
 import 'Repositories/StudentRegisterRepository.dart';
@@ -95,6 +98,10 @@ void main() {
   final lectureRemoteDataSource = LectureRemoteDataSource(apiManager: apiManager);
   final lectureRepository = LectureRepository(remoteDataSource: lectureRemoteDataSource);
 
+  //templates
+  final templateRemoteDataSource = TemplateRemoteDataSource(apiManager);
+  final templateRepository = TemplateRepository(templateRemoteDataSource);
+
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -128,6 +135,9 @@ void main() {
         ),
         RepositoryProvider<LectureRepository>(
           create: (context) => lectureRepository,
+        ),
+        RepositoryProvider<TemplateRepository>(
+          create: (context) => templateRepository,
         ),
       ],
       child: MultiBlocProvider(
@@ -179,6 +189,9 @@ void main() {
           ),
           BlocProvider(
             create: (context) => LectureCubit(context.read<LectureRepository>()),
+          ),
+          BlocProvider(
+            create: (context) => TemplateCubit(context.read<TemplateRepository>()),
           ),
         ],
         child: const MyApp(),
