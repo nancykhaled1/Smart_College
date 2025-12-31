@@ -26,20 +26,14 @@ import 'package:smart_college/Repositories/ResetPasswordRepository.dart';
 import 'package:smart_college/Repositories/SendEmailRepository.dart';
 import 'package:smart_college/Repositories/VerifyEmailRepository.dart';
 import 'package:smart_college/View/Auth/Login/forget_pass.dart';
-import 'package:smart_college/View/Auth/Login/re_pass.dart';
-import 'package:smart_college/View/Auth/Login/send_code.dart';
 import 'package:smart_college/View/Auth/Register/alumniRegister.dart';
-import 'package:smart_college/View/Auth/Register/roleselection.dart';
 import 'package:smart_college/View/Auth/Register/studentRegister.dart';
-import 'package:smart_college/View/Auth/Register/verifyEmail.dart';
 import 'package:smart_college/View/Graduated/home/dashboard.dart';
 import 'package:smart_college/View/Graduated/home/graduatedHomeScreen.dart';
 import 'package:smart_college/View/Graduated/home/postgraduat_%20studies.dart';
 import 'package:smart_college/View/Graduated/home/training.dart';
 import 'package:smart_college/View/Student/studentHomeScreen.dart';
 import 'package:smart_college/View/Student/subjects.dart';
-import 'package:smart_college/View/home/splashScreen.dart';
-import 'package:smart_college/View/Graduated/home/graduatedHomeScreen.dart';
 import 'package:smart_college/View/Onboarding/onboarding.dart';
 import 'package:smart_college/View/SmartChat/SmartChat.dart';
 import 'package:smart_college/View/Student/Materials&Exams/ExamScreen.dart';
@@ -382,17 +376,15 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
 
-          initialRoute: Subjects_Screen.routeName,
+          initialRoute: splashScreen.routeName,
           routes: {
             LoginScreen.routeName: (context) => LoginScreen(),
-            StudentRegisterScreen.routeName:
-                (context) => StudentRegisterScreen(role: ''),
-            AlumniRegisterScreen.routeName:
-                (context) => AlumniRegisterScreen(role: ''),
+            StudentRegisterScreen.routeName: (context) => StudentRegisterScreen(role: ''),
+            AlumniRegisterScreen.routeName: (context) => AlumniRegisterScreen(role: ''),
             ForgetPassScreen.routeName: (context) => ForgetPassScreen(),
             //SendCode.routeName : (context) => SendCode(),
             //RePassword.routeName : (context) => RePassword(),
-            RoleSelectionScreen.routeName: (context) => RoleSelectionScreen(),
+            //RoleSelectionScreen.routeName: (context) => RoleSelectionScreen(),
             GraduatedHomeScreen.routeName: (context) => GraduatedHomeScreen(),
             // VerifyEmail.routeName : (context) => VerifyEmail(userId: userId)
             splashScreen.routeName: (context) => splashScreen(),
@@ -403,40 +395,12 @@ class MyApp extends StatelessWidget {
              DashboardPage.routeName : (context) => DashboardPage(),
              PostgraduatStudies.routeName : (context) => PostgraduatStudies(),
               Subjects_Screen.routeName : (context) => Subjects_Screen(),
+            OnBoarding.routeName : (context) => OnBoarding(),
+            ChatScreen.routeName : (context) => ChatScreen(),
+            Examscreen.routeName : (context) => Examscreen(),
+            ResultScreen.routeName : (context) => ResultScreen(),
+            ProfileScreen.routeName : (context) => ProfileScreen()
           },
-        return SafeArea(
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(primaryColor: MyColors.primaryColor),
-          
-            locale: Locale('ar', ''),
-            supportedLocales: [Locale('ar', ''), Locale('en', '')],
-            localizationsDelegates: [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-          
-            initialRoute: splashScreen.routeName,
-            routes: {
-              HomeScreen.routeName : (context) => HomeScreen(),
-              splashScreen.routeName : (context) => splashScreen(),
-              LoginScreen.routeName: (context) => LoginScreen(),
-              // StudentRegisterScreen.routeName : (context) => StudentRegisterScreen(role: '',),
-              // AlumniRegisterScreen.routeName : (context) => AlumniRegisterScreen(role: '',),
-              ForgetPassScreen.routeName : (context) => ForgetPassScreen(),
-              account_type.routeName : (context) => account_type(),
-              GraduatedHomeScreen.routeName : (context) => GraduatedHomeScreen(),
-              OnBoarding.routeName : (context) => OnBoarding(),
-              ChatScreen.routeName : (context) => ChatScreen(),
-              Examscreen.routeName : (context) => Examscreen(),
-              ResultScreen.routeName : (context) => ResultScreen(),
-              ProfileScreen.routeName : (context) => ProfileScreen()
-          
-          }
-          
-          
-          ),
         );
       },
     );

@@ -275,9 +275,8 @@ class _HomescreenState extends State<studentHomescreen> {
                                         ),
                                         overflow: TextOverflow.ellipsis, // لو النص طول
                                       ),
-                                      overflow: TextOverflow.ellipsis, // لو النص طول
                                     ),
-                         ),
+
 
                   // SizedBox(width: 30 .h),
                                   TextButton(
