@@ -21,6 +21,10 @@ import 'package:smart_college/Models/Response/MyAttemptsResponse.dart';
 import 'package:smart_college/Models/Response/ProfileResponse.dart';
 import 'package:smart_college/Models/Response/QuestionsResponse.dart';
 import 'package:smart_college/Models/Response/ResetPasswordResponse.dart';
+import 'package:smart_college/Models/Response/newsModel.dart';
+import 'package:smart_college/Models/Response/subject_model.dart';
+import 'package:smart_college/Models/Response/templateModel.dart';
+import 'package:smart_college/services/local/sharedPreference.dart';
 import 'package:smart_college/Models/Response/SaveAnswersResponse.dart';
 import 'package:smart_college/Models/Response/SubmitResponse.dart';
 import 'package:smart_college/Models/Response/UpdateProfile.dart';
@@ -2009,6 +2013,179 @@ class ApiManager {
       );
     }
   }
+
+  // Get Templates
+  Future<Either<LoginError, TemplateResponse>> getTemplates() async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          ApiConstants.templatesApi,
+        );
+
+        print('📡 Fetching templates from: $url');
+
+        final savedToken = await TokenStorage.getToken();
+
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
+        }
+
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
+
+        var response = await http.get(
+          url,
+          headers: {
+            'Authorization': 'Bearer $savedToken',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        );
+
+        print('📥 Templates API Response status: ${response.statusCode}');
+        print('📥 Templates API Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var templateResponse = TemplateResponse.fromJson(jsonResponse);
+          print('✅ Templates fetched successfully: ${templateResponse.data.length} templates');
+          return right(templateResponse);
+        } else {
+          print('❌ Templates API Error: ${jsonResponse.toString()}');
+          return left(LoginError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Exception in getTemplates: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
+    }
+  }
+
+  // Get Template By ID
+  Future<Either<LoginError, TemplateDetailResponse>> getTemplateById(String templateId) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        
+        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.templateByIdApi(templateId));
+        print('📡 Fetching template details from: $url');
+        
+        final savedToken = await TokenStorage.getToken();
+        
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
+        }
+        
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
+        
+        var response = await http.get(
+          url,
+          headers: {
+            "Authorization": "Bearer $savedToken",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+        
+        print('📥 Template details API Response status: ${response.statusCode}');
+        print('📥 Template details API Response body: ${response.body}');
+        
+        var jsonResponse = jsonDecode(response.body);
+        
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var templateDetailResponse = TemplateDetailResponse.fromJson(jsonResponse);
+          print('✅ Template details fetched successfully');
+          return right(templateDetailResponse);
+        } else {
+          print('❌ Template details API Error: ${jsonResponse.toString()}');
+          return left(LoginError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Exception in getTemplateById: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /////////////////////////
+ 
 
   Future<Either<LoginError, ImageResponse>> uploadProfileImage(ImageRequest request) async {
     try {

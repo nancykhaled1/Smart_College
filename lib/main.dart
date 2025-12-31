@@ -24,6 +24,7 @@ import 'package:smart_college/Repositories/NotificationRepository.dart';
 import 'package:smart_college/Repositories/ProfileRepository.dart';
 import 'package:smart_college/Repositories/ResetPasswordRepository.dart';
 import 'package:smart_college/Repositories/SendEmailRepository.dart';
+import 'package:smart_college/Repositories/TemplateRepository.dart';
 import 'package:smart_college/Repositories/VerifyEmailRepository.dart';
 import 'package:smart_college/View/Auth/Login/forget_pass.dart';
 import 'package:smart_college/View/Auth/Register/alumniRegister.dart';
@@ -59,6 +60,7 @@ import 'package:smart_college/sources/StudentRegisterDataSource.dart';
 import 'package:smart_college/sources/VerifyEmailDataSource.dart';
 import 'package:smart_college/sources/NewsDataSource.dart';
 import 'package:smart_college/sources/LectureDataSource.dart';
+import 'package:smart_college/sources/TemplateDataSource.dart';
 import 'package:smart_college/sources/getNotificationDataSource.dart';
 import 'package:smart_college/utils/colors.dart';
 import 'Cubits/Auth/Register/AlumniRegisterViewModel.dart';
@@ -66,6 +68,7 @@ import 'Cubits/Auth/Register/SyudentRegisterViewModel.dart';
 import 'Cubits/Auth/Register/VerifyemailViewModel.dart';
 import 'Cubits/News/NewsCubit.dart';
 import 'Cubits/lectures/LectureCubit.dart';
+import 'Cubits/Templates/TemplateCubit.dart';
 import 'Cubits/Home/GetNotificationViewModel.dart';
 import 'Cubits/Home/NotificationViewModel.dart';
 import 'Cubits/Students/ExamDetailsViewModel.dart';
@@ -170,6 +173,10 @@ Future<void> main() async {
 
 
 
+  //templates
+  final templateRemoteDataSource = TemplateRemoteDataSource(apiManager);
+  final templateRepository = TemplateRepository(templateRemoteDataSource);
+
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -208,6 +215,9 @@ Future<void> main() async {
         ),
         RepositoryProvider<LectureRepository>(
           create: (context) => lectureRepository,
+        ),
+        RepositoryProvider<TemplateRepository>(
+          create: (context) => templateRepository,
         ),
         RepositoryProvider<NotificationRepository>(
           create: (context) => notification,
@@ -316,6 +326,9 @@ Future<void> main() async {
           ),
           BlocProvider(
             create: (context) => LectureCubit(context.read<LectureRepository>()),
+          ),
+          BlocProvider(
+            create: (context) => TemplateCubit(context.read<TemplateRepository>()),
           ),
           // BlocProvider(
           //   create: (context) => SendMessageCubit(

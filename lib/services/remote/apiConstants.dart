@@ -23,6 +23,9 @@ static String newsByIdApi(String id) => '/api/user/news/$id';
 
  static const String lecturesApi = "/api/user/lecture";
 
+ static const String templatesApi = "/api/user/templates";
+ static String templateByIdApi(String id) => '/api/user/templates/$id';
+
 
   static const String notificationApi = "/api/user/auth/local/fcm-token";
 
