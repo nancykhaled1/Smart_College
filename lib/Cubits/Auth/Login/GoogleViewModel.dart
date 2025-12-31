@@ -1,59 +1,87 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_college/Repositories/GoogleRepository.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:smart_college/services/local/sharedPreference.dart';
 
 import '../../../Models/Request/GoogleRequest.dart';
-import 'States.dart';
+import '../../../services/local/sharedPreference.dart';
+import '../../States/States.dart';
+import 'loginScreenViewModel.dart';
 
-class GoogleCubit extends Cubit<LoginStates> {
+class GoogleCubit extends Cubit<States> {
   final GoogleRepository repository;
+
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
     serverClientId: "813623514492-jibeig9a2l5a4gap63um33chv4navsq0.apps.googleusercontent.com",
   );
-  GoogleCubit(this.repository) : super(LoginInitialState());
 
-  Future<void> signInWithGoogle() async {
-    emit(LoginLoadingState(loadingMessage: 'Loading........'));
+  GoogleCubit(this.repository) : super(InitialState());
+
+  Future<void> signInWithGoogle({String? role}) async {
+    emit(LoadingState(loadingMessage: 'Loading...'));
     try {
+      await _googleSignIn.signOut();
+
       final account = await _googleSignIn.signIn();
       if (account == null) {
-        emit(LoginErrorState(errorMessage: 'error...'));
+        emit(ErrorState(errorMessage: 'Google sign in cancelled'));
         return;
       }
+
       final auth = await account.authentication;
-      final token = auth.idToken;
+      final idToken = auth.idToken;
+      print("idToken: $idToken");
 
-      if (token == null) {
-        emit(LoginErrorState(errorMessage: "No ID Token received"));
+
+
+      if (idToken == null) {
+        emit(ErrorState(errorMessage: "No ID Token received from Google"));
         return;
       }
 
-      final response = await repository.google(GoogleLoginRequest(idToken: token));
+      // ابعت idToken للباك اند
+      final response = await repository.google(GoogleLoginRequest(idToken: idToken, role: role!));
 
       response.fold(
-        // لو Error
+        // في حالة error
             (error) {
-          emit(LoginErrorState(errorMessage: error.error?.message ?? 'Login failed'));
+          emit(ErrorState(errorMessage: error.error?.message ?? 'Login failed'));
         },
-        // لو Success
+        // في حالة success
             (googleResponse) async {
-          if (googleResponse.token != null) {
-            // Use TokenStorage to save token with the correct key
-            await TokenStorage.saveToken(googleResponse.token!);
-            final savedToken = await TokenStorage.getToken();
-            print("Saved Google token locally: $savedToken");
+          final token = googleResponse.token;
+          await TokenStorage.saveToken(token);
+          final savedToken = await TokenStorage.getToken();
+          print("Saved token locally: $savedToken");
 
-            emit(GoogleSuccessState(response: googleResponse));
-          } else {
-            emit(LoginErrorState(errorMessage: googleResponse.message ?? "Login failed"));
-          }
-        },
+
+
+          final role = googleResponse.role;
+          await TokenStorage.saveRole(role);
+          final savedRole = await TokenStorage.getRole();
+          print("Saved role locally: $savedRole");
+
+
+          final id = googleResponse.user.id;
+          await TokenStorage.saveId(id);
+          final savedId = await TokenStorage.getUserId();
+          print("Saved id locally: $savedId");
+
+          final isNew = googleResponse.isNew;
+          await TokenStorage.saveIsNew(isNew);
+          final savedIsNew= await TokenStorage.getIsNew();
+          print("Saved new: $savedIsNew");
+
+
+          emit(GoogleSuccessState(response: googleResponse));
+                },
       );
     } catch (e) {
-      emit(LoginErrorState(errorMessage: "Error: $e"));
+      emit(ErrorState(errorMessage: "Error: $e"));
     }
   }
-
 }
+

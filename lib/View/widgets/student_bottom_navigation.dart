@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_college/utils/colors.dart';
 
-class CommonBottomNavigation extends StatelessWidget {
+import '../../Cubits/Home/ChatScreenViewModel.dart';
+import '../../Repositories/ChatRepository.dart';
+import '../../services/local/sharedPreference.dart';
+import '../SmartChat/SmartChat.dart';
+
+class StudentBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const CommonBottomNavigation({
+  const StudentBottomNavigation({
     super.key,
     required this.currentIndex,
     required this.onTap,
@@ -104,7 +110,32 @@ class CommonBottomNavigation extends StatelessWidget {
           top: -25, // يخليه يطلع فوق شوية
           left: MediaQuery.of(context).size.width / 2 - 30, // يتوسط الشاشة
           child: GestureDetector(
-            onTap: () => onTap(0), // الزر هيعتبر index = 2
+            onTap: () async{
+              onTap(0);
+
+                final savedToken = await TokenStorage.getToken();
+                print("Token used: $savedToken");
+
+
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (_) => ChatCubit(
+                      token: savedToken!, // 🔑 توكن اليوزر الحالي
+                      adminId: "68d505b6cb5768439463619b", // الأدمن الأساسي
+                    )..connectSocket(), // ⬅️ نبدأ الاتصال فورًا
+                    child: ChatScreen(),
+                  ),
+                ),
+              );
+
+
+
+
+
+            }, // الزر هيعتبر index = 2
             child: Container(
               width: 60,
               height: 60,

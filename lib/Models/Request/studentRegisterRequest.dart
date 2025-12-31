@@ -4,12 +4,16 @@ class StudentRegisterRequest {
     this.email = "",
     this.password = "",
     this.role = "",
+    this.level = "",
+    this.department = "",
   });
 
   String name;
   String email;
   String password;
   String role;
+  String level;
+  String department;
 
 
   Map<String, dynamic> toJson() {
@@ -18,6 +22,8 @@ class StudentRegisterRequest {
       "email": email,
       "password": password,
       "role": role,
+      "level": level,
+      "department": department,
 
     };
   }

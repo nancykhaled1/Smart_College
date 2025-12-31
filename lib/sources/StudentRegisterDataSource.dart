@@ -1,5 +1,9 @@
 import 'package:dartz/dartz.dart';
 import 'package:smart_college/Models/Request/AlumniRegisterRequest.dart';
+import 'package:smart_college/Models/Request/CompleteProfileRequest.dart';
+import 'package:smart_college/Models/Response/CompleteProfileResponse.dart';
+import 'package:smart_college/Models/Response/DepartmentResponse.dart';
+import 'package:smart_college/Models/Response/LevelResponse.dart';
 
 import '../Models/Request/studentRegisterRequest.dart';
 import '../Models/Response/StudentRegisterResponse.dart';
@@ -13,7 +17,20 @@ class StudentRemoteDataSource {
 
   Future<Either<RegisterError, StudentRegisterResponse>> registerStudent(
       StudentRegisterRequest request) {
-    return apiManager.studentRegister(request.name, request.email, request.password,request.role);
+    return apiManager.studentRegister(request.name, request.email, request.password,request.role,request.level,request.department);
+  }
+
+  Future<Either<RegisterError, CompleteProfileResponse>> completeProfile(
+      CompleteProfileRequest request) {
+    return apiManager.completeProfile(request.level!, request.department!);
+  }
+
+  Future<Either<RegisterError, LevelResponse>> getLevel() {
+    return apiManager.getLevel();
+  }
+
+  Future<Either<RegisterError, DepartmentResponse>> getDepartment() {
+    return apiManager.getDepartment();
   }
 
 }
