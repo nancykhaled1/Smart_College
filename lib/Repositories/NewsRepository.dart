@@ -15,5 +15,9 @@ class NewsRepository {
   Future<Either<LoginError, NewsDetailResponse>> getNewsById(String id) {
     return remoteDataSource.getNewsById(id);
   }
+
+  Future<Either<LoginError, NewsResponse>> searchNews(String query) {
+    return remoteDataSource.searchNews(query);
+  }
 }
 

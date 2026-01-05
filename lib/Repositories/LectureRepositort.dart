@@ -27,4 +27,13 @@ class LectureRepository {
       (response) => right(response.data),
     );
   }
+
+  Future<Either<LoginError, List<LectureModel>>> searchLectures(String query) async {
+    final result = await remoteDataSource.searchLectures(query);
+
+    return result.fold(
+      (error) => left(error),
+      (response) => right(response.data),
+    );
+  }
 }

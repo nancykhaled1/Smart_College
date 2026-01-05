@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:smart_college/Cubits/OpenAI/OpenAIChatCubit.dart';
+import 'package:smart_college/Repositories/OpenAIChatRepository.dart';
+import 'package:smart_college/View/home/OpenAIChat/chat.dart';
 import 'package:smart_college/utils/colors.dart';
 
 import '../../services/local/sharedPreference.dart';
 import '../Notification/notification_screen.dart';
-import '../SmartChat/SmartChat.dart';
+
 
 class CommonTopSearchBar extends StatefulWidget {
   final TextEditingController? controller;
@@ -142,14 +146,29 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
                 ),
                
               ),
-              child: Center(
-                child: Image.asset(
-                  "assets/images/Notification.png",
-                  width: 40.w,
-                  height: 40.h,
-                  fit: BoxFit.contain,
-                ),
-              ),
+             child: GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          create: (context) => OpenAIChatCubit(
+            context.read<OpenAIChatRepository>(),
+          ),
+          child: ChatScreen(),
+        ),
+      ),
+    );
+  },
+  child: Center(
+    child: SvgPicture.asset(
+      "assets/images/bot.svg",
+      width: 40.w,
+      height: 40.h,
+      fit: BoxFit.contain,
+    ),
+  ),
+),
             ),
           ),
         ],
@@ -159,3 +178,4 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
 }
 
 
+ 

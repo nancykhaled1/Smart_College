@@ -41,5 +41,29 @@ class NewsCubit extends Cubit<NewsStates> {
       },
     );
   }
+
+  /// Search news by query
+  Future<void> searchNews(String query) async {
+    if (query.trim().isEmpty) {
+      // If query is empty, get all news
+      getNews();
+      return;
+    }
+
+    emit(NewsSearchLoadingState(loadingMessage: "جاري البحث عن الأخبار..."));
+
+    final response = await repository.searchNews(query.trim());
+
+    response.fold(
+      (error) {
+        emit(NewsSearchErrorState(
+          errorMessage: error.error?.message ?? "حدث خطأ أثناء البحث عن الأخبار",
+        ));
+      },
+      (newsResponse) {
+        emit(NewsSearchSuccessState(response: newsResponse));
+      },
+    );
+  }
 }
 

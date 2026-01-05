@@ -5,6 +5,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_college/utils/colors.dart';
 
 import '../../Cubits/Home/ChatScreenViewModel.dart';
+import '../../services/local/sharedPreference.dart';
+import '../../View/Student/Materials&Exams/ExamScreen.dart';
+import '../../View/Student/Profile/ProfileScreen.dart';
+import '../SmartChat/SmartChat.dart';
+import '../Student/subjects.dart';
 import '../../Repositories/ChatRepository.dart';
 import '../../services/local/sharedPreference.dart';
 import '../SmartChat/SmartChat.dart';
@@ -23,8 +28,8 @@ class StudentBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
-      children: [ 
- Container(
+      children: [
+        Container(
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
@@ -37,7 +42,9 @@ class StudentBottomNavigation extends StatelessWidget {
           ),
           child: BottomNavigationBar(
             currentIndex: currentIndex,
-            onTap: onTap,
+            onTap: (index) {
+              _handleNavigation(context, index);
+            },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             selectedItemColor: MyColors.primaryColor,
@@ -105,47 +112,46 @@ class StudentBottomNavigation extends StatelessWidget {
           ),
         ),
 
-        // زر الشات الطالع لفوق
+        // ✅ زر الشات الطالع لفوق (يفتح صفحة Admin Chat)
         Positioned(
-          top: -25, // يخليه يطلع فوق شوية
-          left: MediaQuery.of(context).size.width / 2 - 30, // يتوسط الشاشة
+          top: -25,
+          left: MediaQuery.of(context).size.width / 2 - 30,
           child: GestureDetector(
-            onTap: () async{
-              onTap(0);
+            onTap: () async {
+              final savedToken = await TokenStorage.getToken();
+              print("Token used: $savedToken");
 
-                final savedToken = await TokenStorage.getToken();
-                print("Token used: $savedToken");
-
-
-
-              Navigator.pushReplacement(
+              // ✅ نروح لصفحة الشات بدون ما نأثر على الـ navigation
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => BlocProvider(
                     create: (_) => ChatCubit(
-                      token: savedToken!, // 🔑 توكن اليوزر الحالي
+                      token: savedToken ?? '', // 🔑 توكن اليوزر الحالي
                       adminId: "68d505b6cb5768439463619b", // الأدمن الأساسي
                     )..connectSocket(), // ⬅️ نبدأ الاتصال فورًا
                     child: ChatScreen(),
                   ),
                 ),
               );
-
-
-
-
-
-            }, // الزر هيعتبر index = 2
+            },
             child: Container(
               width: 60,
               height: 60,
               decoration: BoxDecoration(
                 color: MyColors.primaryColor,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: MyColors.primaryColor.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Center(
                 child: SvgPicture.asset(
-                  "assets/images/chat.svg", // أيقونة الشات
+                  "assets/images/chat.svg",
                   width: 28.w,
                   height: 28.h,
                   color: Colors.white,
@@ -156,5 +162,33 @@ class StudentBottomNavigation extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  // ✅ Function للتعامل مع كل الـ Navigation
+  void _handleNavigation(BuildContext context, int index) {
+    switch (index) {
+      case 0: // الرئيسية
+        onTap(0); // يرجع للصفحة الرئيسية في الـ IndexedStack
+        break;
+
+      case 1: // المواد الدراسية
+        Navigator.pushNamed(context, Subjects_Screen.routeName);
+        break;
+
+      case 2: // مكان فاضي (الشات في النص)
+        // مافيش حاجة، لأن الزر الطالع لفوق هيتحكم
+        break;
+
+      case 3: // الامتحانات
+        Navigator.pushNamed(context, Examscreen.routeName);
+        break;
+
+      case 4: // الملف الشخصي
+        Navigator.pushNamed(context, ProfileScreen.routeName);
+        break;
+
+      default:
+        onTap(index);
+    }
   }
 }

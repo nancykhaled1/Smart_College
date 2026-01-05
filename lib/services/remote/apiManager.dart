@@ -21,8 +21,9 @@ import 'package:smart_college/Models/Response/MyAttemptsResponse.dart';
 import 'package:smart_college/Models/Response/ProfileResponse.dart';
 import 'package:smart_college/Models/Response/QuestionsResponse.dart';
 import 'package:smart_college/Models/Response/ResetPasswordResponse.dart';
-import 'package:smart_college/Models/Response/newsModel.dart';
-import 'package:smart_college/Models/Response/subject_model.dart';
+import 'package:smart_college/Models/Response/SaveAnswersResponse.dart';
+import 'package:smart_college/Models/Response/SubmitResponse.dart';
+import 'package:smart_college/Models/Response/UpdateProfile.dart';
 import 'package:smart_college/Models/Response/templateModel.dart';
 import 'package:smart_college/services/local/sharedPreference.dart';
 import 'package:smart_college/Models/Response/SaveAnswersResponse.dart';
@@ -50,11 +51,15 @@ import '../../Models/Response/StudentRegisterResponse.dart';
 import '../../Models/Response/VerifyEmailError.dart';
 import '../../Models/Response/VerifyEmailResponse.dart';
 import '../../Models/Response/newsModel.dart';
+import '../../Models/Response/openaiChatResponse.dart';
+import '../../Models/Response/registerError.dart';
+import '../../Models/Request/openaiChatRequest.dart';
 import '../../Models/Response/registerError.dart';
 import '../../Models/Response/subject_model.dart';
 import '../local/sharedPreference.dart';
 import 'apiConstants.dart';
 import 'package:http_parser/http_parser.dart';
+
 
 
 class ApiManager {
@@ -1187,6 +1192,85 @@ class ApiManager {
     }
   }
 
+  // Search Lectures
+  Future<Either<LoginError, LectureResponseModel>> searchLectures(String query) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        // Build URL with proper query parameters (Uri.https encodes automatically)
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          '/api/user/lecture/search',
+          {'q': query},
+        );
+        print('📡 Searching lectures from: $url');
+
+        final savedToken = await TokenStorage.getToken();
+
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
+        }
+
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Authorization": "Bearer $savedToken",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('📥 Lecture search API Response status: ${response.statusCode}');
+        print('📥 Lecture search API Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var lectureResponse = LectureResponseModel.fromJson(jsonResponse);
+          print('✅ Lectures search successful: ${lectureResponse.data.length} lectures found');
+          return right(lectureResponse);
+        } else {
+          print('❌ Lecture search API Error: ${jsonResponse.toString()}');
+          return left(LoginError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Exception in searchLectures: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
+    }
+  }
+
   Future<Either<LoginError, NewsResponse>> getNews() async {
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
@@ -1343,6 +1427,189 @@ class ApiManager {
     }
   }
 
+  // Search News
+  Future<Either<LoginError, NewsResponse>> searchNews(String query) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        // Build URL with proper query parameters (Uri.https encodes automatically)
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          '/api/user/news/search',
+          {'q': query},
+        );
+        print('📡 Searching news from: $url');
+
+        final savedToken = await TokenStorage.getToken();
+
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
+        }
+
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
+
+        var response = await http.get(
+          url,
+          headers: {
+            "Authorization": "Bearer $savedToken",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('📥 News search API Response status: ${response.statusCode}');
+        print('📥 News search API Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var newsResponse = NewsResponse.fromJson(jsonResponse);
+          print('✅ News search successful: ${newsResponse.data.length} news items found');
+          return right(newsResponse);
+        } else {
+          print('❌ News search API Error: ${jsonResponse.toString()}');
+          return left(LoginError.fromJson(jsonResponse));
+        }
+      } else {
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Exception in searchNews: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
+    }
+  }
+
+  // OpenAI Chat API
+  Future<Either<LoginError, OpenAIChatResponse>> openAIChat(String message) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.openAIChatApi);
+        print('📡 Sending OpenAI chat request to: $url');
+
+        final savedToken = await TokenStorage.getToken();
+
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
+        }
+
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
+
+        final requestBody = OpenAIChatRequest(prompt: message);
+        final jsonBody = jsonEncode(requestBody.toJson());
+
+        var response = await http.post(
+          url,
+          headers: {
+            "Authorization": "Bearer $savedToken",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          body: jsonBody,
+        );
+
+        print('📥 OpenAI Chat API Response status: ${response.statusCode}');
+        print('📥 OpenAI Chat API Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          // Ensure jsonResponse is a Map, not a List
+          if (jsonResponse is! Map<String, dynamic>) {
+            print('❌ OpenAI Chat API Error: Expected Map but got ${jsonResponse.runtimeType}');
+            return left(
+              LoginError(
+                success: false,
+                error: LoginDetailsError(
+                  code: -1,
+                  message: "حدث خطأ غير متوقع: Invalid response format",
+                ),
+              ),
+            );
+          }
+          var chatResponse = OpenAIChatResponse.fromJson(jsonResponse);
+          print('✅ OpenAI Chat successful: ${chatResponse.data}');
+          return right(chatResponse);
+        } else {
+          // Handle error response - ensure it's a Map
+          if (jsonResponse is Map<String, dynamic>) {
+            print('❌ OpenAI Chat API Error: ${jsonResponse.toString()}');
+            return left(LoginError.fromJson(jsonResponse));
+          } else {
+            return left(
+              LoginError(
+                success: false,
+                error: LoginDetailsError(
+                  code: response.statusCode,
+                  message: "حدث خطأ في الاستجابة",
+                ),
+              ),
+            );
+          }
+        }
+      } else {
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Exception in openAIChat: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
+    }
+  }
+
   /////////////////////Exams///////////////////////////
   Future<Either<LoginError, ExamsResponse>> getExams() async {
     final connectivityResult = await Connectivity().checkConnectivity();
@@ -1430,8 +1697,11 @@ class ApiManager {
         },
       );
 
+
+
       print('Mark as read status: ${response.statusCode}');
       print('Mark as read body: ${response.body}');
+
 
       var jsonResponse = jsonDecode(response.body);
 
@@ -1473,6 +1743,36 @@ class ApiManager {
               message: "Unauthorized: No token found, please login again.",
             ),
           ),
+
+class ApiManager {
+
+  /////////////////////////////Login/Register/
+  Future<Either<RegisterError, StudentRegisterResponse>> studentRegister(
+      String name,
+      String email,
+      String password,
+      String role,
+      String level,
+      String department,
+      ) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          ApiConstants.studentRegisterApi,
+        );
+
+        var requestBody = StudentRegisterRequest(
+            email: email,
+            password: password,
+            name: name,
+            role: role,
+            level: level,
+            department: department
+
         );
       }
 
@@ -1620,8 +1920,8 @@ class ApiManager {
                 code: 401,
                 message: "Unauthorized: No token found, please login again.",
               ),
-            ),
-          );
+            );
+          }
         }
 
 
@@ -2014,7 +2314,47 @@ class ApiManager {
     }
   }
 
-  // Get Templates
+  Future<Either<LoginError, ImageResponse>> uploadProfileImage(ImageRequest request) async {
+    try {
+      final savedToken = await TokenStorage.getToken();
+
+      if (savedToken == null) {
+        return left(LoginError(
+          success: false,
+          error: LoginDetailsError(code: 401, message: "Unauthorized: Please login again."),
+        ));
+      }
+
+      Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.updateImageApi);
+
+      final response = await http.patch(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $savedToken",
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      final jsonResponse = jsonDecode(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return right(ImageResponse.fromJson(jsonResponse));
+      } else {
+        return left(LoginError.fromJson(jsonResponse));
+      }
+    } catch (e) {
+      print("🚨 uploadProfileImage error: $e");
+      return left(LoginError(
+        success: false,
+        error: LoginDetailsError(code: -1, message: "Unexpected error occurred"),
+      ));
+    }
+  }
+
+/////////////////////
+///// Get Templates
   Future<Either<LoginError, TemplateResponse>> getTemplates() async {
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
@@ -2167,64 +2507,83 @@ class ApiManager {
       );
     }
   }
-}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /////////////////////////
- 
-
-  Future<Either<LoginError, ImageResponse>> uploadProfileImage(ImageRequest request) async {
+  // Search Templates
+  Future<Either<LoginError, TemplateResponse>> searchTemplates(String query) async {
     try {
-      final savedToken = await TokenStorage.getToken();
+      final connectivityResult = await Connectivity().checkConnectivity();
 
-      if (savedToken == null) {
-        return left(LoginError(
-          success: false,
-          error: LoginDetailsError(code: 401, message: "Unauthorized: Please login again."),
-        ));
-      }
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        // Build URL with proper query parameters (Uri.https encodes automatically)
+        Uri url = Uri.https(
+          ApiConstants.baseurl,
+          '/api/user/templates/search',
+          {'q': query},
+        );
+        print('📡 Searching templates from: $url');
 
-      Uri url = Uri.https(ApiConstants.baseurl, ApiConstants.updateImageApi);
+        final savedToken = await TokenStorage.getToken();
 
-      final response = await http.patch(
-        url,
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": "Bearer $savedToken",
-        },
-        body: jsonEncode(request.toJson()),
-      );
+        if (savedToken == null || savedToken.isEmpty) {
+          print("⚠️ No auth token found. User needs to login first.");
+          return left(
+            LoginError(
+              success: false,
+              error: LoginDetailsError(
+                code: 401,
+                message: "يرجى تسجيل الدخول أولاً",
+              ),
+            ),
+          );
+        }
 
-      final jsonResponse = jsonDecode(response.body);
+        print('✅ Token found: ${savedToken.substring(0, 20)}...');
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return right(ImageResponse.fromJson(jsonResponse));
+        var response = await http.get(
+          url,
+          headers: {
+            "Authorization": "Bearer $savedToken",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        );
+
+        print('📥 Template search API Response status: ${response.statusCode}');
+        print('📥 Template search API Response body: ${response.body}');
+
+        var jsonResponse = jsonDecode(response.body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          var templateResponse = TemplateResponse.fromJson(jsonResponse);
+          print('✅ Templates search successful: ${templateResponse.data.length} templates found');
+          return right(templateResponse);
+        } else {
+          print('❌ Template search API Error: ${jsonResponse.toString()}');
+          return left(LoginError.fromJson(jsonResponse));
+        }
       } else {
-        return left(LoginError.fromJson(jsonResponse));
+        return left(
+          LoginError(
+            success: false,
+            error: LoginDetailsError(
+              code: 0,
+              message: "No Internet Connection",
+            ),
+          ),
+        );
       }
     } catch (e) {
-      print("🚨 uploadProfileImage error: $e");
-      return left(LoginError(
-        success: false,
-        error: LoginDetailsError(code: -1, message: "Unexpected error occurred"),
-      ));
+      print('❌ Exception in searchTemplates: $e');
+      return left(
+        LoginError(
+          success: false,
+          error: LoginDetailsError(
+            code: -1,
+            message: "حدث خطأ غير متوقع: ${e.toString()}",
+          ),
+        ),
+      );
     }
   }
-
-
 }

@@ -49,4 +49,31 @@ class LectureCubit extends Cubit<LectureState> {
       },
     );
   }
+
+  /// 🔹 Search lectures by query
+  Future<void> searchLectures(String query) async {
+    if (query.trim().isEmpty) {
+      // If query is empty, get all lectures
+      getLectures();
+      return;
+    }
+
+    emit(LectureSearchLoading());
+
+    final response = await repository.searchLectures(query.trim());
+
+    response.fold(
+      (error) {
+        emit(
+          LectureSearchError(
+            error.error?.message ?? "حدث خطأ أثناء البحث عن المحاضرات",
+            error.error?.code ?? 0,
+          ),
+        );
+      },
+      (lectures) {
+        emit(LectureSearchSuccess(lectures));
+      },
+    );
+  }
 }

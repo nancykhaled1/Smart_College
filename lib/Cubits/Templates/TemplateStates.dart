@@ -37,3 +37,19 @@ class TemplateDetailSuccessState extends TemplateStates {
   TemplateDetailSuccessState({required this.response});
 }
 
+// Template Search States
+class TemplateSearchLoadingState extends TemplateStates {
+  String? loadingMessage;
+  TemplateSearchLoadingState({this.loadingMessage});
+}
+
+class TemplateSearchErrorState extends TemplateStates {
+  String? errorMessage;
+  TemplateSearchErrorState({required this.errorMessage});
+}
+
+class TemplateSearchSuccessState extends TemplateStates {
+  final TemplateResponse response;
+  TemplateSearchSuccessState({required this.response});
+}
+
