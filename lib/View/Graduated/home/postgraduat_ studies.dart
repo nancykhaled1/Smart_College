@@ -1,4 +1,5 @@
- import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -21,12 +22,42 @@ class PostgraduatStudies extends StatefulWidget {
 class _PostgraduatStudiesState extends State<PostgraduatStudies> {
   int selectedIndex = 0; // للتحكم في الزر المختار (0=Masters, 1=Doctorate, 2=Diploma)
   int  _currentIndex = 1; // Postgraduate Studies
+  TextEditingController _searchController = TextEditingController();
+  Timer? _debounceTimer;
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     // Fetch templates when screen loads
     context.read<TemplateCubit>().getTemplates();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      final query = _searchController.text.trim();
+      if (query.isEmpty) {
+        setState(() {
+          _isSearching = false;
+        });
+        context.read<TemplateCubit>().getTemplates();
+      } else {
+        setState(() {
+          _isSearching = true;
+        });
+        context.read<TemplateCubit>().searchTemplates(query);
+      }
+    });
   }
 
   String _getCategoryForIndex(int index) {
@@ -58,7 +89,7 @@ class _PostgraduatStudiesState extends State<PostgraduatStudies> {
 
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-      CommonTopSearchBar(),
+      CommonTopSearchBar(controller: _searchController),
 
               SizedBox(height: 30.h),
               
@@ -92,7 +123,7 @@ class _PostgraduatStudiesState extends State<PostgraduatStudies> {
           ),
         ),
       ),
-      bottomNavigationBar: CommonBottomNavigation(
+      bottomNavigationBar: BottomNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index != _currentIndex) {
@@ -185,6 +216,109 @@ class _PostgraduatStudiesState extends State<PostgraduatStudies> {
   Widget _buildContent() {
     return BlocBuilder<TemplateCubit, TemplateStates>(
       builder: (context, state) {
+        // Handle search states
+        if (_isSearching) {
+          if (state is TemplateSearchLoadingState) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      color: MyColors.primaryColor,
+                    ),
+                    SizedBox(height: 20.h),
+                    Text(
+                      state.loadingMessage ?? "جاري البحث عن القوالب...",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: "Noto Kufi Arabic",
+                        color: MyColors.greyColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (state is TemplateSearchErrorState) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red, size: 50),
+                    SizedBox(height: 15.h),
+                    Text(
+                      "حدث خطأ في البحث",
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontFamily: "Noto Kufi Arabic",
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10.h),
+                    Text(
+                      state.errorMessage ?? "حدث خطأ غير معروف",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: "Noto Kufi Arabic",
+                        color: Colors.red[700],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20.h),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        context.read<TemplateCubit>().searchTemplates(_searchController.text.trim());
+                      },
+                      icon: Icon(Icons.refresh),
+                      label: Text(
+                        "إعادة المحاولة",
+                        style: TextStyle(fontFamily: "Noto Kufi Arabic"),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MyColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (state is TemplateSearchSuccessState) {
+            // Filter templates by selected category
+            final category = _getCategoryForIndex(selectedIndex);
+            final filteredTemplates = state.response.data
+                .where((template) => template.category.toLowerCase() == category.toLowerCase())
+                .toList();
+
+            if (filteredTemplates.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.w),
+                  child: Text(
+                    "لا توجد نتائج للبحث",
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      color: Colors.grey,
+                      fontFamily: "Noto Kufi Arabic",
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return _buildTemplatesListView(filteredTemplates);
+          }
+          return SizedBox.shrink();
+        }
+
+        // Handle regular states
         if (state is TemplateLoadingState) {
           return Center(
             child: Padding(
@@ -280,22 +414,26 @@ class _PostgraduatStudiesState extends State<PostgraduatStudies> {
             );
           }
 
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: filteredTemplates.length,
-            itemBuilder: (context, index) {
-              final template = filteredTemplates[index];
-              return _buildTemplateCard(
-                context: context,
-                template: template,
-                templateList: filteredTemplates,
-                index: index,
-              );
-            },
-          );
+          return _buildTemplatesListView(filteredTemplates);
         }
         return SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildTemplatesListView(List<Template> filteredTemplates) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: filteredTemplates.length,
+      itemBuilder: (context, index) {
+        final template = filteredTemplates[index];
+        return _buildTemplateCard(
+          context: context,
+          template: template,
+          templateList: filteredTemplates,
+          index: index,
+        );
       },
     );
   }

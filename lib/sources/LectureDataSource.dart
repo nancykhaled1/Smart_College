@@ -16,4 +16,8 @@ class LectureRemoteDataSource {
   Future<Either<LoginError, LectureDetailResponse>> getLectureById(String id) async {
     return apiManager.getLectureById(id);
   }
+
+  Future<Either<LoginError, LectureResponseModel>> searchLectures(String query) async {
+    return apiManager.searchLectures(query);
+  }
 }

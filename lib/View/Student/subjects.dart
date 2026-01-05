@@ -1,12 +1,12 @@
 // ignore_for_file: camel_case_types
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smart_college/Models/Response/subject_model.dart';
 import 'package:smart_college/Cubits/lectures/LectureCubit.dart';
 import 'package:smart_college/Cubits/lectures/lectureState.dart';
-import 'package:smart_college/utils/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Subjects_Screen extends StatefulWidget {
@@ -20,11 +20,41 @@ class Subjects_Screen extends StatefulWidget {
 class Subjects_ScreenState extends State<Subjects_Screen> {
   // Track expanded state for each week
   Map<String, bool> expandedWeeks = {};
+  TextEditingController _searchController = TextEditingController();
+  Timer? _debounceTimer;
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     context.read<LectureCubit>().getLectures();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      final query = _searchController.text.trim();
+      if (query.isEmpty) {
+        setState(() {
+          _isSearching = false;
+        });
+        context.read<LectureCubit>().getLectures();
+      } else {
+        setState(() {
+          _isSearching = true;
+        });
+        context.read<LectureCubit>().searchLectures(query);
+      }
+    });
   }
 
   // Group lectures by subject name and week number
@@ -91,12 +121,144 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: BlocConsumer<LectureCubit, LectureState>(
-        listener: (context, state) {
-          // Handle side effects if needed
-        },
-        builder: (context, state) {
-          if (state is LectureLoading) {
+      body: Column(
+        children: [
+          // Search Bar
+          Container(
+            padding: EdgeInsets.all(16.w),
+            color: Colors.white,
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _searchController,
+              builder: (context, value, child) {
+                return TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'ابحث عن المحاضرات...',
+                    hintStyle: TextStyle(
+                      fontFamily: 'Noto Kufi Arabic',
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                    ),
+                    prefixIcon: Icon(Icons.search, color: Color(0xFF00BFA5)),
+                    suffixIcon: value.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.clear, color: Colors.grey),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _isSearching = false;
+                              });
+                              context.read<LectureCubit>().getLectures();
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  ),
+                  style: TextStyle(
+                    fontFamily: 'Noto Kufi Arabic',
+                    fontSize: 14.sp,
+                  ),
+                );
+              },
+            ),
+          ),
+          // Content
+          Expanded(
+            child: BlocConsumer<LectureCubit, LectureState>(
+              listener: (context, state) {
+                // Handle side effects if needed
+              },
+              builder: (context, state) {
+                // Handle search states
+                if (_isSearching) {
+                  if (state is LectureSearchLoading) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF00BFA5),
+                      ),
+                    );
+                  } else if (state is LectureSearchError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, size: 60.sp, color: Colors.red),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'حدث خطأ في البحث',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontFamily: 'Noto Kufi Arabic',
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            state.message,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.grey,
+                              fontFamily: 'Noto Kufi Arabic',
+                            ),
+                          ),
+                          SizedBox(height: 20.h),
+                          ElevatedButton(
+                            onPressed: () {
+                              context.read<LectureCubit>().searchLectures(_searchController.text.trim());
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF00BFA5),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 32.w,
+                                vertical: 12.h,
+                              ),
+                            ),
+                            child: Text(
+                              'إعادة المحاولة',
+                              style: TextStyle(
+                                fontFamily: 'Noto Kufi Arabic',
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (state is LectureSearchSuccess) {
+                    final lectures = state.lectures;
+                    if (lectures.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'لا توجد نتائج للبحث',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontFamily: 'Noto Kufi Arabic',
+                            color: Colors.grey,
+                          ),
+                        ),
+                      );
+                    }
+                    return _buildLecturesList(lectures);
+                  }
+                  return Center(
+                    child: Text(
+                      'جاري البحث...',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: 'Noto Kufi Arabic',
+                        color: Colors.grey,
+                      ),
+                    ),
+                  );
+                }
+
+                // Handle regular states
+                if (state is LectureLoading) {
             return Center(
               child: CircularProgressIndicator(
                 color: Color(0xFF00BFA5),
@@ -162,59 +324,7 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                 ),
               );
             }
-
-            final groupedLectures = _getGroupedLectures(lectures);
-
-            return ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-              itemCount: groupedLectures.length,
-              itemBuilder: (context, index) {
-                final subjectEntry = groupedLectures.entries.elementAt(index);
-                final subjectName = subjectEntry.key;
-                final weeksMap = subjectEntry.value;
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    // Subject Header
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 12.h, right: 8.w),
-                      child: Text(
-                        'مادة: $subjectName',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Noto Kufi Arabic',
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-
-                    // Weeks for this subject
-                    ...weeksMap.entries.map((weekEntry) {
-                      final weekNum = weekEntry.key;
-                      final weekLectures = weekEntry.value;
-                      final weekKey = '${subjectName}_week_$weekNum';
-                      final isExpanded = expandedWeeks[weekKey] ?? false;
-
-                      // Get first lecture for date
-                      final firstLecture = weekLectures.first;
-                      final dateStr = _formatDate(firstLecture.date);
-
-                      return _buildWeekCard(
-                        weekKey: weekKey,
-                        weekNumber: _getWeekString(weekNum),
-                        date: dateStr,
-                        isExpanded: isExpanded,
-                        lecture: firstLecture,
-                      );
-                    }).toList(),
-
-                    SizedBox(height: 24.h),
-                  ],
-                );
-              },
-            );
+            return _buildLecturesList(lectures);
           }
 
           return Center(
@@ -227,8 +337,66 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
               ),
             ),
           );
-        },
+              },
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildLecturesList(List<LectureModel> lectures) {
+    final groupedLectures = _getGroupedLectures(lectures);
+
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      itemCount: groupedLectures.length,
+      itemBuilder: (context, index) {
+        final subjectEntry = groupedLectures.entries.elementAt(index);
+        final subjectName = subjectEntry.key;
+        final weeksMap = subjectEntry.value;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Subject Header
+            Padding(
+              padding: EdgeInsets.only(bottom: 12.h, right: 8.w),
+              child: Text(
+                'مادة: $subjectName',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Noto Kufi Arabic',
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+
+            // Weeks for this subject
+            ...weeksMap.entries.map((weekEntry) {
+              final weekNum = weekEntry.key;
+              final weekLectures = weekEntry.value;
+              final weekKey = '${subjectName}_week_$weekNum';
+              final isExpanded = expandedWeeks[weekKey] ?? false;
+
+              // Get first lecture for date
+              final firstLecture = weekLectures.first;
+              final dateStr = _formatDate(firstLecture.date);
+
+              return _buildWeekCard(
+                weekKey: weekKey,
+                weekNumber: _getWeekString(weekNum),
+                date: dateStr,
+                isExpanded: isExpanded,
+                lecture: firstLecture,
+              );
+            }).toList(),
+
+            SizedBox(height: 24.h),
+          ],
+        );
+      },
     );
   }
 

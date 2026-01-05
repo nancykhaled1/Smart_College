@@ -15,5 +15,9 @@ class TemplateRepository {
   Future<Either<LoginError, TemplateDetailResponse>> getTemplateById(String id) {
     return remoteDataSource.getTemplateById(id);
   }
+
+  Future<Either<LoginError, TemplateResponse>> searchTemplates(String query) {
+    return remoteDataSource.searchTemplates(query);
+  }
 }
 

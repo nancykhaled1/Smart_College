@@ -37,3 +37,19 @@ class NewsDetailSuccessState extends NewsStates {
   NewsDetailSuccessState({required this.response});
 }
 
+// News Search States
+class NewsSearchLoadingState extends NewsStates {
+  String? loadingMessage;
+  NewsSearchLoadingState({this.loadingMessage});
+}
+
+class NewsSearchErrorState extends NewsStates {
+  String? errorMessage;
+  NewsSearchErrorState({required this.errorMessage});
+}
+
+class NewsSearchSuccessState extends NewsStates {
+  final NewsResponse response;
+  NewsSearchSuccessState({required this.response});
+}
+

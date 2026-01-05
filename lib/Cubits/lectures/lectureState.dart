@@ -29,3 +29,16 @@ class LectureDetailError extends LectureState {
   final int code;
   LectureDetailError(this.message, this.code);
 }
+
+class LectureSearchLoading extends LectureState {}
+
+class LectureSearchSuccess extends LectureState {
+  final List<LectureModel> lectures;
+  LectureSearchSuccess(this.lectures);
+}
+
+class LectureSearchError extends LectureState {
+  final String message;
+  final int code;
+  LectureSearchError(this.message, this.code);
+}

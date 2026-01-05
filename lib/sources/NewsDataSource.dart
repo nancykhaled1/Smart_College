@@ -15,4 +15,8 @@ class NewsRemoteDataSource {
   Future<Either<LoginError, NewsDetailResponse>> getNewsById(String id) async {
     return await apiManager.getNewsById(id);
   }
+
+  Future<Either<LoginError, NewsResponse>> searchNews(String query) async {
+    return await apiManager.searchNews(query);
+  }
 }

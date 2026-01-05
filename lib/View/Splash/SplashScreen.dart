@@ -2,8 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:smart_college/utils/colors.dart';
-import 'accountType.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
+import '../../services/local/sharedPreference.dart';
+import '../../utils/colors.dart';
+import '../Graduated/home/graduatedHomeScreen.dart';
+import '../Onboarding/onboarding.dart';
+import '../home/accountType.dart';
 
 class splashScreen extends StatefulWidget {
   static const String routeName = 'splash';
@@ -18,22 +22,21 @@ class _splashScreenState extends State<splashScreen>
   late AnimationController _splashController;
   late AnimationController _shadowController;
   late AnimationController _loaderController;
-
   late Animation<Offset> _splashAnimation;
   late Animation<Offset> _shadowAnimation;
   late Animation<Alignment> _loaderAnimation;
+
 
   @override
   void initState() {
     super.initState();
 
-    // Splash Animation
+
     _splashController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
-    // Shadow Animation
     _shadowController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -72,15 +75,60 @@ class _splashScreenState extends State<splashScreen>
     _splashController.forward();
     _shadowController.forward();
 
-    // Navigate after delay
-    Future.delayed(const Duration(seconds: 5), () {
+    // استنى لحد ما الاتنين يخلصوا
+    Future.wait([
+      _splashController.forward().orCancel,
+      _shadowController.forward().orCancel,
+    ]).then((_) async {
+      await Future.delayed(const Duration(milliseconds: 500)); // زيادة وقت لو عايزة
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const account_type()),
-        );
+        await _checkAuth();
       }
     });
+
+
+    // Future.delayed(const Duration(seconds: 5), () {
+    //   if (mounted) {
+    //     Navigator.pushReplacement(
+    //       context,
+    //       MaterialPageRoute(builder: (context) => const account_type()),
+    //     );
+    //   }
+    // });
+  }
+
+  _checkAuth() async {
+    final token = await TokenStorage.getToken();
+    final role = await TokenStorage.getRole();
+    final savedIsNew = await TokenStorage.getIsNew();
+
+    if (token != null) {
+      if (role == "Student") {
+        if (savedIsNew == true) {
+          // 🟢 أول مرة → روح على تكملة البيانات
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => account_type()),
+          );
+        } else {
+          // 🟢 مش أول مرة → روح على الهوم
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => HomeScreen()),
+          );
+        }
+      } else if (role == "Graduated") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => GraduatedHomeScreen()),
+        );
+      }
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => OnBoarding()),
+      );
+    }
   }
 
   @override
@@ -104,6 +152,7 @@ class _splashScreenState extends State<splashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+
                 SlideTransition(
                   position: _splashAnimation,
                   child: SvgPicture.asset(
@@ -112,7 +161,10 @@ class _splashScreenState extends State<splashScreen>
                     height: 122.h,
                   ),
                 ),
+
                 SizedBox(height: 20.h),
+
+
                 SlideTransition(
                   position: _shadowAnimation,
                   child: SvgPicture.asset(
@@ -153,7 +205,7 @@ class _splashScreenState extends State<splashScreen>
                       alignment: _loaderAnimation.value,
                       child: Container(
                         width: 30.w,
-                        height: 15.h,
+                        height: 10.h,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(100.r),

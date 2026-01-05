@@ -41,5 +41,29 @@ class TemplateCubit extends Cubit<TemplateStates> {
       },
     );
   }
+
+  /// Search templates by query
+  Future<void> searchTemplates(String query) async {
+    if (query.trim().isEmpty) {
+      // If query is empty, get all templates
+      getTemplates();
+      return;
+    }
+
+    emit(TemplateSearchLoadingState(loadingMessage: "جاري البحث عن القوالب..."));
+
+    final response = await repository.searchTemplates(query.trim());
+
+    response.fold(
+      (error) {
+        emit(TemplateSearchErrorState(
+          errorMessage: error.error?.message ?? "حدث خطأ أثناء البحث عن القوالب",
+        ));
+      },
+      (templateResponse) {
+        emit(TemplateSearchSuccessState(response: templateResponse));
+      },
+    );
+  }
 }
 
