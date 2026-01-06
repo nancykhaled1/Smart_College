@@ -1,5 +1,5 @@
 /// success : true
-/// data : {"exam":{"_id":"68c8051872f53a0d4feb0a5c","title":"arabic Examx","doctorname":"Dr. Ahmedxxxxxx","level":3,"department":"CS","questions":["68c8054272f53a0d4feb0a69","68c8054772f53a0d4feb0a72"],"isPublished":true,"subject_name":"Mathematics","startAt":"2025-09-20T00:00:00.000Z","endAt":"2025-09-29T00:00:00.000Z","durationMinutes":120,"createdAt":"2025-09-15T12:22:48.423Z","updatedAt":"2025-09-15T12:29:08.466Z","__v":2}}
+/// data : {"exam":{"_id":"68d3df73e36996af7725097e","title":"Math Exam","doctorname":"Dr. Ahmed","level":3,"department":"CS","isPublished":true,"subject_name":"Algebra","startAt":"2025-09-30T08:00:00.000Z","endAt":"2025-09-30T10:00:00.000Z","durationMinutes":120,"createdAt":"2025-09-24T12:09:23.554Z","updatedAt":"2025-09-26T11:44:27.762Z","__v":0}}
 
 class ExamDetailsResponse {
   ExamDetailsResponse({
@@ -24,7 +24,7 @@ class ExamDetailsResponse {
 
 }
 
-/// exam : {"_id":"68c8051872f53a0d4feb0a5c","title":"arabic Examx","doctorname":"Dr. Ahmedxxxxxx","level":3,"department":"CS","questions":["68c8054272f53a0d4feb0a69","68c8054772f53a0d4feb0a72"],"isPublished":true,"subject_name":"Mathematics","startAt":"2025-09-20T00:00:00.000Z","endAt":"2025-09-29T00:00:00.000Z","durationMinutes":120,"createdAt":"2025-09-15T12:22:48.423Z","updatedAt":"2025-09-15T12:29:08.466Z","__v":2}
+/// exam : {"_id":"68d3df73e36996af7725097e","title":"Math Exam","doctorname":"Dr. Ahmed","level":3,"department":"CS","isPublished":true,"subject_name":"Algebra","startAt":"2025-09-30T08:00:00.000Z","endAt":"2025-09-30T10:00:00.000Z","durationMinutes":120,"createdAt":"2025-09-24T12:09:23.554Z","updatedAt":"2025-09-26T11:44:27.762Z","__v":0}
 
 class Data {
   Data({
@@ -45,20 +45,19 @@ class Data {
 
 }
 
-/// _id : "68c8051872f53a0d4feb0a5c"
-/// title : "arabic Examx"
-/// doctorname : "Dr. Ahmedxxxxxx"
+/// _id : "68d3df73e36996af7725097e"
+/// title : "Math Exam"
+/// doctorname : "Dr. Ahmed"
 /// level : 3
 /// department : "CS"
-/// questions : ["68c8054272f53a0d4feb0a69","68c8054772f53a0d4feb0a72"]
 /// isPublished : true
-/// subject_name : "Mathematics"
-/// startAt : "2025-09-20T00:00:00.000Z"
-/// endAt : "2025-09-29T00:00:00.000Z"
+/// subject_name : "Algebra"
+/// startAt : "2025-09-30T08:00:00.000Z"
+/// endAt : "2025-09-30T10:00:00.000Z"
 /// durationMinutes : 120
-/// createdAt : "2025-09-15T12:22:48.423Z"
-/// updatedAt : "2025-09-15T12:29:08.466Z"
-/// __v : 2
+/// createdAt : "2025-09-24T12:09:23.554Z"
+/// updatedAt : "2025-09-26T11:44:27.762Z"
+/// __v : 0
 
 class Exam {
   Exam({
@@ -67,7 +66,6 @@ class Exam {
       this.doctorname, 
       this.level, 
       this.department, 
-      this.questions, 
       this.isPublished, 
       this.subjectName, 
       this.startAt, 
@@ -83,7 +81,6 @@ class Exam {
     doctorname = json['doctorname'];
     level = json['level'];
     department = json['department'];
-    questions = json['questions'] != null ? json['questions'].cast<String>() : [];
     isPublished = json['isPublished'];
     subjectName = json['subject_name'];
     startAt = json['startAt'];
@@ -98,7 +95,6 @@ class Exam {
   String? doctorname;
   int? level;
   String? department;
-  List<String>? questions;
   bool? isPublished;
   String? subjectName;
   String? startAt;
@@ -115,7 +111,6 @@ class Exam {
     map['doctorname'] = doctorname;
     map['level'] = level;
     map['department'] = department;
-    map['questions'] = questions;
     map['isPublished'] = isPublished;
     map['subject_name'] = subjectName;
     map['startAt'] = startAt;

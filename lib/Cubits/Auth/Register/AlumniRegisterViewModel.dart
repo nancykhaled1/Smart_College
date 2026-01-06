@@ -65,9 +65,9 @@ class AlumniRegisterCubit extends Cubit<RegisterStates> {
     switch (statusAr) {
       case "موظف":
         return "Employed";
-      case "باحث عن عمل":
+      case "غير موظف":
         return "Job Seeker";
-      case "فريلانسر":
+      case "عامل حر":
         return "Freelancer";
       case "طالب دراسات عليا":
         return "Postgraduate Studies";
@@ -88,9 +88,9 @@ class AlumniRegisterCubit extends Cubit<RegisterStates> {
       password: passwordController.text,
       role: role,
       graduatedData: GraduatedData(
-        cv: cvController.text,
+        cv: resumeFile, // ✅ هنا بنبعت الفايل مش النص
         employmentStatus: mapEmploymentStatus(employmentStatusController.text),
-        jobTitle: jobTitleController.text.isEmpty ? "N/A" : jobTitleController.text, // 👈 لازم قيمة حتى لو placeholder
+        jobTitle: jobTitleController.text.isEmpty ? "N/A" : jobTitleController.text,
         companyLocation: companyLocationController.text.isEmpty ? "N/A" : companyLocationController.text,
         companyEmail: "N/A",
         companyLink: companyLinkController.text.isEmpty ? "N/A" : companyLinkController.text,
@@ -99,10 +99,8 @@ class AlumniRegisterCubit extends Cubit<RegisterStates> {
       ),
     );
 
+    print("🟢 Sending alumni register request...");
     print(request.toJson());
-
-
-
 
     Either<RegisterError, StudentRegisterResponse> response =
     await repository.registerAlumni(request);
@@ -112,25 +110,10 @@ class AlumniRegisterCubit extends Cubit<RegisterStates> {
         emit(RegisterErrorState(errorMessage: error.error!.message));
       },
           (data) async {
-            // final token = data.data?; // تأكدي إن اسم الفيلد هو token
-            // print("Full login response: ${data.toJson()}"); // لو عامل toJson
-            // print("Token field: ${data.data?.token}");
+        await TokenStorage.saveId(data.data!.userId!);
+        print("✅ Saved user ID locally");
 
-
-            // // خزنه محليًا
-            // await TokenStorage.saveToken(token!);
-            // final savedToken = await TokenStorage.getToken();
-            // print("Saved token locally: $savedToken");
-
-            final savedRole = await TokenStorage.getRole();
-            print("Saved role locally: $savedRole");
-
-
-            await TokenStorage.saveId(data.data!.userId!);
-            final savedUserId = await TokenStorage.getUserId();
-            print("Saved token locally: $savedUserId");
-
-            emit(AlumniRegisterSuccessState(response: data));
+        emit(AlumniRegisterSuccessState(response: data));
       },
     );
   }
@@ -138,23 +121,35 @@ class AlumniRegisterCubit extends Cubit<RegisterStates> {
 
 
 
+
+
   Future<void> pickCVFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx'],
+      allowedExtensions: ['pdf'], // الأفضل نخليها PDF فقط لأن الـ backend بيطلب كده
     );
 
-    if (result != null) {
-      // حفظ الملف كـ File علشان يتبعت للسيرفر أو يتحقق منه
-      File file = File(result.files.single.path!);
+    if (result != null && result.files.single.path != null) {
+      final file = File(result.files.single.path!);
 
-      // خزنيه في الـ ViewModel
+      // تأكد إنه فعلاً PDF
+      if (!file.path.toLowerCase().endsWith('.pdf')) {
+        debugPrint('❌ Only PDF files are allowed');
+        return;
+      }
+
+      // خزّني الملف نفسه علشان نرفعه لاحقاً
       resumeFile = file;
 
-      // كمان لو عايزة تعملي Preview أو تبيني اسمه في TextField
+      // بيعرض اسم الملف فقط في الـ TextField للعرض
       cvController.text = result.files.single.name;
+
+      debugPrint('✅ CV file selected: ${file.path}');
+    } else {
+      debugPrint('⚠️ No file selected');
     }
   }
+
 
 
 

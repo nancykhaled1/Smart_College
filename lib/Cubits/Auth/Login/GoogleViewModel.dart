@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_college/Repositories/GoogleRepository.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_college/services/local/sharedPreference.dart';
 
 import '../../../Models/Request/GoogleRequest.dart';
 import '../../../services/local/sharedPreference.dart';
@@ -21,7 +21,7 @@ class GoogleCubit extends Cubit<States> {
   GoogleCubit(this.repository) : super(InitialState());
 
   Future<void> signInWithGoogle({String? role}) async {
-    emit(LoadingState(loadingMessage: 'Loading........'));
+    emit(LoadingState(loadingMessage: 'Loading...'));
     try {
       await _googleSignIn.signOut();
 

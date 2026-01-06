@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../Models/Request/VerifyEmailRequest.dart';
 import '../../../Repositories/VerifyEmailRepository.dart';
+import '../../../services/local/sharedPreference.dart';
 import 'States.dart';
 
 class VerifyEmailCubit extends Cubit<RegisterStates> {
@@ -42,11 +43,15 @@ class VerifyEmailCubit extends Cubit<RegisterStates> {
           (error) {
         emit(RegisterErrorState(errorMessage: error.message));
       },
-          (data) {
-        if (data.success != null) {
+          (data)async {
+        if (data.success != null)  {
+          final token = data.data.token;
+          await TokenStorage.saveToken(token);
+          final savedToken = await TokenStorage.getToken();
+          print("Saved token locally: $savedToken");
           emit(VerifyEmailSuccessState(response: data));
         } else {
-          emit(RegisterErrorState(errorMessage: data.message));
+          emit(RegisterErrorState(errorMessage: data.data.message));
         }
       },
     );
