@@ -41,9 +41,9 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
         right: 15.w,
        // bottom: 20.h,
       ),
-      decoration: BoxDecoration(
-        color: Color(0xffF5F5F5),
-      ),
+      // decoration: BoxDecoration(
+      //   color: Color(0xffF5F5F5),
+      // ),
       child: Row(
         children: [
           GestureDetector(
@@ -175,7 +175,9 @@ class _CommonTopSearchBarState extends State<CommonTopSearchBar> {
       ),
     );
   }
+  
 }
+
 
 
  

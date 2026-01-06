@@ -103,24 +103,6 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'المواد الدراسية',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Noto Kufi Arabic',
-            color: Colors.black,
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.black, size: 20.sp),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: Column(
         children: [
           // Search Bar
@@ -132,6 +114,7 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
               builder: (context, value, child) {
                 return TextField(
                   controller: _searchController,
+                  textDirection: TextDirection.rtl,
                   decoration: InputDecoration(
                     hintText: 'ابحث عن المحاضرات...',
                     hintStyle: TextStyle(
@@ -139,8 +122,8 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                       fontSize: 14.sp,
                       color: Colors.grey,
                     ),
-                    prefixIcon: Icon(Icons.search, color: Color(0xFF00BFA5)),
-                    suffixIcon: value.text.isNotEmpty
+                    suffixIcon: Icon(Icons.search, color: Color(0xFF00BFA5)),
+                    prefixIcon: value.text.isNotEmpty
                         ? IconButton(
                             icon: Icon(Icons.clear, color: Colors.grey),
                             onPressed: () {
@@ -259,84 +242,84 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
 
                 // Handle regular states
                 if (state is LectureLoading) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF00BFA5),
-              ),
-            );
-          } else if (state is LectureError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 60.sp, color: Colors.red),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'حدث خطأ في تحميل البيانات',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontFamily: 'Noto Kufi Arabic',
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF00BFA5),
                     ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    state.message,
+                  );
+                } else if (state is LectureError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 60.sp, color: Colors.red),
+                        SizedBox(height: 16.h),
+                        Text(
+                          'حدث خطأ في تحميل البيانات',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontFamily: 'Noto Kufi Arabic',
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          state.message,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: Colors.grey,
+                            fontFamily: 'Noto Kufi Arabic',
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<LectureCubit>().getLectures();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF00BFA5),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 32.w,
+                              vertical: 12.h,
+                            ),
+                          ),
+                          child: Text(
+                            'إعادة المحاولة',
+                            style: TextStyle(
+                              fontFamily: 'Noto Kufi Arabic',
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (state is LectureSuccess) {
+                  final lectures = state.lectures;
+                  if (lectures.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'لا توجد محاضرات متاحة',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontFamily: 'Noto Kufi Arabic',
+                          color: Colors.grey,
+                        ),
+                      ),
+                    );
+                  }
+                  return _buildLecturesList(lectures);
+                }
+
+                return Center(
+                  child: Text(
+                    'جاري التحميل...',
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.grey,
                       fontFamily: 'Noto Kufi Arabic',
+                      color: Colors.grey,
                     ),
                   ),
-                  SizedBox(height: 20.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<LectureCubit>().getLectures();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF00BFA5),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 32.w,
-                        vertical: 12.h,
-                      ),
-                    ),
-                    child: Text(
-                      'إعادة المحاولة',
-                      style: TextStyle(
-                        fontFamily: 'Noto Kufi Arabic',
-                        fontSize: 14.sp,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          } else if (state is LectureSuccess) {
-            final lectures = state.lectures;
-            if (lectures.isEmpty) {
-              return Center(
-                child: Text(
-                  'لا توجد محاضرات متاحة',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontFamily: 'Noto Kufi Arabic',
-                    color: Colors.grey,
-                  ),
-                ),
-              );
-            }
-            return _buildLecturesList(lectures);
-          }
-
-          return Center(
-            child: Text(
-              'جاري التحميل...',
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontFamily: 'Noto Kufi Arabic',
-                color: Colors.grey,
-              ),
-            ),
-          );
+                );
               },
             ),
           ),
@@ -357,11 +340,11 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
         final weeksMap = subjectEntry.value;
 
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Subject Header
             Padding(
-              padding: EdgeInsets.only(bottom: 12.h, right: 8.w),
+              padding: EdgeInsets.only(bottom: 12.h, left: 8.w),
               child: Text(
                 'مادة: $subjectName',
                 style: TextStyle(
@@ -434,13 +417,19 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
               padding: EdgeInsets.all(16.w),
               child: Row(
                 children: [
-                  // Expand/Collapse Icon
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: Color(0xFF00BFA5),
-                    size: 24.sp,
+                  // Book Icon (on the right for RTL)
+                  Container(
+                    width: 50.w,
+                    height: 50.w,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF00BFA5),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(
+                      Icons.menu_book_rounded,
+                      color: Colors.white,
+                      size: 26.sp,
+                    ),
                   ),
                   
                   SizedBox(width: 16.w),
@@ -448,7 +437,7 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                   // Week Info
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           weekNumber,
@@ -474,19 +463,13 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
 
                   SizedBox(width: 16.w),
 
-                  // Book Icon
-                  Container(
-                    width: 50.w,
-                    height: 50.w,
-                    decoration: BoxDecoration(
-                      color: Color(0xFF00BFA5),
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    child: Icon(
-                      Icons.menu_book_rounded,
-                      color: Colors.white,
-                      size: 26.sp,
-                    ),
+                  // Expand/Collapse Icon (on the left for RTL)
+                  Icon(
+                    isExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: Color(0xFF00BFA5),
+                    size: 24.sp,
                   ),
                 ],
               ),
@@ -504,22 +487,22 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Divider
           Divider(height: 1, color: Colors.grey[200]),
           SizedBox(height: 16.h),
 
-          // Title
+          // Title - FIXED: Changed from subjectName to lecture.lectureName
           Text(
-            'العنوان: ${lecture.video.name.split('.').first}',
+            'العنوان: ${lecture.subName}',
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w500,
               fontFamily: 'Noto Kufi Arabic',
               color: Colors.black87,
             ),
-            textAlign: TextAlign.right,
+            textAlign: TextAlign.left,
           ),
 
           SizedBox(height: 16.h),
@@ -527,7 +510,7 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
           // PDF Files Section
           if (lecture.pdfs.isNotEmpty) ...[
             Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.centerLeft,
               child: Text(
                 'ملفات المحاضرة:',
                 style: TextStyle(
@@ -559,7 +542,7 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
 
           // Video Recording Section
           Align(
-            alignment: Alignment.centerRight,
+            alignment: Alignment.centerLeft,
             child: Text(
               'تسجيل المحاضرة:',
               style: TextStyle(
@@ -620,8 +603,16 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
             border: Border.all(color: Colors.grey[200]!),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // Icon on the right
+              Icon(
+                icon,
+                color: Color(0xFF00BFA5),
+                size: 20.sp,
+              ),
+              SizedBox(width: 8.w),
+              // Text on the left
               Expanded(
                 child: Text(
                   fileName,
@@ -631,15 +622,9 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                     fontFamily: 'Noto Kufi Arabic',
                     fontWeight: FontWeight.w500,
                   ),
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.left,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              SizedBox(width: 8.w),
-              Icon(
-                icon,
-                color: Color(0xFF00BFA5),
-                size: 20.sp,
               ),
             ],
           ),
