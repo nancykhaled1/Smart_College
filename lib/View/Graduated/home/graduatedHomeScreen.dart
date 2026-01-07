@@ -436,13 +436,13 @@ class _GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
               Expanded(child: _buildNewsContent(newsModel, allNews, index)),
             ],
           ),
-          linearGradient: LinearGradient(
-            colors: gradientColors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          backgroundColor: Colors.grey.shade300,
-          circularStrokeCap: CircularStrokeCap.round,
+          // linearGradient: LinearGradient(
+          //   colors: gradientColors,
+          //   begin: Alignment.topLeft,
+          //   end: Alignment.bottomRight,
+          // ),
+          // backgroundColor: Colors.grey.shade300,
+          // circularStrokeCap: CircularStrokeCap.round,
         ),
       ),
     );

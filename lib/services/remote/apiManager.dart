@@ -1743,36 +1743,6 @@ class ApiManager {
               message: "Unauthorized: No token found, please login again.",
             ),
           ),
-
-class ApiManager {
-
-  /////////////////////////////Login/Register/
-  Future<Either<RegisterError, StudentRegisterResponse>> studentRegister(
-      String name,
-      String email,
-      String password,
-      String role,
-      String level,
-      String department,
-      ) async {
-    try {
-      final connectivityResult = await Connectivity().checkConnectivity();
-
-      if (connectivityResult == ConnectivityResult.mobile ||
-          connectivityResult == ConnectivityResult.wifi) {
-        Uri url = Uri.https(
-          ApiConstants.baseurl,
-          ApiConstants.studentRegisterApi,
-        );
-
-        var requestBody = StudentRegisterRequest(
-            email: email,
-            password: password,
-            name: name,
-            role: role,
-            level: level,
-            department: department
-
         );
       }
 
@@ -1920,8 +1890,8 @@ class ApiManager {
                 code: 401,
                 message: "Unauthorized: No token found, please login again.",
               ),
-            );
-          }
+            ),
+          );
         }
 
 

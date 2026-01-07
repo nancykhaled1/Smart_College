@@ -79,6 +79,7 @@ import 'Cubits/Auth/Register/AlumniRegisterViewModel.dart';
 import 'Cubits/Auth/Register/SyudentRegisterViewModel.dart';
 import 'Cubits/Auth/Register/VerifyemailViewModel.dart';
 import 'Cubits/News/NewsCubit.dart';
+import 'Cubits/Students/ExamsScreenViewModel.dart';
 import 'Cubits/lectures/LectureCubit.dart';
 import 'Cubits/Templates/TemplateCubit.dart';
 import 'Cubits/Home/GetNotificationViewModel.dart';
@@ -146,6 +147,7 @@ Future<void> main() async {
   //notification
   final notificationDataSource = NotificationRemoteDataSource(apiManager);
   final notification = NotificationRepository(notificationDataSource);
+
   final getNotificationDataSource = GetNotificationRemoteDataSource(apiManager);
   final getnotification = GetNotificationRepository(getNotificationDataSource);
 
@@ -166,36 +168,24 @@ Future<void> main() async {
   final profileDataSource = ProfileDataSource(apiManager);
   final profile = ProfileRepository(profileDataSource);
 
-  final savedToken = await TokenStorage.getToken();
-  if (kDebugMode) {
-    print("token$savedToken");
-  }
-
-
-
-
-
-
-
-
   final templateRemoteDataSource = TemplateRemoteDataSource(apiManager);
   final templateRepository = TemplateRepository(templateRemoteDataSource);
   
   final openAIChatDataSource = OpenAIChatRemoteDataSource(apiManager);
   final openAIChatRepository = OpenAIChatRepository(openAIChatDataSource);
 
-  // ✅ Notification repositories (FIXED - Added missing repositories)
-  final notificationDataSource = NotificationRemoteDataSource(apiManager);
-  final notificationRepository = NotificationRepository(notificationDataSource);
-
-  final getNotificationDataSource = GetNotificationRemoteDataSource(apiManager);
-  final getNotificationRepository = GetNotificationRepository(getNotificationDataSource);
-
-  final notificationDetailsDataSource = NotificationDetailsRemoteDataSource(apiManager);
-  final notificationDetailsRepository = NotificationDetailsRepository(notificationDetailsDataSource);
-
-  final counterDataSource = CounterRemoteDataSource(apiManager);
-  final counterRepository = CounterRepository(counterDataSource);
+  // // ✅ Notification repositories (FIXED - Added missing repositories)
+  // final notificationDataSource = NotificationRemoteDataSource(apiManager);
+  // final notificationRepository = NotificationRepository(notificationDataSource);
+  //
+  // final getNotificationDataSource = GetNotificationRemoteDataSource(apiManager);
+  // final getNotificationRepository = GetNotificationRepository(getNotificationDataSource);
+  //
+  // final notificationDetailsDataSource = NotificationDetailsRemoteDataSource(apiManager);
+  // final notificationDetailsRepository = NotificationDetailsRepository(notificationDetailsDataSource);
+  //
+  // final counterDataSource = CounterRemoteDataSource(apiManager);
+  // final counterRepository = CounterRepository(counterDataSource);
 
   runApp(
     MultiRepositoryProvider(
@@ -238,16 +228,34 @@ Future<void> main() async {
         ),
         // ✅ Added missing notification repositories
         RepositoryProvider<NotificationRepository>(
-          create: (context) => notificationRepository,
+          create: (context) => notification,
         ),
         RepositoryProvider<GetNotificationRepository>(
-          create: (context) => getNotificationRepository,
+          create: (context) => getnotification,
         ),
         RepositoryProvider<NotificationDetailsRepository>(
-          create: (context) => notificationDetailsRepository,
+          create: (context) => notificationDetails,
         ),
         RepositoryProvider<CounterRepository>(
-          create: (context) => counterRepository,
+          create: (context) => counter,
+        ),
+
+        RepositoryProvider<CounterRepository>(
+          create: (context) => counter,
+        ),
+        RepositoryProvider<CounterRepository>(
+          create: (context) => counter,
+        ),
+        RepositoryProvider<CounterRepository>(
+          create: (context) => counter,
+        ),
+
+        RepositoryProvider<ExamsRepository>(
+          create: (context) => exams,
+        ),
+
+        RepositoryProvider<ProfileRepository>(
+          create: (context) => profile,
         ),
       ],
 
@@ -422,16 +430,8 @@ class MyApp extends StatelessWidget {
           //  ChatScreen.routeName: (context) => ChatScreen(),
             Examscreen.routeName: (context) => Examscreen(),
             ResultScreen.routeName: (context) => ResultScreen(),
-            ProfileScreen.routeName: (context) => ProfileScreen()
-             TrainingPage.routeName: (context) => TrainingPage(),
-             DashboardPage.routeName : (context) => DashboardPage(),
-             PostgraduatStudies.routeName : (context) => PostgraduatStudies(),
-              Subjects_Screen.routeName : (context) => Subjects_Screen(),
-            OnBoarding.routeName : (context) => OnBoarding(),
-            ChatScreen.routeName : (context) => ChatScreen(),
-            Examscreen.routeName : (context) => Examscreen(),
-            ResultScreen.routeName : (context) => ResultScreen(),
-            ProfileScreen.routeName : (context) => ProfileScreen()
+            ProfileScreen.routeName: (context) => ProfileScreen(),
+
           },
         );
       },
