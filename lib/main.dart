@@ -3,6 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; 
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -40,6 +45,13 @@ import 'package:smart_college/View/Student/Profile/ProfileScreen.dart';
 import 'package:smart_college/View/Student/studentHomeScreen.dart';
 import 'package:smart_college/View/Student/subjects.dart';
 import 'package:smart_college/View/home/OpenAIChat/chat.dart';
+import 'package:smart_college/View/Onboarding/onboarding.dart';
+import 'package:smart_college/View/SmartChat/SmartChat.dart';
+import 'package:smart_college/View/Student/Materials&Exams/ExamScreen.dart';
+import 'package:smart_college/View/Student/Materials&Exams/ResultScreen.dart';
+import 'package:smart_college/View/Student/Profile/ProfileScreen.dart';
+import 'package:smart_college/services/local/Hive.dart';
+import 'package:smart_college/services/local/sharedPreference.dart';
 import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/services/local/Hive.dart';
 import 'package:smart_college/services/remote/apiManager.dart';
@@ -61,13 +73,19 @@ import 'package:smart_college/sources/NewsDataSource.dart';
 import 'package:smart_college/sources/LectureDataSource.dart';
 import 'package:smart_college/sources/getNotificationDataSource.dart';
 import 'package:smart_college/sources/TemplateDataSource.dart';
+import 'package:smart_college/sources/getNotificationDataSource.dart';
 import 'package:smart_college/utils/colors.dart';
 import 'Cubits/Auth/Register/AlumniRegisterViewModel.dart';
 import 'Cubits/Auth/Register/SyudentRegisterViewModel.dart';
 import 'Cubits/Auth/Register/VerifyemailViewModel.dart';
 import 'Cubits/News/NewsCubit.dart';
+import 'Cubits/Students/ExamsScreenViewModel.dart';
 import 'Cubits/lectures/LectureCubit.dart';
 import 'Cubits/Templates/TemplateCubit.dart';
+import 'Cubits/Home/GetNotificationViewModel.dart';
+import 'Cubits/Home/NotificationViewModel.dart';
+import 'Cubits/Students/ExamDetailsViewModel.dart';
+import 'Cubits/Students/ProfileScreenViewModel.dart';
 import 'Repositories/AlumniRegisterRepository.dart';
 import 'Repositories/CounterRepository.dart';
 import 'Repositories/GetNotificationRepository.dart';
@@ -80,6 +98,9 @@ import 'sources/OpenAIChatDataSource.dart';
 import 'View/Auth/Login/login.dart';
 import 'View/Splash/SplashScreen.dart';
 import 'View/home/accountType.dart';
+
+
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -99,7 +120,6 @@ Future<void> main() async {
   final alumniRemoteDataSource = AlumniRemoteDataSource(apiManager);
   final alumniRepository = AlumniRepository(alumniRemoteDataSource);
 
-  // Auth repositories
   final verifyEmailRemoteDataSource = VerifyEmailRemoteDataSource(apiManager);
   final verifyEmail = VerifyEmailRepository(verifyEmailRemoteDataSource);
 
@@ -124,6 +144,29 @@ Future<void> main() async {
 
   final lectureRemoteDataSource = LectureRemoteDataSource(apiManager: apiManager);
   final lectureRepository = LectureRepository(remoteDataSource: lectureRemoteDataSource);
+  //notification
+  final notificationDataSource = NotificationRemoteDataSource(apiManager);
+  final notification = NotificationRepository(notificationDataSource);
+
+  final getNotificationDataSource = GetNotificationRemoteDataSource(apiManager);
+  final getnotification = GetNotificationRepository(getNotificationDataSource);
+
+  final NotificationDataSource = NotificationDetailsRemoteDataSource(apiManager);
+  final notificationDetails = NotificationDetailsRepository(NotificationDataSource);
+
+  // Counter repo
+  final counterRepository = CounterRemoteDataSource(apiManager);
+  final counter = CounterRepository(counterRepository);
+
+  // //chat repo
+  // final chatRepository = ChatRemoteDataSource(apiManager);
+  // final chat = ChatRepository(chatRepository);
+
+  final examsDataSource = ExamsRemoteDataSource(apiManager);
+  final exams = ExamsRepository(examsDataSource);
+
+  final profileDataSource = ProfileDataSource(apiManager);
+  final profile = ProfileRepository(profileDataSource);
 
   final templateRemoteDataSource = TemplateRemoteDataSource(apiManager);
   final templateRepository = TemplateRepository(templateRemoteDataSource);
@@ -131,18 +174,18 @@ Future<void> main() async {
   final openAIChatDataSource = OpenAIChatRemoteDataSource(apiManager);
   final openAIChatRepository = OpenAIChatRepository(openAIChatDataSource);
 
-  // ✅ Notification repositories (FIXED - Added missing repositories)
-  final notificationDataSource = NotificationRemoteDataSource(apiManager);
-  final notificationRepository = NotificationRepository(notificationDataSource);
-
-  final getNotificationDataSource = GetNotificationRemoteDataSource(apiManager);
-  final getNotificationRepository = GetNotificationRepository(getNotificationDataSource);
-
-  final notificationDetailsDataSource = NotificationDetailsRemoteDataSource(apiManager);
-  final notificationDetailsRepository = NotificationDetailsRepository(notificationDetailsDataSource);
-
-  final counterDataSource = CounterRemoteDataSource(apiManager);
-  final counterRepository = CounterRepository(counterDataSource);
+  // // ✅ Notification repositories (FIXED - Added missing repositories)
+  // final notificationDataSource = NotificationRemoteDataSource(apiManager);
+  // final notificationRepository = NotificationRepository(notificationDataSource);
+  //
+  // final getNotificationDataSource = GetNotificationRemoteDataSource(apiManager);
+  // final getNotificationRepository = GetNotificationRepository(getNotificationDataSource);
+  //
+  // final notificationDetailsDataSource = NotificationDetailsRemoteDataSource(apiManager);
+  // final notificationDetailsRepository = NotificationDetailsRepository(notificationDetailsDataSource);
+  //
+  // final counterDataSource = CounterRemoteDataSource(apiManager);
+  // final counterRepository = CounterRepository(counterDataSource);
 
   runApp(
     MultiRepositoryProvider(
@@ -185,20 +228,48 @@ Future<void> main() async {
         ),
         // ✅ Added missing notification repositories
         RepositoryProvider<NotificationRepository>(
-          create: (context) => notificationRepository,
+          create: (context) => notification,
         ),
         RepositoryProvider<GetNotificationRepository>(
-          create: (context) => getNotificationRepository,
+          create: (context) => getnotification,
         ),
         RepositoryProvider<NotificationDetailsRepository>(
-          create: (context) => notificationDetailsRepository,
+          create: (context) => notificationDetails,
         ),
         RepositoryProvider<CounterRepository>(
-          create: (context) => counterRepository,
+          create: (context) => counter,
+        ),
+
+        RepositoryProvider<CounterRepository>(
+          create: (context) => counter,
+        ),
+        RepositoryProvider<CounterRepository>(
+          create: (context) => counter,
+        ),
+        RepositoryProvider<CounterRepository>(
+          create: (context) => counter,
+        ),
+
+        RepositoryProvider<ExamsRepository>(
+          create: (context) => exams,
+        ),
+
+        RepositoryProvider<ProfileRepository>(
+          create: (context) => profile,
         ),
       ],
+
       child: MultiBlocProvider(
         providers: [
+          // BlocProvider(
+          //   create: (context) => ChatCubit(
+          //     token: savedToken?? '',
+          //     chatRepository: context.read<ChatRepository>(),
+          //     isUser: true,
+          //       adminId: "68d505b6cb5768439463619b"
+          //   ),
+          // ),
+
           BlocProvider(
             create: (context) => GoogleCubit(
               context.read<GoogleRepository>(),
@@ -209,11 +280,14 @@ Future<void> main() async {
               context.read<StudentRepository>(),
             ),
           ),
+
           BlocProvider(
             create: (context) => AlumniRegisterCubit(
               context.read<AlumniRepository>(),
+
             ),
           ),
+
           BlocProvider(
             create: (context) => VerifyEmailCubit(
               context.read<VerifyEmailRepository>(),
@@ -264,17 +338,49 @@ Future<void> main() async {
           BlocProvider(
             create: (context) => TemplateCubit(context.read<TemplateRepository>()),
           ),
+
           BlocProvider(
             create: (context) => OpenAIChatCubit(
               context.read<OpenAIChatRepository>(),
             ),
           ),
+
+          // BlocProvider(
+          //   create: (context) => SendMessageCubit(
+          //     context.read<ChatRepository>(),
+          //   ),
+          // ),
+
+          BlocProvider(
+            create: (context) => ExamsScreenViewModel(
+              context.read<ExamsRepository>(),
+            ),
+          ),
+
+          BlocProvider(
+            create: (context) => ExamDetailsViewModel(
+              context.read<ExamsRepository>(),
+            ),
+          ),
+
+          BlocProvider(
+            create: (context) => ProfileViewModel(
+              context.read<ProfileRepository>(),
+
+            ),
+          ),
+
+
         ],
         child: const MyApp(),
       ),
     ),
   );
 }
+
+
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -299,12 +405,18 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          initialRoute: studentHomescreen.routeName,
+
+
+          initialRoute: splashScreen.routeName,
+
           routes: {
             LoginScreen.routeName: (context) => LoginScreen(),
             StudentRegisterScreen.routeName: (context) => StudentRegisterScreen(role: ''),
             AlumniRegisterScreen.routeName: (context) => AlumniRegisterScreen(role: ''),
             ForgetPassScreen.routeName: (context) => ForgetPassScreen(),
+            //SendCode.routeName : (context) => SendCode(),
+            //RePassword.routeName : (context) => RePassword(),
+            //RoleSelectionScreen.routeName: (context) => RoleSelectionScreen(),
             GraduatedHomeScreen.routeName: (context) => GraduatedHomeScreen(),
             splashScreen.routeName: (context) => splashScreen(),
             account_type.routeName: (context) => account_type(),
@@ -318,7 +430,8 @@ class MyApp extends StatelessWidget {
           //  ChatScreen.routeName: (context) => ChatScreen(),
             Examscreen.routeName: (context) => Examscreen(),
             ResultScreen.routeName: (context) => ResultScreen(),
-            ProfileScreen.routeName: (context) => ProfileScreen()
+            ProfileScreen.routeName: (context) => ProfileScreen(),
+
           },
         );
       },

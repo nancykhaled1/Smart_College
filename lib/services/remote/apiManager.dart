@@ -25,6 +25,10 @@ import 'package:smart_college/Models/Response/SaveAnswersResponse.dart';
 import 'package:smart_college/Models/Response/SubmitResponse.dart';
 import 'package:smart_college/Models/Response/UpdateProfile.dart';
 import 'package:smart_college/Models/Response/templateModel.dart';
+import 'package:smart_college/services/local/sharedPreference.dart';
+import 'package:smart_college/Models/Response/SaveAnswersResponse.dart';
+import 'package:smart_college/Models/Response/SubmitResponse.dart';
+import 'package:smart_college/Models/Response/UpdateProfile.dart';
 import '../../Models/Request/AlumniRegisterRequest.dart';
 import '../../Models/Request/ImageRequest.dart';
 import '../../Models/Request/LoginRequest.dart';
@@ -50,10 +54,12 @@ import '../../Models/Response/newsModel.dart';
 import '../../Models/Response/openaiChatResponse.dart';
 import '../../Models/Response/registerError.dart';
 import '../../Models/Request/openaiChatRequest.dart';
+import '../../Models/Response/registerError.dart';
 import '../../Models/Response/subject_model.dart';
 import '../local/sharedPreference.dart';
 import 'apiConstants.dart';
 import 'package:http_parser/http_parser.dart';
+
 
 
 class ApiManager {
@@ -1691,8 +1697,11 @@ class ApiManager {
         },
       );
 
+
+
       print('Mark as read status: ${response.statusCode}');
       print('Mark as read body: ${response.body}');
+
 
       var jsonResponse = jsonDecode(response.body);
 

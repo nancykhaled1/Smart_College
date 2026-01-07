@@ -10,6 +10,9 @@ import '../../View/Student/Materials&Exams/ExamScreen.dart';
 import '../../View/Student/Profile/ProfileScreen.dart';
 import '../SmartChat/SmartChat.dart';
 import '../Student/subjects.dart';
+import '../../Repositories/ChatRepository.dart';
+import '../../services/local/sharedPreference.dart';
+import '../SmartChat/SmartChat.dart';
 
 class StudentBottomNavigation extends StatelessWidget {
   final int currentIndex;

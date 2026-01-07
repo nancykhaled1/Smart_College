@@ -98,7 +98,7 @@ class _HomescreenState extends State<studentHomescreen> {
       ),
       body: Column(
         children: [
-          CommonTopSearchBar(controller: _searchController),
+         // CommonTopSearchBar(controller: _searchController),
           Expanded(
             child: SingleChildScrollView(
           child: Padding(
