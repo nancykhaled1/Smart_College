@@ -3,10 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_college/Cubits/Templates/TemplateCubit.dart';
 import 'package:smart_college/Cubits/Templates/TemplateStates.dart';
 import 'package:smart_college/Models/Response/templateModel.dart';
-import 'package:smart_college/View/Graduated/home/template_details.dart';
 import 'package:smart_college/View/widgets/common_bottom_navigation.dart';
 import 'package:smart_college/View/widgets/common_top_search_bar.dart';
 import 'package:smart_college/utils/colors.dart';
@@ -262,33 +262,33 @@ class __TrainingPage extends State<TrainingPage> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          if (index != _currentIndex) {
-            String route;
-            switch (index) {
-              case 0:
-                route = 'gradhome';
-                break;
-              case 1:
-                route = 'postgraduatStudies';
-                break;
-              case 2:
-                route = 'gradhome'; // Chat
-                break;
-              case 3:
-                route = 'trainingPage';
-                break;
-              case 4:
-              default:
-                route = 'dashboardPage';
-                break;
-            }
-            Navigator.pushNamed(context, route);
-          }
-        },
-      ),
+      // bottomNavigationBar: BottomNavigation(
+      //   currentIndex: _currentIndex,
+      //   onTap: (index) {
+      //     if (index != _currentIndex) {
+      //       String route;
+      //       switch (index) {
+      //         case 0:
+      //           route = 'gradhome';
+      //           break;
+      //         case 1:
+      //           route = 'postgraduatStudies';
+      //           break;
+      //         case 2:
+      //           route = 'gradhome'; // Chat
+      //           break;
+      //         case 3:
+      //           route = 'trainingPage';
+      //           break;
+      //         case 4:
+      //         default:
+      //           route = 'dashboardPage';
+      //           break;
+      //       }
+      //       Navigator.pushNamed(context, route);
+      //     }
+      //   },
+      // ),
     );
   }
 
@@ -303,92 +303,119 @@ class __TrainingPage extends State<TrainingPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TemplateDetails(
-                    templateList: trainingTemplates,
-                    initialIndex: index,
-                  ),
-                ),
-              );
-            },
-            child: Container(
-              color: MyColors.whiteColor,
+          child: Container(
+            color: MyColors.whiteColor,
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Template Image
-                  if (template.image != null && template.image!.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                      child: Image.network(
-                        template.image!,
-                        width: double.infinity,
-                        height: 200.h,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: double.infinity,
-                            height: 200.h,
-                            color: Colors.grey[300],
-                            child: Icon(Icons.image_not_supported, size: 50),
-                          );
-                        },
-                      ),
+                  // Title
+                  Text(
+                    template.title,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: "Noto Kufi Arabic",
+                      color: MyColors.blackColor,
                     ),
-                  
-                  // Template Content
-                  Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 10.h),
+                  // Content
+                  Text(
+                    template.content,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontFamily: "Noto Kufi Arabic",
+                      color: MyColors.textColor,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 15.h),
+                  // Location
+                  if (template.location != null)
+                    Row(
                       children: [
-                        // Title
-                        Text(
-                          template.title,
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: "Noto Kufi Arabic",
-                            color: MyColors.blackColor,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 10.h),
-                        // Description
-                        Text(
-                          template.description,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontFamily: "Noto Kufi Arabic",
-                            color: MyColors.textColor,
-                          ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 15.h),
-                        // Date
-                        Row(
-                          children: [
-                            Icon(Icons.calendar_today, size: 16, color: MyColors.greyColor),
-                            SizedBox(width: 8.w),
-                            Text(
-                              template.formattedCreatedDate,
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                fontFamily: "Noto Kufi Arabic",
-                                color: MyColors.greyColor,
-                              ),
+                        SvgPicture.asset('assets/images/location.svg'),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            template.location!,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontFamily: "Noto Kufi Arabic",
+                              color: MyColors.greyColor,
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                  if (template.location != null) SizedBox(height: 10.h),
+                  // Start Date and End Date
+                  if (template.startDate != null && template.endDate != null)
+                    Row(
+                      children: [
+                        SvgPicture.asset('assets/images/calendar.svg'),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            "${_formatDate(template.startDate!)} – ${_formatDate(template.endDate!)}",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontFamily: "Noto Kufi Arabic",
+                              color: MyColors.greyColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (template.startDate != null && template.endDate != null) SizedBox(height: 10.h),
+                  // Company Name
+                  if (template.companyName != null)
+                    Row(
+                      children: [
+                        SvgPicture.asset('assets/images/building.svg'),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            template.companyName!,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontFamily: "Noto Kufi Arabic",
+                              color: MyColors.greyColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                     SizedBox(height: 20.h),
+                    Padding(
+                      padding:  EdgeInsets.only(right: 153),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 8.h),
+                        ),
+                        child: Text(
+                          "قدم الآن",
+                          style: TextStyle(
+                            fontFamily: "Noto Kufi Arabic",
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15.sp,
+                            color: MyColors.whiteColor,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -396,5 +423,9 @@ class __TrainingPage extends State<TrainingPage> {
         );
       },
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

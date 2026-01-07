@@ -146,33 +146,33 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          if (index != _currentIndex) {
-            String route;
-            switch (index) {
-              case 0:
-                route = 'gradhome';
-                break;
-              case 1:
-                route = 'postgraduatStudies';
-                break;
-              case 2:
-                route = 'gradhome'; // Chat, navigate to home for now
-                break;
-              case 3:
-                route = 'trainingPage';
-                break;
-              case 4:
-              default:
-                route = 'dashboardPage';
-                break;
-            }
-            Navigator.pushNamed(context, route);
-          }
-        },
-      ),
+      // bottomNavigationBar: BottomNavigation(
+      //   currentIndex: _currentIndex,
+      //   onTap: (index) {
+      //     if (index != _currentIndex) {
+      //       String route;
+      //       switch (index) {
+      //         case 0:
+      //           route = 'gradhome';
+      //           break;
+      //         case 1:
+      //           route = 'postgraduatStudies';
+      //           break;
+      //         case 2:
+      //           route = 'gradhome'; // Chat, navigate to home for now
+      //           break;
+      //         case 3:
+      //           route = 'trainingPage';
+      //           break;
+      //         case 4:
+      //         default:
+      //           route = 'dashboardPage';
+      //           break;
+      //       }
+      //       Navigator.pushNamed(context, route);
+      //     }
+      //   },
+      // ),
     );
   }
   

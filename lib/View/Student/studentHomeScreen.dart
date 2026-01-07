@@ -11,6 +11,7 @@ import 'package:smart_college/View/widgets/student_bottom_navigation.dart';
 import 'package:smart_college/Cubits/News/NewsCubit.dart';
 import 'package:smart_college/Cubits/News/NewsStates.dart';
 import 'package:smart_college/Models/Response/newsModel.dart';
+import 'package:smart_college/Models/Response/news_model.dart';
 import 'package:smart_college/View/Student/all_news.dart';
 import 'package:smart_college/View/Student/news_details.dart';
 
@@ -73,18 +74,28 @@ class _HomescreenState extends State<studentHomescreen> {
     'ديسمبر',
   ];
 
+  NewsModel _convertNewsToNewsModel(News news) {
+    return NewsModel(
+      title: news.title,
+      content: news.content,
+      mainImage: news.mainImage,
+      images: news.images,
+      createdAt: news.createdAt,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF5F5F5),
-      // bottomNavigationBar: CommonBottomNavigation(
-      //   currentIndex: _currentIndex,
-      //   onTap: (index) {
-      //     setState(() {
-      //       _currentIndex = index;
-      //     });
-      //   },
-      // ),
+      bottomNavigationBar: StudentBottomNavigation(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
       body: Column(
         children: [
          // CommonTopSearchBar(controller: _searchController),
@@ -299,279 +310,33 @@ class _HomescreenState extends State<studentHomescreen> {
                        ],
                      ),
 /////////////////////////////// news start ///////////////////////////////  
- SizedBox(
-  height: 350.h,
-  child: BlocBuilder<NewsCubit, NewsStates>(
-    builder: (context, state) {
-      if (state is NewsLoadingState) {
-        return Center(
-          child: CircularProgressIndicator(
-            color: MyColors.primaryColor,
-            strokeWidth: 3,
-          ),
-        );
-      } else if (state is NewsErrorState) {
-        return Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.error_outline_rounded,
-                    color: Colors.red,
-                    size: 48.sp,
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                Text(
-                  state.errorMessage ?? "حدث خطأ",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontFamily: "Noto Kufi Arabic",
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red.shade700,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 20.h),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<NewsCubit>().getNews();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: Text(
-                    "إعادة المحاولة",
-                    style: TextStyle(
-                      fontFamily: "Noto Kufi Arabic",
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      } else if (state is NewsSuccessState) {
-        final newsList = state.response.data;
-        if (newsList.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.newspaper_outlined,
-                  size: 64.sp,
-                  color: MyColors.greyColor.withOpacity(0.5),
-                ),
-                SizedBox(height: 16.h),
-                Text(
-                  "لا توجد أخبار متاحة",
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontFamily: "Noto Kufi Arabic",
-                    fontWeight: FontWeight.w600,
-                    color: MyColors.greyColor,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: newsList.length,
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          itemBuilder: (context, index) {
-            final news = newsList[index];
-            
-            bool isBase64(String str) => str.startsWith('data:image');
-            
-            Widget buildImageWidget() {
-              if (news.mainImage.isEmpty) {
-                return Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: Colors.grey[300],
-                  child: Icon(Icons.image_not_supported, size: 30),
-                );
-              }
-
-              if (isBase64(news.mainImage)) {
-                try {
-                  final base64String = news.mainImage.split(',')[1];
-                  final bytes = base64Decode(base64String);
-                  return Image.memory(
-                    bytes,
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        color: Colors.grey[300],
-                        child: Icon(Icons.image_not_supported, size: 30),
+                BlocBuilder<NewsCubit, NewsStates>(
+                  builder: (context, state) {
+                    if (state is NewsLoadingState) {
+                      return Center(
+                        child: CircularProgressIndicator(color: MyColors.primaryColor),
                       );
-                    },
-                  );
-                } catch (e) {
-                  return Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Colors.grey[300],
-                    child: Icon(Icons.image_not_supported, size: 30),
-                  );
-                }
-              }
-
-              return Image.network(
-                news.mainImage,
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Colors.grey[300],
-                    child: Icon(Icons.image_not_supported, size: 30),
-                  );
-                },
-              );
-            }
-
-            return Container(
-              width: 343.w,
-              margin: EdgeInsets.only(left: index == 0 ? 0 : 12.w),
-              child: Stack(
-                children: [
-                  Card(
-                    elevation: 2,
-                    shadowColor: Colors.black.withOpacity(0.08),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Container(
-                      height: 120.h,
-                      decoration: BoxDecoration(
-                        color: MyColors.whiteColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          // Image Section
-                          ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
-                            ),
-                            child: Container(
-                              width: double.infinity,
-                              height: 60.h,
-                              child: buildImageWidget(),
+                    } else if (state is NewsErrorState) {
+                      return _buildErrorWidget(state.errorMessage ?? "حدث خطأ");
+                    } else if (state is NewsSuccessState) {
+                      final newsList = state.response.data;
+                      if (newsList.isEmpty) {
+                        return Center(
+                          child: Text(
+                            "لا توجد أخبار متاحة",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontFamily: "Noto Kufi Arabic",
+                              color: MyColors.greyColor,
                             ),
                           ),
-                          // Content Section
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12.w,
-                                vertical: 8.h,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    news.title,
-                                    style: TextStyle(
-                                      fontSize: 10.sp,
-                                      fontWeight: FontWeight.w700,
-                                      fontFamily: "Noto Kufi Arabic",
-                                      color: MyColors.blackColor,
-                                      height: 1.3,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "اقرأ المزيد",
-                                        style: TextStyle(
-                                          fontSize: 8.sp,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: "Noto Kufi Arabic",
-                                          color: Color(0xff14B8A6),
-                                        ),
-                                      ),
-                                      Text(
-                                        "${news.createdAt.day} ${_months[news.createdAt.month - 1]} ${news.createdAt.year}",
-                                        style: TextStyle(
-                                          fontSize: 7.sp,
-                                          fontWeight: FontWeight.w400,
-                                          fontFamily: "Noto Kufi Arabic",
-                                          color: Color(0xffAAAAAB),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Clickable overlay
-                  Positioned.fill(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => NewsDetails(
-                                newsList: newsList,
-                                initialIndex: index,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      }
-      return SizedBox.shrink();
-    },
-  ),
-)
+                        );
+                      }
+                      return _buildNewsListView(newsList);
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
   /////////////////////////////// news end ///////////////////////////////  
                 ],
 
@@ -820,6 +585,207 @@ class _HomescreenState extends State<studentHomescreen> {
       itemBuilder: (context, index) {
         return calendarDays[index];
       },
+    );
+  }
+
+  Widget _buildErrorWidget(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 40),
+          SizedBox(height: 10.h),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontFamily: "Noto Kufi Arabic",
+              color: Colors.red,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10.h),
+          ElevatedButton(
+            onPressed: () => context.read<NewsCubit>().getNews(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: MyColors.primaryColor,
+            ),
+            child: const Text(
+              "إعادة المحاولة",
+              style: TextStyle(
+                fontFamily: "Noto Kufi Arabic",
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNewsListView(List<News> newsList) {
+    final newsModelList = newsList.map(_convertNewsToNewsModel).toList();
+    
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.only(top: 10.h),
+      itemCount: newsList.length,
+      itemBuilder: (context, index) {
+        final newsModel = newsModelList[index];
+        return _buildNewsCard(newsModel, newsModelList, index, newsList);
+      },
+    );
+  }
+
+  Widget _buildNewsCard(
+    NewsModel newsModel, 
+    List<NewsModel> allNewsModels, 
+    int index, 
+    List<News> originalNewsList
+  ) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      decoration: BoxDecoration(
+        color: MyColors.whiteColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            // Image section (right side)
+            _buildNewsImage(newsModel.mainImage),
+            
+            // Content section (left side)
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(12.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      newsModel.title,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Noto Kufi Arabic",
+                        color: MyColors.blackColor,
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      newsModel.content,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: "Noto Kufi Arabic",
+                        color: MyColors.greyColor,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                    ),
+                    SizedBox(height: 12.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            newsModel.createdAt != null
+                                ? "${newsModel.createdAt!.day} ${_months[newsModel.createdAt!.month - 1]}, ${newsModel.createdAt!.year}"
+                                : "تاريخ غير متاح",
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: "Noto Kufi Arabic",
+                              color: const Color(0xffAAAAAB),
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => NewsDetails(
+                                  news: originalNewsList[index],
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "عرض المزيد",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: "Noto Kufi Arabic",
+                              color: MyColors.primaryColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewsImage(String imageUrl) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topRight: Radius.circular(12),
+        bottomRight: Radius.circular(12),
+      ),
+      child: imageUrl.isNotEmpty
+          ? Image.network(
+              imageUrl,
+              width: 120.w,
+              height: 120.h,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return _buildImagePlaceholder();
+              },
+            )
+          : _buildImagePlaceholder(),
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      width: 120.w,
+      height: 120.h,
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(12),
+          bottomRight: Radius.circular(12),
+        ),
+      ),
+      child: Icon(
+        Icons.image_not_supported,
+        size: 40,
+        color: Colors.grey[500],
+      ),
     );
   }
 }
