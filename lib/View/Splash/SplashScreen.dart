@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -9,15 +8,15 @@ import '../Graduated/home/graduatedHomeScreen.dart';
 import '../Onboarding/onboarding.dart';
 import '../home/accountType.dart';
 
-class splashScreen extends StatefulWidget {
+class SplashScreen extends StatefulWidget {
   static const String routeName = 'splash';
-  const splashScreen({super.key});
+  const SplashScreen({super.key});
 
   @override
-  State<splashScreen> createState() => _splashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _splashScreenState extends State<splashScreen>
+class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _splashController;
   late AnimationController _shadowController;
@@ -26,11 +25,9 @@ class _splashScreenState extends State<splashScreen>
   late Animation<Offset> _shadowAnimation;
   late Animation<Alignment> _loaderAnimation;
 
-
   @override
   void initState() {
     super.initState();
-
 
     _splashController = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -42,7 +39,6 @@ class _splashScreenState extends State<splashScreen>
       vsync: this,
     );
 
-    // Loader Animation (يمين وشمال)
     _loaderController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -75,26 +71,15 @@ class _splashScreenState extends State<splashScreen>
     _splashController.forward();
     _shadowController.forward();
 
-    // استنى لحد ما الاتنين يخلصوا
     Future.wait([
       _splashController.forward().orCancel,
       _shadowController.forward().orCancel,
     ]).then((_) async {
-      await Future.delayed(const Duration(milliseconds: 500)); // زيادة وقت لو عايزة
+      await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         await _checkAuth();
       }
     });
-
-
-    // Future.delayed(const Duration(seconds: 5), () {
-    //   if (mounted) {
-    //     Navigator.pushReplacement(
-    //       context,
-    //       MaterialPageRoute(builder: (context) => const account_type()),
-    //     );
-    //   }
-    // });
   }
 
   _checkAuth() async {
@@ -105,28 +90,26 @@ class _splashScreenState extends State<splashScreen>
     if (token != null) {
       if (role == "Student") {
         if (savedIsNew == true) {
-          // 🟢 أول مرة → روح على تكملة البيانات
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => account_type()),
+            MaterialPageRoute(builder: (_) => const AccountType()),
           );
         } else {
-          // 🟢 مش أول مرة → روح على الهوم
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => HomeScreen()),
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
           );
         }
       } else if (role == "Graduated") {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => GraduatedHomeScreen()),
+          MaterialPageRoute(builder: (_) => const GraduatedHomeScreen()),
         );
       }
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => OnBoarding()),
+        MaterialPageRoute(builder: (_) => const OnBoarding()),
       );
     }
   }
@@ -142,82 +125,98 @@ class _splashScreenState extends State<splashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(height: 50.h),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Top spacer
+              const Spacer(flex: 3),
 
-          // Logo + Shadow
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                SlideTransition(
-                  position: _splashAnimation,
-                  child: SvgPicture.asset(
-                    "assets/images/SPLASH.svg",
-                    width: 184.w,
-                    height: 122.h,
+              // Logo + Shadow + Text - Centered
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SlideTransition(
+                    position: _splashAnimation,
+                    child: SvgPicture.asset(
+                      "assets/images/splash.svg",
+                      width: 184.w,
+                      height: 122.h,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                ),
 
-                SizedBox(height: 20.h),
+                  SizedBox(height: 20.h),
 
-
-                SlideTransition(
-                  position: _shadowAnimation,
-                  child: SvgPicture.asset(
-                    "assets/images/SHADO.svg",
-                    width: 50.w,
-                    height: 7.h,
+                  SlideTransition(
+                    position: _shadowAnimation,
+                    child: SvgPicture.asset(
+                      "assets/images/SHADO.svg",
+                      width: 50.w,
+                      height: 7.h,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  "Smart college",
-                  style: TextStyle(
-                    color: const Color(0xff14B8A6),
-                    fontSize: 30.sp,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: "Noto Kufi Arabic",
-                  ),
-                )
-              ],
-            ),
-          ),
 
-          // Loader at bottom
-          Padding(
-            padding: EdgeInsets.only(bottom: 50.h),
-            child: Center(
-              child: Container(
-                width: 100.w,
-                height: 29.h,
-                decoration: BoxDecoration(
-                  color: MyColors.primaryColor,
-                  borderRadius: BorderRadius.circular(100.r),
-                ),
-                child: AnimatedBuilder(
-                  animation: _loaderAnimation,
-                  builder: (context, child) {
-                    return Align(
-                      alignment: _loaderAnimation.value,
-                      child: Container(
-                        width: 30.w,
-                        height: 10.h,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(100.r),
-                        ),
-                      ),
-                    );
-                  },
+                  SizedBox(height: 8.h),
+
+                  Text(
+                    "Smart college",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: const Color(0xff14B8A6),
+                      fontSize: 30.sp,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: "Noto Kufi Arabic",
+                    ),
+                  ),
+                ],
+              ),
+
+              // Bottom spacer
+              const Spacer(flex: 3),
+
+              // Loader at bottom - Centered
+              Padding(
+                padding: EdgeInsets.only(bottom: 50.h),
+                child: Center(
+                  child: Container(
+                    width: 100.w,
+                    height: 29.h,
+                    decoration: BoxDecoration(
+                      color: MyColors.primaryColor,
+                      borderRadius: BorderRadius.circular(100.r),
+                    ),
+                    child: AnimatedBuilder(
+                      animation: _loaderAnimation,
+                      builder: (context, child) {
+                        return Align(
+                          alignment: _loaderAnimation.value,
+                          child: Container(
+                            width: 30.w,
+                            height: 10.h,
+                            margin: EdgeInsets.symmetric(horizontal: 4.w),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(100.r),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_college/View/Student/Profile/ProfileScreen.dart';
 import 'package:smart_college/View/Student/studentHomeScreen.dart';
+import 'package:smart_college/View/Student/subjects.dart';
 import 'package:smart_college/View/widgets/common_top_search_bar.dart';
 import 'package:smart_college/View/widgets/common_bottom_navigation.dart';
 
@@ -31,14 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
   
   // قائمة الصفحات في الـ Bottom Navigation
   final List<Widget> _pages = [
-    studentHomescreen(),                 // index 0 → الرئيسية
-    Center(child: Text(' المواد الدراسية')), // index 1 → المواد
-    Container(),                         // index 2 → مكان زرار الشات (فضي)
-    Examscreen(),                        // index 3 → الامتحانات
-    ProfileScreen(),                         // index 4 → حسابى
+    studentHomescreen(),      // index 0 → الرئيسية
+    Subjects_Screen(),
+     Container(),         // index 1 → المواد الدراسية
+    Examscreen(),             // index 2 → الامتحانات
+    ProfileScreen(),          // index 3 → حسابى
   ];
-
-
+  
   @override
   void initState() {
     super.initState();
@@ -75,41 +75,23 @@ class _HomeScreenState extends State<HomeScreen> {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     NotificationSettings settings = await messaging.requestPermission();
     print("🔔 Permission status: ${settings.authorizationStatus}");
-
-
   }
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF5F5F5),
-      body: Column(
-        children: [
-          // شريط البحث والإشعارات - مشترك في جميع الصفحات
-          if (_currentIndex != 4) CommonTopSearchBar(),
-          
-          // محتوى الصفحات
-          Expanded(
-            child: _pages[_currentIndex],
-          ),
-        ],
-      ),
+      body: _pages[_currentIndex], // ✅ شيلت الـ Column والـ Expanded
       
       // Bottom Navigation Bar
-      bottomNavigationBar: _currentIndex != 4
-          ? StudentBottomNavigation(
+      bottomNavigationBar: StudentBottomNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-      )
-          : null,
+      ),
     );
   }
 }

@@ -478,7 +478,7 @@ class ProfileViewModel extends Cubit<States> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
 
-        Navigator.pushReplacementNamed(context, account_type.routeName);
+        Navigator.pushReplacementNamed(context, AccountType.routeName);
         // 🟢 إظهار رسالة نجاح
         emit(DeleteProfileSuccessState(response));
 
@@ -521,7 +521,7 @@ class ProfileViewModel extends Cubit<States> {
     // 🚪 رجّعي المستخدم لشاشة اختيار الحساب
     Navigator.pushNamedAndRemoveUntil(
       context,
-      account_type.routeName,
+      AccountType.routeName,
           (route) => false,
     );
   }

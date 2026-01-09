@@ -3,14 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_college/utils/colors.dart';
-
 import '../../Cubits/Home/ChatScreenViewModel.dart';
-import '../../services/local/sharedPreference.dart';
-import '../../View/Student/Materials&Exams/ExamScreen.dart';
-import '../../View/Student/Profile/ProfileScreen.dart';
-import '../SmartChat/SmartChat.dart';
-import '../Student/subjects.dart';
-import '../../Repositories/ChatRepository.dart';
 import '../../services/local/sharedPreference.dart';
 import '../SmartChat/SmartChat.dart';
 
@@ -41,14 +34,21 @@ class StudentBottomNavigation extends StatelessWidget {
             ],
           ),
           child: BottomNavigationBar(
-            currentIndex: currentIndex,
+            currentIndex: currentIndex > 2 ? currentIndex : currentIndex,
             onTap: (index) {
-              _handleNavigation(context, index);
+              // ✅ بدل ما نعمل Navigator.push، نبلّغ الـ parent يغير الصفحة
+              if (index == 2) {
+                // زر الشات - مش هنعمل حاجة هنا
+                return;
+              }
+              onTap(index); // ✅ نبلّغ الـ parent يغير الـ index
             },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             selectedItemColor: MyColors.primaryColor,
             unselectedItemColor: MyColors.textColor,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
             selectedLabelStyle: TextStyle(
               fontFamily: "Noto Kufi Arabic",
               fontSize: 10.sp,
@@ -60,81 +60,40 @@ class StudentBottomNavigation extends StatelessWidget {
               fontWeight: FontWeight.w400,
             ),
             items: [
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  "assets/images/home.svg",
-                  width: 24.w,
-                  height: 24.h,
-                  color: currentIndex == 0
-                      ? MyColors.primaryColor
-                      : MyColors.textColor,
-                ),
-                label: 'الرئيسية',
+              _buildNavItem(
+                iconPath: "assets/images/home.svg",
+                label: "الرئيسية",
+                index: 0,
               ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  "assets/images/subject.svg",
-                  width: 24.w,
-                  height: 24.h,
-                  color: currentIndex == 1
-                      ? MyColors.primaryColor
-                      : MyColors.textColor,
-                ),
-                label: ' المواد الدراسية',
+              _buildNavItem(
+                iconPath: "assets/images/subject.svg",
+                label: "المواد الدراسية",
+                index: 1,
               ),
               const BottomNavigationBarItem(
-                icon: SizedBox.shrink(), // مكان فاضي لزر الشات
+                icon: SizedBox.shrink(),
                 label: '',
               ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  "assets/images/exam.svg",
-                  width: 24.w,
-                  height: 24.h,
-                  color: currentIndex == 3
-                      ? MyColors.primaryColor
-                      : MyColors.textColor,
-                ),
-                label: 'الامتحانات',
+              _buildNavItem(
+                iconPath: "assets/images/exam.svg",
+                label: "الامتحانات",
+                index: 3,
               ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  "assets/images/profile.svg",
-                  width: 24.w,
-                  height: 24.h,
-                  color: currentIndex == 4
-                      ? MyColors.primaryColor
-                      : MyColors.greyColor,
-                ),
-                label: 'حسابي',
+              _buildNavItem(
+                iconPath: "assets/images/profile.svg",
+                label: "حسابي",
+                index: 4,
               ),
             ],
           ),
         ),
 
-        // ✅ زر الشات الطالع لفوق (يفتح صفحة Admin Chat)
+        // ✅ زر الشات الطالع لفوق
         Positioned(
           top: -25,
           left: MediaQuery.of(context).size.width / 2 - 30,
           child: GestureDetector(
-            onTap: () async {
-              final savedToken = await TokenStorage.getToken();
-              print("Token used: $savedToken");
-
-              // ✅ نروح لصفحة الشات بدون ما نأثر على الـ navigation
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider(
-                    create: (_) => ChatCubit(
-                      token: savedToken ?? '', // 🔑 توكن اليوزر الحالي
-                      adminId: "68d505b6cb5768439463619b", // الأدمن الأساسي
-                    )..connectSocket(), // ⬅️ نبدأ الاتصال فورًا
-                    child: ChatScreen(),
-                  ),
-                ),
-              );
-            },
+            onTap: () => _openChatScreen(context),
             child: Container(
               width: 60,
               height: 60,
@@ -164,31 +123,39 @@ class StudentBottomNavigation extends StatelessWidget {
     );
   }
 
-  // ✅ Function للتعامل مع كل الـ Navigation
-  void _handleNavigation(BuildContext context, int index) {
-    switch (index) {
-      case 0: // الرئيسية
-        onTap(0); // يرجع للصفحة الرئيسية في الـ IndexedStack
-        break;
+  BottomNavigationBarItem _buildNavItem({
+    required String iconPath,
+    required String label,
+    required int index,
+  }) {
+    return BottomNavigationBarItem(
+      icon: SvgPicture.asset(
+        iconPath,
+        width: 24.w,
+        height: 24.h,
+        color: currentIndex == index ? MyColors.primaryColor : MyColors.textColor,
+      ),
+      label: label,
+    );
+  }
 
-      case 1: // المواد الدراسية
-        Navigator.pushNamed(context, Subjects_Screen.routeName);
-        break;
+  Future<void> _openChatScreen(BuildContext context) async {
+    final savedToken = await TokenStorage.getToken();
+    
+    if (!context.mounted) return;
 
-      case 2: // مكان فاضي (الشات في النص)
-        // مافيش حاجة، لأن الزر الطالع لفوق هيتحكم
-        break;
-
-      case 3: // الامتحانات
-        Navigator.pushNamed(context, Examscreen.routeName);
-        break;
-
-      case 4: // الملف الشخصي
-        Navigator.pushNamed(context, ProfileScreen.routeName);
-        break;
-
-      default:
-        onTap(index);
-    }
+    // ✅ فتح صفحة الشات في صفحة جديدة (مش جزء من الـ bottom navigation)
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => ChatCubit(
+            token: savedToken ?? '',
+            adminId: "68d505b6cb5768439463619b",
+          )..connectSocket(),
+          child: const ChatScreen(),
+        ),
+      ),
+    );
   }
 }
