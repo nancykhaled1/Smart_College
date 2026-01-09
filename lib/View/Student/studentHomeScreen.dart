@@ -37,12 +37,12 @@ class _HomescreenState extends State<studentHomescreen> {
   void initState() {
     super.initState();
     // قائمة الصفحات في الـ Bottom Navigation
-    _pages = [
+    // _pages = [
 
-      Container(child: Center(child: Text(' المواد الدراسية'))),
-      Container(child: Center(child: Text('الامتحانات'))),
-      Container(child: Center(child: Text('بروفايل'))),
-    ];
+    //   Container(child: Center(child: Text(' المواد الدراسية'))),
+    //   Container(child: Center(child: Text('الامتحانات'))),
+    //   Container(child: Center(child: Text('بروفايل'))),
+    // ];
     // Fetch news when screen loads
     context.read<NewsCubit>().getNews();
   }
@@ -88,17 +88,18 @@ class _HomescreenState extends State<studentHomescreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF5F5F5),
-      bottomNavigationBar: StudentBottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
+
+      // bottomNavigationBar: StudentBottomNavigation(
+      //   currentIndex: _currentIndex,
+      //   onTap: (index) {
+      //     setState(() {
+      //       _currentIndex = index;
+      //     });
+      //   },
+      // ),
       body: Column(
         children: [
-         // CommonTopSearchBar(controller: _searchController),
+           CommonTopSearchBar(controller: _searchController),
           Expanded(
             child: SingleChildScrollView(
           child: Padding(

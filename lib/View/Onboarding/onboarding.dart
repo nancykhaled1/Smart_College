@@ -192,7 +192,7 @@ class _OnBoardingState extends State<OnBoarding> {
           onTap: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => account_type()),
+              MaterialPageRoute(builder: (context) => AccountType()),
             );
           },
           child: Container(
@@ -270,7 +270,7 @@ class _OnBoardingState extends State<OnBoarding> {
           TextButton(
             onPressed: () {
               Navigator.pushReplacementNamed(
-                  context, account_type.routeName);
+                  context, AccountType.routeName);
             },
             child: Text(
               "تخطي",

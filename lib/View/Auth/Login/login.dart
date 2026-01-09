@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (role == "Student") {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => HomeScreen()),
+              MaterialPageRoute(builder: (_) => studentHomescreen()),
             );
           } else if (role == "Graduated") {
             Navigator.pushReplacement(

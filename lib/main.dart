@@ -407,7 +407,7 @@ class MyApp extends StatelessWidget {
           ],
 
 
-          initialRoute: splashScreen.routeName,
+          initialRoute: SplashScreen.routeName,
 
           routes: {
             LoginScreen.routeName: (context) => LoginScreen(),
@@ -418,8 +418,8 @@ class MyApp extends StatelessWidget {
             //RePassword.routeName : (context) => RePassword(),
             //RoleSelectionScreen.routeName: (context) => RoleSelectionScreen(),
             GraduatedHomeScreen.routeName: (context) => GraduatedHomeScreen(),
-            splashScreen.routeName: (context) => splashScreen(),
-            account_type.routeName: (context) => account_type(),
+            SplashScreen.routeName: (context) => SplashScreen(),
+            AccountType.routeName: (context) => AccountType(),
             HomeScreen.routeName: (context) => HomeScreen(),
             studentHomescreen.routeName: (context) => studentHomescreen(),
             TrainingPage.routeName: (context) => TrainingPage(),
