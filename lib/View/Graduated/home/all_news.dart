@@ -88,12 +88,89 @@ class _AllNewsState extends State<AllNews> {
           
           // Search Bar
           Positioned(
-            top: 50.h,
-            left: 0,
-            right: 0,
-            child: CommonTopSearchBar(controller: _searchController),
+  top: 50.h,
+  left: 0,
+  right: 0,
+  child: Container(
+    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+  
+    child: Row(
+      children: [
+        // Back Button
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            width: 39.w,
+            height: 38.h,
+            decoration: BoxDecoration(
+              color: MyColors.whiteColor,
+              borderRadius: BorderRadius.circular(9),
+             
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                "assets/images/back.svg",
+                width: 8.w,
+                height: 13.h,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
-          
+        ),
+        
+        SizedBox(width: 12.w),
+        
+        // Search TextField
+        Expanded(
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _searchController,
+            builder: (context, value, child) {
+              return TextField(
+                controller: _searchController,
+                textDirection: TextDirection.rtl,
+                decoration: InputDecoration(
+                  hintText: 'ابحث عن الأخبار...',
+                  hintStyle: TextStyle(
+                    fontFamily: 'Noto Kufi Arabic',
+                    fontSize: 14.sp,
+                    color: Colors.grey,
+                  ),
+                  suffixIcon: Icon(Icons.search, color: Color(0xFF00BFA5)),
+                  prefixIcon: value.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _isSearching = false;
+                            });
+                            context.read<NewsCubit>().getNews();
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
+                ),
+                style: TextStyle(
+                  fontFamily: 'Noto Kufi Arabic',
+                  fontSize: 14.sp,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+  ),
+),
           // News List
           Positioned(
             top: 110.h,
@@ -263,10 +340,10 @@ class _AllNewsState extends State<AllNews> {
                     Text(
                       newsModel.title,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                         fontFamily: "Noto Kufi Arabic",
-                        color: MyColors.blackColor,
+                        color: MyColors.softBlackColor,
                         height: 1.4,
                       ),
                       maxLines: 2,
@@ -279,7 +356,7 @@ class _AllNewsState extends State<AllNews> {
                     Text(
                       newsModel.content,
                       style: TextStyle(
-                        fontSize: 11.sp,
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.w400,
                         fontFamily: "Noto Kufi Arabic",
                         color: MyColors.greyColor,
@@ -300,7 +377,7 @@ class _AllNewsState extends State<AllNews> {
                           child: Text(
                             _formatDate(newsModel.createdAt),
                             style: TextStyle(
-                              fontSize: 10.sp,
+                              fontSize: 9.sp,
                               fontWeight: FontWeight.w400,
                               fontFamily: "Noto Kufi Arabic",
                               color: const Color(0xffAAAAAB),
