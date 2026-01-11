@@ -6,6 +6,7 @@ import 'package:smart_college/Cubits/Auth/Register/VerifyemailViewModel.dart';
 import 'package:smart_college/View/Auth/Login/login.dart';
 import 'package:smart_college/View/Auth/Register/verifyEmail.dart';
 import 'package:smart_college/View/Student/Home/StudentHomeScreen.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/utils/colors.dart';
 import 'package:smart_college/utils/text_field.dart';
 import '../../../Cubits/Auth/Login/GoogleViewModel.dart';
@@ -28,18 +29,34 @@ class StudentRegisterScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<StudentRegisterScreen> {
+  late RegisterCubit registerCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    registerCubit = context.read<RegisterCubit>();
+    registerCubit.getLevels();
+    registerCubit.getDepartment();
+  }
+
+  @override
+  void dispose() {
+    registerCubit.clearForm();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<RegisterCubit, RegisterStates>(
       listener: (context, state) {
         if (state is RegisterErrorState) {
-          // Navigator.pop(context); // لإغلاق الديالوج لو كان مفتوح
           showOverlayMessage(context, state.errorMessage!, isError: true);
 
-          // ScaffoldMessenger.of(
-          //   context,
-          // ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-        } else if (state is RegisterSuccessState) {
+        }
+        else if (state is LevelSuccessState) {
+          setState(() {});
+        }
+        else if (state is RegisterSuccessState) {
           showOverlayMessage(
             context,
             state.response.data!.message!,
@@ -53,9 +70,6 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
             ),
           );
 
-          // ScaffoldMessenger.of(
-          //   context,
-          // ).showSnackBar( SnackBar(content: Text(state.response.data!.message!)));
         }
       },
       builder: (context, state) {
@@ -73,7 +87,8 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max, // ✅ ده يمنع الـ infinite height
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
                         padding: EdgeInsets.only(top: 50.h, bottom: 20.h),
@@ -246,9 +261,9 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
                               },
                             ),
                             SizedBox(height: 20.h),
-                            _buildLevelDropdown(viewModel),
+                            buildLevelDropdown(viewModel),
                             SizedBox(height: 20.h),
-                            _buildDepartmentDropdown(viewModel),
+                            buildDepartmentDropdown(viewModel),
                             SizedBox(height: 40.h),
                             ElevatedButton(
                               onPressed:
@@ -385,7 +400,6 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
                             final role = await TokenStorage.getRole();
                             final savedIsNew = await TokenStorage.getIsNew();
 
-                           // context.read<SendMessageCubit>().connectSocket();
 
                             if (role == "Student") {
                               // 🟢 هنا بتشيكي هل هو اول مرة ولا لأ
@@ -403,9 +417,7 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => StudentHomeScreen(
-
-                                    ),
+                                    builder: (_) => HomeScreen(),
                                   ),
                                 );
                               }
@@ -471,7 +483,7 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
     );
   }
 
-  Widget _buildLevelDropdown(RegisterCubit viewModel) {
+  Widget buildLevelDropdown(RegisterCubit viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -519,11 +531,11 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
         if (viewModel.showDropdownlevel)
           Column(
             children:
-                viewModel.level.map((status) {
-                  return GestureDetector(
+            viewModel.levelsList.map((item) {
+              return GestureDetector(
                     onTap: () {
                       setState(() {
-                        viewModel.levelController.text = status.toString();
+                        viewModel.levelController.text = item.levelNumber.toString();
                         viewModel.showDropdownlevel = false;
                       });
                     },
@@ -551,7 +563,7 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
                           ),
                           SizedBox(width: 20.w),
                           Text(
-                            status.toString(),
+                            item.levelNumber.toString(),
                             style: TextStyle(
                               color: MyColors.greyColor,
                               fontFamily: "Noto Kufi Arabic",
@@ -569,7 +581,7 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
     );
   }
 
-  Widget _buildDepartmentDropdown(RegisterCubit viewModel) {
+  Widget buildDepartmentDropdown(RegisterCubit viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -618,7 +630,7 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        viewModel.departmentController.text = status;
+                        viewModel.departmentController.text = status.name ??'';
                         viewModel.showDropdowndepartment = false;
                       });
                     },
@@ -646,7 +658,7 @@ class _LoginScreenState extends State<StudentRegisterScreen> {
                           ),
                           SizedBox(width: 20.w),
                           Text(
-                            status,
+                            status.name ??'',
                             style: TextStyle(
                               color: MyColors.greyColor,
                               fontFamily: "Noto Kufi Arabic",

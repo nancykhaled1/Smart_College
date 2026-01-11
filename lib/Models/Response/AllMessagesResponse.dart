@@ -48,11 +48,14 @@ class MessageData {
       this.content, 
       this.readBy, 
       this.createdAt, 
-      this.updatedAt, 
-      this.v,});
+      this.updatedAt,
+    this.isLocal = false,
+    this.tempId,
+
+      this.v, });
 
   MessageData.fromJson(dynamic json) {
-    id = json['_id'];
+    id = json['_id'] ?? json['tempId'] ?? '';
     chat = json['chat'];
     senderModel = json['senderModel'];
     sender = json['sender'] != null ? Sender.fromJson(json['sender']) : null;
@@ -60,6 +63,8 @@ class MessageData {
     readBy = json['readBy'] != null ? json['readBy'].cast<String>() : [];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
+    isLocal = json['isLocal'];
+    tempId = json['tempId'];
     v = json['__v'];
   }
   String? id;
@@ -71,6 +76,8 @@ class MessageData {
   String? createdAt;
   String? updatedAt;
   int? v;
+   bool? isLocal; // 🟡 جديد
+   String? tempId; // 🟡 جديد
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};

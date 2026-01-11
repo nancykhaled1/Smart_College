@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import 'package:smart_college/utils/colors.dart';
 import '../../../Cubits/Auth/Register/States.dart';
 import '../../../Cubits/Auth/Register/VerifyemailViewModel.dart';
@@ -36,14 +37,14 @@ class _VerifyEmailState extends State<VerifyEmail> {
           child: BlocConsumer<VerifyEmailCubit, RegisterStates>(
             listener: (context, state) async {
               if (state is VerifyEmailSuccessState) {
-                showOverlayMessage(context, state.response.message!, isError: false);
+                showOverlayMessage(context, state.response.data.message, isError: false);
 
                 final role = await TokenStorage.getRole();
 
                 if (role == "Student") {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (_) => StudentHomeScreen()),
+                    MaterialPageRoute(builder: (_) => HomeScreen()),
                   );
                 } else if (role == "Graduated") {
                   Navigator.pushReplacement(
@@ -74,7 +75,7 @@ class _VerifyEmailState extends State<VerifyEmail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Center(
-                          child: SvgPicture.asset('assets/images/code-pass.svg')),
+                          child: SvgPicture.asset('assets/images/email-verify.svg')),
                       SizedBox(height: 50.h),
                       Text(
                         'ارجع الي البريد الالكتروني الخاص بك!',

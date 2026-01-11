@@ -5,6 +5,7 @@ import 'package:smart_college/View/Auth/Login/login.dart';
 
 import '../../utils/colors.dart';
 import '../Auth/Register/roleselection.dart';
+import '../home/accountType.dart';
 
 
 class OnBoarding extends StatefulWidget {
@@ -48,8 +49,6 @@ class _OnBoardingState extends State<OnBoarding> {
         backgroundColor: MyColors.whiteColor,
         body: Column(
           children: [
-            // زر التخطي في الأعلى
-            topPageView(),
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -67,16 +66,29 @@ class _OnBoardingState extends State<OnBoarding> {
                         SvgPicture.asset(
                           onboarding[index].image,
                           width: double.infinity,
-                          height: double.infinity, // قللنا الارتفاع
+                          height: double.infinity,
                           fit: BoxFit.cover,
                         ),
+
+                        // 🔹 السهم في أول صفحة: فوق الرسمة على اليمين
                         Positioned(
-                          top : 60.h,
+                          left: 0,
+                          right: 0,
+                          bottom: 15.h,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric( horizontal: 20.w),
+                            child: bottomPageView(),
+                          ),
+                        ),
+
+                        Positioned(
+                          top: 120.h, // النص أسفل السهم شوية
+                          left: 0,
+                          right: 0,
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              //  mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   onboarding[index].title,
@@ -97,22 +109,14 @@ class _OnBoardingState extends State<OnBoarding> {
                                     fontFamily: "Noto Kufi Arabic",
                                   ),
                                 ),
-                                SizedBox(height: 30.h),
-
                               ],
                             ),
                           ),
                         ),
-                        Positioned(
-                            bottom : 15.h,
-                            right : 150.w,
-                            child: bottomPageView()),
-
                       ],
                     );
-
-
-                  } else {
+                  }
+                  else {
                     // باقي الصفحات: الصورة تحت النص
                     return Stack(
                       children: [
@@ -176,103 +180,117 @@ class _OnBoardingState extends State<OnBoarding> {
     );
   }
 
-  Widget topPageView() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Align(
-        alignment: Alignment.topRight,
-        child: _currentIndex == onboarding.length - 1
-            ? const SizedBox.shrink() // يخفي الزرار في آخر صفحة
-            : TextButton(
-          onPressed: () {
-            Navigator.pushReplacementNamed(
-                context, AccountType.routeName);
-          },
-          child: Text(
-            "تخطي",
-            style: TextStyle(
-              color: MyColors.greyColor,
-              fontSize: 12.sp,
-              fontFamily: "Noto Kufi Arabic",
-              fontWeight: FontWeight.w300,
-              decoration: TextDecoration.underline, // خط تحت النص
-              decorationColor: MyColors.greyColor,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
 
   Widget bottomPageView() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: GestureDetector(
-        onTap: () {
-          if (_currentIndex < onboarding.length - 1) {
-            _pageController.animateToPage(
-              _currentIndex + 1,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            );
-          } else {
+      padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 5.w),
+      child: _currentIndex == onboarding.length - 1
+          ? // 🔹 الصفحة الأخيرة: زر "ابدأ" في النص
+      Center(
+        child: GestureDetector(
+          onTap: () {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => AccountType()),
             );
-          }
-        },
-        child: _currentIndex == onboarding.length - 1
-            ? Container(
-          width: 130.w,
-          height: 40.h,
-          decoration: BoxDecoration(
-            color: MyColors.primaryColor,
-            borderRadius: BorderRadius.circular(15.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 15.r,
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              "ابدأ",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                fontFamily: "Noto Kufi Arabic",
+          },
+          child: Container(
+            width: 130.w,
+            height: 40.h,
+            decoration: BoxDecoration(
+              color: MyColors.primaryColor,
+              borderRadius: BorderRadius.circular(15.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 15.r,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                "ابدأ",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: "Noto Kufi Arabic",
+                ),
               ),
             ),
           ),
-        )
-            : Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: MyColors.primaryColor,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 5,
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-          child: Transform(
-              transform: Matrix4.identity()..scale(-1.0, 1.0),
-              alignment: Alignment.center,
-              child: Icon(Icons.arrow_back_ios_new,color: MyColors.whiteColor, size: 20.sp,)
-          ),
         ),
+      )
+          : // 🔹 الصفحتين الأولى والثانية: سهم يمين + تخطي شمال
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // 🔹 تخطي على الشمال
+
+          // 🔹 السهم على اليمين
+          GestureDetector(
+            onTap: () {
+              _pageController.animateToPage(
+                _currentIndex + 1,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              );
+            },
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: _currentIndex == 0
+                    ? MyColors.whiteColor
+                    : MyColors.primaryColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 5,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Transform(
+                transform: Matrix4.identity()..scale(-1.0, 1.0),
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  color: _currentIndex == 0
+                      ? MyColors.primaryColor
+                      : MyColors.whiteColor,
+                  size: 20.sp,
+                ),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(
+                  context, AccountType.routeName);
+            },
+            child: Text(
+              "تخطي",
+              style: TextStyle(
+                color: MyColors.greyColor,
+                fontSize: 12.sp,
+                fontFamily: "Noto Kufi Arabic",
+                fontWeight: FontWeight.w300,
+                decoration: TextDecoration.underline,
+                decorationColor: MyColors.greyColor,
+              ),
+            ),
+          ),
+
+        ],
       ),
     );
   }
+
+
 }
 
 class OnBoardingDate {

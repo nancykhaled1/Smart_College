@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_college/View/Student/Home/StudentHomeScreen.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import '../../Cubits/Home/ChatScreenViewModel.dart';
 import '../../Cubits/States/States.dart';
 import '../../utils/colors.dart';
@@ -27,9 +28,12 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ChatCubit>().getAllMessages();
-
+    final cubit = context.read<ChatCubit>();
+    cubit.connectSocket();
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +54,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       Navigator.of(context).pushReplacement(
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) =>
-                              StudentHomeScreen(),
+                              HomeScreen(),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
@@ -84,8 +88,12 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
               /// ✅ الرسائل
               Expanded(
-                child: BlocBuilder<ChatCubit, States>(
+                child: BlocBuilder<ChatCubit, ChatStates>(
                   builder: (context, state) {
+                    final cubit = context.read<ChatCubit>();
+                    final messages = cubit.messages;
+
+
                     if (state is ChatConnecting) {
                       return const Center(
                         child: CircularProgressIndicator(
@@ -108,8 +116,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       );
                     }
 
-                    if (state is GetMessagesSuccessState) {
-                      final messages = state.messages;
+                    if (state is ChatMessagesUpdated) {
+                     // final messages = state.messages;
 
                       if (messages.isEmpty) {
                         return const Center(child: Text("ابدأ الدردشة"));
@@ -220,13 +228,13 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                       onSubmitted: (_) => _sendMessage(cubit),
-                      onChanged: (val) {
-                        cubit.setTyping(val.isNotEmpty);
-                        _timer?.cancel();
-                        _timer = Timer(const Duration(seconds: 2), () {
-                          cubit.setTyping(false);
-                        });
-                      },
+                      // onChanged: (val) {
+                      //   cubit.setTyping(val.isNotEmpty);
+                      //   _timer?.cancel();
+                      //   _timer = Timer(const Duration(seconds: 2), () {
+                      //     cubit.setTyping(false);
+                      //   });
+                      // },
                     ),
                   ),
                   const SizedBox(width: 8),

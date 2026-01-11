@@ -1,14 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:smart_college/View/Auth/Register/roleselection.dart';
-import 'package:smart_college/View/Auth/Register/studentRegister.dart';
-import 'package:smart_college/View/Onboarding/onboarding.dart';
+import 'package:smart_college/View/home/homeScreen.dart';
 import '../../services/local/sharedPreference.dart';
-import '../Auth/Register/CompleteStudentProfile.dart';
+import '../../utils/colors.dart';
 import '../Graduated/home/graduatedHomeScreen.dart';
-import '../Student/Home/StudentHomeScreen.dart';
+import '../Onboarding/onboarding.dart';
+import '../home/accountType.dart';
 
 class SplashScreen extends StatefulWidget {
   static const String routeName = 'splash';
@@ -22,56 +20,10 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _splashController;
   late AnimationController _shadowController;
+  late AnimationController _loaderController;
   late Animation<Offset> _splashAnimation;
   late Animation<Offset> _shadowAnimation;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _checkAuth();
-  //
-  //
-  //   _splashController = AnimationController(
-  //     duration: const Duration(milliseconds: 1500),
-  //     vsync: this,
-  //   );
-  //
-  //   _shadowController = AnimationController(
-  //     duration: const Duration(milliseconds: 1500),
-  //     vsync: this,
-  //   );
-  //
-  //
-  //   _splashAnimation = Tween<Offset>(
-  //     begin: const Offset(0, -2), // Start from top
-  //     end: Offset.zero, // End at center
-  //   ).animate(CurvedAnimation(
-  //     parent: _splashController,
-  //     curve: Curves.easeOutBack,
-  //   ));
-  //
-  //   _shadowAnimation = Tween<Offset>(
-  //     begin: const Offset(-2, 0), // Start from left
-  //     end: Offset.zero, // End at center
-  //   ).animate(CurvedAnimation(
-  //     parent: _shadowController,
-  //     curve: Curves.easeOutBack,
-  //   ));
-  //
-  //
-  //   _splashController.forward();
-  //   _shadowController.forward();
-  //
-  //
-  //   Future.delayed(const Duration(milliseconds: 1000), () {
-  //     if (mounted) {
-  //       Navigator.pushReplacement(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => const AccountType()),
-  //       );
-  //     }
-  //   });
-  // }
+  late Animation<Alignment> _loaderAnimation;
 
   @override
   void initState() {
@@ -86,6 +38,11 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
+
+    _loaderController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat(reverse: true);
 
     _splashAnimation = Tween<Offset>(
       begin: const Offset(0, -2),
@@ -103,22 +60,27 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeOutBack,
     ));
 
+    _loaderAnimation = Tween<Alignment>(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    ).animate(CurvedAnimation(
+      parent: _loaderController,
+      curve: Curves.easeInOut,
+    ));
+
     _splashController.forward();
     _shadowController.forward();
 
-    // استنى لحد ما الاتنين يخلصوا
     Future.wait([
       _splashController.forward().orCancel,
       _shadowController.forward().orCancel,
     ]).then((_) async {
-      await Future.delayed(const Duration(milliseconds: 500)); // زيادة وقت لو عايزة
+      await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         await _checkAuth();
       }
     });
   }
-
-
 
   _checkAuth() async {
     final token = await TokenStorage.getToken();
@@ -128,88 +90,133 @@ class _SplashScreenState extends State<SplashScreen>
     if (token != null) {
       if (role == "Student") {
         if (savedIsNew == true) {
-          // 🟢 أول مرة → روح على تكملة البيانات
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => AccountType()),
+            MaterialPageRoute(builder: (_) => const AccountType()),
           );
         } else {
-          // 🟢 مش أول مرة → روح على الهوم
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => StudentHomeScreen()),
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
           );
         }
       } else if (role == "Graduated") {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => GraduatedHomeScreen()),
+          MaterialPageRoute(builder: (_) => const GraduatedHomeScreen()),
         );
       }
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => OnBoarding()),
+        MaterialPageRoute(builder: (_) => const OnBoarding()),
       );
     }
   }
-
 
   @override
   void dispose() {
     _splashController.dispose();
     _shadowController.dispose();
+    _loaderController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Empty space at top
-          SizedBox(height: 50.h),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Top spacer
+              const Spacer(flex: 3),
 
+              // Logo + Shadow + Text - Centered
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SlideTransition(
+                    position: _splashAnimation,
+                    child: SvgPicture.asset(
+                      "assets/images/splash.svg",
+                      width: 184.w,
+                      height: 122.h,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
 
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+                  SizedBox(height: 20.h),
 
-                SlideTransition(
-                  position: _splashAnimation,
-                  child: SvgPicture.asset(
-                    "assets/images/splash.svg",
-                    width: 184.w,
-                    height: 122.h,
+                  SlideTransition(
+                    position: _shadowAnimation,
+                    child: SvgPicture.asset(
+                      "assets/images/SHADO.svg",
+                      width: 50.w,
+                      height: 7.h,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+
+                  SizedBox(height: 8.h),
+
+                  Text(
+                    "Smart college",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: const Color(0xff14B8A6),
+                      fontSize: 30.sp,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: "Noto Kufi Arabic",
+                    ),
+                  ),
+                ],
+              ),
+
+              // Bottom spacer
+              const Spacer(flex: 3),
+
+              // Loader at bottom - Centered
+              Padding(
+                padding: EdgeInsets.only(bottom: 50.h),
+                child: Center(
+                  child: Container(
+                    width: 100.w,
+                    height: 29.h,
+                    decoration: BoxDecoration(
+                      color: MyColors.primaryColor,
+                      borderRadius: BorderRadius.circular(100.r),
+                    ),
+                    child: AnimatedBuilder(
+                      animation: _loaderAnimation,
+                      builder: (context, child) {
+                        return Align(
+                          alignment: _loaderAnimation.value,
+                          child: Container(
+                            width: 30.w,
+                            height: 10.h,
+                            margin: EdgeInsets.symmetric(horizontal: 4.w),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(100.r),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-
-                SizedBox(height: 20.h),
-
-
-                SlideTransition(
-                  position: _shadowAnimation,
-                  child: SvgPicture.asset(
-                    "assets/images/shadow.svg",
-                    width: 50.w,
-                    height: 7.h,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Text("Smart college",style: TextStyle(color: Color(0xff14B8A6),fontSize: 30.sp,fontWeight: FontWeight.w600, fontFamily: "Noto Kufi Arabic",),)
-              ],
-            ),
+              ),
+            ],
           ),
-          Padding(
-            padding: EdgeInsets.only(bottom: 50.h),
-            child: Center(
-              child: SvgPicture.asset("assets/images/Loader.svg"),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -16,6 +16,7 @@ import '../../../utils/dialog.dart';
 import '../../Graduated/home/graduatedHomeScreen.dart';
 import '../../Onboarding/onboarding.dart';
 import '../../Student/Home/StudentHomeScreen.dart';
+import '../../home/homeScreen.dart';
 
 class AlumniRegisterScreen extends StatefulWidget{
   static const String routeName = 'alumniRegister';
@@ -411,7 +412,7 @@ class _LoginScreenState extends State<AlumniRegisterScreen> {
                             if (role == "Student") {
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => StudentHomeScreen()),
+                                MaterialPageRoute(builder: (_) => HomeScreen()),
                               );
                             } else if (role == "Graduated") {
                               Navigator.pushReplacement(
@@ -432,7 +433,6 @@ class _LoginScreenState extends State<AlumniRegisterScreen> {
                             onPressed: state is LoadingState
                                 ? null
                                 : () async{
-                              final role = await TokenStorage.getRole();
 
                               context.read<GoogleCubit>().signInWithGoogle(
                                   role:widget.role
@@ -488,7 +488,6 @@ class _LoginScreenState extends State<AlumniRegisterScreen> {
 
   Widget _buildResumeUploadField(AlumniRegisterCubit viewModel) {
     return buildTextField(
-
       hint: 'السيرة الذاتية',
       controller: viewModel.cvController,
       validator: (text) {
