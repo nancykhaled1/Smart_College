@@ -1,13 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart'; 
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -21,7 +16,7 @@ import 'package:smart_college/Cubits/Home/NotificationDetailsViewModel.dart';
 import 'package:smart_college/Cubits/Home/NotificationViewModel.dart';
 import 'package:smart_college/Cubits/OpenAI/OpenAIChatCubit.dart';
 import 'package:smart_college/Repositories/ChangePasswordRepository.dart';
-import 'package:smart_college/Repositories/ChatRepository.dart';
+
 import 'package:smart_college/Repositories/ExamsRepository.dart';  
 import 'package:smart_college/Repositories/GoogleRepository.dart';
 import 'package:smart_college/Repositories/NotificationDetailsRepository.dart';
@@ -44,20 +39,11 @@ import 'package:smart_college/View/Student/Materials&Exams/ResultScreen.dart';
 import 'package:smart_college/View/Student/Profile/ProfileScreen.dart';
 import 'package:smart_college/View/Student/studentHomeScreen.dart';
 import 'package:smart_college/View/Student/subjects.dart';
-import 'package:smart_college/View/home/OpenAIChat/chat.dart';
-import 'package:smart_college/View/Onboarding/onboarding.dart';
-import 'package:smart_college/View/SmartChat/SmartChat.dart';
-import 'package:smart_college/View/Student/Materials&Exams/ExamScreen.dart';
-import 'package:smart_college/View/Student/Materials&Exams/ResultScreen.dart';
-import 'package:smart_college/View/Student/Profile/ProfileScreen.dart';
 import 'package:smart_college/services/local/Hive.dart';
-import 'package:smart_college/services/local/sharedPreference.dart';
 import 'package:smart_college/View/home/homeScreen.dart';
-import 'package:smart_college/services/local/Hive.dart';
 import 'package:smart_college/services/remote/apiManager.dart';
 import 'package:smart_college/sources/AlumniRegisterDataSource.dart';
 import 'package:smart_college/sources/ChangePasswordDataSource.dart';
-import 'package:smart_college/sources/ChatDataSource.dart';
 import 'package:smart_college/sources/CounterDataSource.dart';
 import 'package:smart_college/sources/ExamsDataSource.dart';
 import 'package:smart_college/sources/GoogleDataSource.dart';
@@ -73,7 +59,6 @@ import 'package:smart_college/sources/NewsDataSource.dart';
 import 'package:smart_college/sources/LectureDataSource.dart';
 import 'package:smart_college/sources/getNotificationDataSource.dart';
 import 'package:smart_college/sources/TemplateDataSource.dart';
-import 'package:smart_college/sources/getNotificationDataSource.dart';
 import 'package:smart_college/utils/colors.dart';
 import 'Cubits/Auth/Register/AlumniRegisterViewModel.dart';
 import 'Cubits/Auth/Register/SyudentRegisterViewModel.dart';
@@ -82,8 +67,6 @@ import 'Cubits/News/NewsCubit.dart';
 import 'Cubits/Students/ExamsScreenViewModel.dart';
 import 'Cubits/lectures/LectureCubit.dart';
 import 'Cubits/Templates/TemplateCubit.dart';
-import 'Cubits/Home/GetNotificationViewModel.dart';
-import 'Cubits/Home/NotificationViewModel.dart';
 import 'Cubits/Students/ExamDetailsViewModel.dart';
 import 'Cubits/Students/ProfileScreenViewModel.dart';
 import 'Repositories/AlumniRegisterRepository.dart';
@@ -104,9 +87,18 @@ import 'View/home/accountType.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+//  await Firebase.initializeApp(
+//  options: const FirebaseOptions(
+// );
   await Hive.initFlutter();
   Hive.registerAdapter(MessageAdapter());
+   FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      print('══════════════════════════════════════════');
+      print('Flutter Error: ${details.exception}');
+      print('Stack Trace: ${details.stack}');
+      print('══════════════════════════════════════════');
+    };
 
   // افتحي بوكس للرسائل
   await Hive.openBox('messages');
@@ -240,15 +232,15 @@ Future<void> main() async {
           create: (context) => counter,
         ),
 
-        RepositoryProvider<CounterRepository>(
-          create: (context) => counter,
-        ),
-        RepositoryProvider<CounterRepository>(
-          create: (context) => counter,
-        ),
-        RepositoryProvider<CounterRepository>(
-          create: (context) => counter,
-        ),
+        // RepositoryProvider<CounterRepository>(
+        //   create: (context) => counter,
+        // ),
+        // RepositoryProvider<CounterRepository>(
+        //   create: (context) => counter,
+        // ),
+        // RepositoryProvider<CounterRepository>(
+        //   create: (context) => counter,
+        // ),
 
         RepositoryProvider<ExamsRepository>(
           create: (context) => exams,

@@ -4,9 +4,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:smart_college/Models/Response/subject_model.dart';
 import 'package:smart_college/Cubits/lectures/LectureCubit.dart';
 import 'package:smart_college/Cubits/lectures/lectureState.dart';
+import 'package:smart_college/utils/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Subjects_Screen extends StatefulWidget {
@@ -107,50 +109,66 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
         children: [
           // Search Bar
           Container(
-            padding: EdgeInsets.all(16.w),
-            color: Colors.white,
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _searchController,
-              builder: (context, value, child) {
-                return TextField(
-                  controller: _searchController,
-                  textDirection: TextDirection.rtl,
-                  decoration: InputDecoration(
-                    hintText: 'ابحث عن المحاضرات...',
-                    hintStyle: TextStyle(
-                      fontFamily: 'Noto Kufi Arabic',
-                      fontSize: 14.sp,
-                      color: Colors.grey,
-                    ),
-                    suffixIcon: Icon(Icons.search, color: Color(0xFF00BFA5)),
-                    prefixIcon: value.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(Icons.clear, color: Colors.grey),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _isSearching = false;
-                              });
-                              context.read<LectureCubit>().getLectures();
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            padding: EdgeInsets.only(top: 50.h, left: 16.w, right: 16.w, bottom: 12.h),
+          //  color: Colors.white,
+            child: Row(
+              children: [
+                // Back Button
+               
+                
+                SizedBox(width: 12.w),
+                
+                // Search TextField
+                Expanded(
+                  child: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _searchController,
+                    builder: (context, value, child) {
+                      return TextField(
+                        controller: _searchController,
+                        textDirection: TextDirection.rtl,
+                        decoration: InputDecoration(
+                          hintText: 'ابحث عن المحاضرات...',
+                          hintStyle: TextStyle(
+                            fontFamily: 'Noto Kufi Arabic',
+                            fontSize: 14.sp,
+                            color: Colors.grey,
+                          ),
+                          suffixIcon: Icon(Icons.search, color: Color(0xFF00BFA5)),
+                          prefixIcon: value.text.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear, color: Colors.grey),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _isSearching = false;
+                                    });
+                                    context.read<LectureCubit>().getLectures();
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                        ),
+                        style: TextStyle(
+                          fontFamily: 'Noto Kufi Arabic',
+                          fontSize: 14.sp,
+                        ),
+                      );
+                    },
                   ),
-                  style: TextStyle(
-                    fontFamily: 'Noto Kufi Arabic',
-                    fontSize: 14.sp,
-                  ),
-                );
-              },
+                ),
+              ],
             ),
           ),
+          
           // Content
           Expanded(
             child: BlocConsumer<LectureCubit, LectureState>(
@@ -422,16 +440,15 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                     width: 50.w,
                     height: 50.w,
                     decoration: BoxDecoration(
-                      color: Color(0xFF00BFA5),
+                      color: Color(0xFF14B8A6),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(
-                      Icons.menu_book_rounded,
-                      color: Colors.white,
-                      size: 26.sp,
+                    child: SvgPicture.asset(  
+                      'assets/images/Book (1).svg',
+                      width: 10.w,
+                      height: 10.h,
                     ),
                   ),
-                  
                   SizedBox(width: 16.w),
 
                   // Week Info
@@ -493,7 +510,7 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
           Divider(height: 1, color: Colors.grey[200]),
           SizedBox(height: 16.h),
 
-          // Title - FIXED: Changed from subjectName to lecture.lectureName
+          // Title
           Text(
             'العنوان: ${lecture.subName}',
             style: TextStyle(
@@ -509,31 +526,27 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
 
           // PDF Files Section
           if (lecture.pdfs.isNotEmpty) ...[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'ملفات المحاضرة:',
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                  fontFamily: 'Noto Kufi Arabic',
-                ),
+            Text(
+              'ملفات المحاضرة:',
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+                fontFamily: 'Noto Kufi Arabic',
               ),
+              textAlign: TextAlign.left,
             ),
             SizedBox(height: 12.h),
 
             // PDF Files List
             ...lecture.pdfs.asMap().entries.map((entry) {
-              final index = entry.key;
               final pdf = entry.value;
-              final fileName = pdf.name.split('.').first;
+              final fileName = pdf.name;
 
               return _buildFileItem(
                 fileName: fileName,
-                icon: Icons.cloud_download_outlined,
                 fileUrl: pdf.url,
-                isLast: index == lecture.pdfs.length - 1,
+                isPdf: true,
               );
             }).toList(),
 
@@ -541,27 +554,23 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
           ],
 
           // Video Recording Section
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'تسجيل المحاضرة:',
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-                fontFamily: 'Noto Kufi Arabic',
-              ),
+          Text(
+            'تسجيل المحاضرة:',
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[700],
+              fontFamily: 'Noto Kufi Arabic',
             ),
+            textAlign: TextAlign.right,
           ),
           SizedBox(height: 12.h),
 
           // Video File
           _buildFileItem(
-            fileName: lecture.video.name.split('.').first,
-            icon: Icons.play_circle_outline,
+            fileName: lecture.video.name,
             fileUrl: lecture.video.url,
-            isLast: true,
-            isVideo: true,
+            isPdf: false,
           ),
         ],
       ),
@@ -570,13 +579,11 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
 
   Widget _buildFileItem({
     required String fileName,
-    required IconData icon,
     required String fileUrl,
-    required bool isLast,
-    bool isVideo = false,
+    required bool isPdf,
   }) {
     return Container(
-      margin: EdgeInsets.only(bottom: isLast ? 0 : 8.h),
+      margin: EdgeInsets.only(bottom: 8.h),
       child: InkWell(
         onTap: () async {
           final uri = Uri.parse(fileUrl);
@@ -589,45 +596,42 @@ class Subjects_ScreenState extends State<Subjects_Screen> {
                   'تعذر فتح الملف',
                   style: TextStyle(fontFamily: 'Noto Kufi Arabic'),
                 ),
-                backgroundColor: Colors.red,
+                backgroundColor: Color(0xFF00BFA5),
               ),
             );
           }
         },
-        borderRadius: BorderRadius.circular(8.r),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              // Icon on the right
-              Icon(
-                icon,
-                color: Color(0xFF00BFA5),
-                size: 20.sp,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            // Download/Play Icon
+            Container(
+              width: 24.w,
+              height: 24.h,
+              
+              child: Icon(
+                isPdf ? Icons.cloud_download_outlined : Icons.play_circle_outline,
+                color: Color(0xFF14B8A6),
+                size: 16.sp,
               ),
-              SizedBox(width: 8.w),
-              // Text on the left
-              Expanded(
-                child: Text(
-                  fileName,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Color(0xFF00BFA5),
-                    fontFamily: 'Noto Kufi Arabic',
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.left,
-                  overflow: TextOverflow.ellipsis,
-                ),
+            ),
+            
+            SizedBox(width: 8.w),
+            
+            // File Name
+            Text(
+              fileName,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: Color(0xFF545454),
+                fontFamily: 'Noto Kufi Arabic',
+                fontWeight: FontWeight.w400,
+                decoration: TextDecoration.underline,
+                decorationColor: Color(0xFF545454),
               ),
-            ],
-          ),
+              textDirection: TextDirection.rtl,
+            ),
+          ],
         ),
       ),
     );

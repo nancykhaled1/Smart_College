@@ -38,7 +38,7 @@ class JobProgressCard extends StatelessWidget {
             Row(
               children: [
                 SvgPicture.asset(
-                  'assets/images/suitcase.svg', // أو استخدم Icon
+                  'assets/images/suitcase.svg',
                   width: 24.w,
                   height: 24.h,
                   color: Color(0xff14B8A6),
@@ -48,7 +48,7 @@ class JobProgressCard extends StatelessWidget {
                   "المسمى الوظيفي",
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: MyColors.blackColor,
+                    color: MyColors.softBlackColor,
                     fontWeight: FontWeight.w600,
                     fontFamily: 'Noto Kufi Arabic',
                   ),
@@ -58,45 +58,55 @@ class JobProgressCard extends StatelessWidget {
             
             SizedBox(height: 20.h),
             
-            // قائمة الوظائف
+            // قائمة الوظائف - العنوان وشريط التقدم في نفس الصف
             ...jobs.map((job) => Padding(
               padding: EdgeInsets.only(bottom: 16.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    job['title'] as String,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: MyColors.greyColor,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: 'Noto Kufi Arabic',
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
                   // شريط التقدم
-                  Container(
-                    height: 8.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerRight,
-                      widthFactor: job['progress'] as double,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xff14B8A6),
-                              Color(0xff2DD4BF),
-                            ],
-                            begin: Alignment.centerRight,
-                            end: Alignment.centerLeft,
+                  Expanded(
+                    child: Container(
+                      height: 8.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerRight,
+                        widthFactor: job['progress'] as double,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xff14B8A6),
+                                Color(0xff2DD4BF),
+                              ],
+                              begin: Alignment.centerRight,
+                              end: Alignment.centerLeft,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
+                    ),
+                  ),
+                  
+                  SizedBox(width: 12.w),
+                  
+                  // عنوان الوظيفة
+                  SizedBox(
+                    width: 120.w,
+                    child: Text(
+                      job['title'] as String,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: MyColors.greyColor,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Noto Kufi Arabic',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
                     ),
                   ),
                 ],

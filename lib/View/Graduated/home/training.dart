@@ -15,21 +15,19 @@ class TrainingPage extends StatefulWidget {
   const TrainingPage({super.key});
   static const String routeName = 'trainingPage';
 
-
   @override
   State<TrainingPage> createState() => __TrainingPage();
 }
 
 class __TrainingPage extends State<TrainingPage> {
   TextEditingController _searchController = TextEditingController();
-  int _currentIndex = 3; // Training
+  int _currentIndex = 3;
   Timer? _debounceTimer;
   bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
-    // Fetch templates when screen loads
     context.read<TemplateCubit>().getTemplates();
     _searchController.addListener(_onSearchChanged);
   }
@@ -70,16 +68,13 @@ class __TrainingPage extends State<TrainingPage> {
           Expanded(
             child: BlocBuilder<TemplateCubit, TemplateStates>(
               builder: (context, state) {
-                // Handle search states
                 if (_isSearching) {
                   if (state is TemplateSearchLoadingState) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircularProgressIndicator(
-                            color: MyColors.primaryColor,
-                          ),
+                          CircularProgressIndicator(color: MyColors.primaryColor),
                           SizedBox(height: 20.h),
                           Text(
                             state.loadingMessage ?? "جاري البحث عن القوالب...",
@@ -93,56 +88,11 @@ class __TrainingPage extends State<TrainingPage> {
                       ),
                     );
                   } else if (state is TemplateSearchErrorState) {
-                    return Center(
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(horizontal: 25.w),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error_outline, color: Colors.red, size: 50),
-                            SizedBox(height: 15.h),
-                            Text(
-                              "حدث خطأ في البحث",
-                              style: TextStyle(
-                                fontSize: 18.sp,
-                                fontFamily: "Noto Kufi Arabic",
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 10.h),
-                            Text(
-                              state.errorMessage ?? "حدث خطأ غير معروف",
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontFamily: "Noto Kufi Arabic",
-                                color: Colors.red[700],
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 20.h),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                context.read<TemplateCubit>().searchTemplates(_searchController.text.trim());
-                              },
-                              icon: Icon(Icons.refresh),
-                              label: Text(
-                                "إعادة المحاولة",
-                                style: TextStyle(fontFamily: "Noto Kufi Arabic"),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: MyColors.primaryColor,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    return _buildErrorWidget(
+                      state.errorMessage ?? "حدث خطأ غير معروف",
+                      () => context.read<TemplateCubit>().searchTemplates(_searchController.text.trim()),
                     );
                   } else if (state is TemplateSearchSuccessState) {
-                    // Filter templates by category = "Training"
                     final trainingTemplates = state.response.data
                         .where((template) => template.category.toLowerCase() == 'training')
                         .toList();
@@ -159,21 +109,17 @@ class __TrainingPage extends State<TrainingPage> {
                         ),
                       );
                     }
-
                     return _buildTemplatesList(trainingTemplates);
                   }
                   return SizedBox.shrink();
                 }
 
-                // Handle regular states
                 if (state is TemplateLoadingState) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(
-                          color: MyColors.primaryColor,
-                        ),
+                        CircularProgressIndicator(color: MyColors.primaryColor),
                         SizedBox(height: 20.h),
                         Text(
                           state.loadingMessage ?? "جاري تحميل القوالب...",
@@ -187,56 +133,11 @@ class __TrainingPage extends State<TrainingPage> {
                     ),
                   );
                 } else if (state is TemplateErrorState) {
-                  return Center(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(horizontal: 25.w),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.error_outline, color: Colors.red, size: 50),
-                          SizedBox(height: 15.h),
-                          Text(
-                            "حدث خطأ",
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontFamily: "Noto Kufi Arabic",
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 10.h),
-                          Text(
-                            state.errorMessage ?? "حدث خطأ غير معروف",
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontFamily: "Noto Kufi Arabic",
-                              color: Colors.red[700],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 20.h),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              context.read<TemplateCubit>().getTemplates();
-                            },
-                            icon: Icon(Icons.refresh),
-                            label: Text(
-                              "إعادة المحاولة",
-                              style: TextStyle(fontFamily: "Noto Kufi Arabic"),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: MyColors.primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  return _buildErrorWidget(
+                    state.errorMessage ?? "حدث خطأ غير معروف",
+                    () => context.read<TemplateCubit>().getTemplates(),
                   );
                 } else if (state is TemplateSuccessState) {
-                  // Filter templates by category = "Training"
                   final trainingTemplates = state.response.data
                       .where((template) => template.category.toLowerCase() == 'training')
                       .toList();
@@ -253,7 +154,6 @@ class __TrainingPage extends State<TrainingPage> {
                       ),
                     );
                   }
-
                   return _buildTemplatesList(trainingTemplates);
                 }
                 return SizedBox.shrink();
@@ -262,33 +162,55 @@ class __TrainingPage extends State<TrainingPage> {
           ),
         ],
       ),
-      // bottomNavigationBar: BottomNavigation(
-      //   currentIndex: _currentIndex,
-      //   onTap: (index) {
-      //     if (index != _currentIndex) {
-      //       String route;
-      //       switch (index) {
-      //         case 0:
-      //           route = 'gradhome';
-      //           break;
-      //         case 1:
-      //           route = 'postgraduatStudies';
-      //           break;
-      //         case 2:
-      //           route = 'gradhome'; // Chat
-      //           break;
-      //         case 3:
-      //           route = 'trainingPage';
-      //           break;
-      //         case 4:
-      //         default:
-      //           route = 'dashboardPage';
-      //           break;
-      //       }
-      //       Navigator.pushNamed(context, route);
-      //     }
-      //   },
-      // ),
+    );
+  }
+
+  Widget _buildErrorWidget(String message, VoidCallback onRetry) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 25.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, color: Colors.red, size: 50),
+            SizedBox(height: 15.h),
+            Text(
+              "حدث خطأ",
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontFamily: "Noto Kufi Arabic",
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontFamily: "Noto Kufi Arabic",
+                color: Colors.red[700],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20.h),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: Icon(Icons.refresh),
+              label: Text(
+                "إعادة المحاولة",
+                style: TextStyle(fontFamily: "Noto Kufi Arabic"),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: MyColors.primaryColor,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -298,48 +220,135 @@ class __TrainingPage extends State<TrainingPage> {
       itemCount: trainingTemplates.length,
       itemBuilder: (context, index) {
         final template = trainingTemplates[index];
-        return Card(
+        
+        // Get the first available image
+        String? imageUrl;
+        if (template.image != null && template.image!.isNotEmpty) {
+          imageUrl = template.image;
+        } else if (template.images != null && template.images!.isNotEmpty) {
+          imageUrl = template.images!.first;
+        }
+
+        return Container(
           margin: EdgeInsets.only(bottom: 16.h),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Container(
+          decoration: BoxDecoration(
             color: MyColors.whiteColor,
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    template.title,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "Noto Kufi Arabic",
-                      color: MyColors.blackColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Single Image Section
+                if (imageUrl != null && imageUrl.isNotEmpty)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      height: 200.h,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: double.infinity,
+                          height: 200.h,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.image_not_supported,
+                                size: 50,
+                                color: Colors.grey[400],
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                'فشل تحميل الصورة',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: Colors.grey[500],
+                                  fontFamily: "Noto Kufi Arabic",
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          width: double.infinity,
+                          height: 200.h,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: MyColors.primaryColor,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 10.h),
-                  // Content
-                  Text(
-                    template.content,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontFamily: "Noto Kufi Arabic",
-                      color: MyColors.textColor,
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
+                if (imageUrl != null && imageUrl.isNotEmpty)
+                  SizedBox(height: 16.h),
+                
+                // Title
+                Text(
+                  template.title,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: "Noto Kufi Arabic",
+                    color: MyColors.blackColor,
                   ),
-                  SizedBox(height: 15.h),
-                  // Location
-                  if (template.location != null)
-                    Row(
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 10.h),
+                
+                // Content
+                Text(
+                  template.content,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: "Noto Kufi Arabic",
+                    color: MyColors.textColor,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 15.h),
+                
+                // Location
+                if (template.location != null && template.location!.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 10.h),
+                    child: Row(
                       children: [
-                        SvgPicture.asset('assets/images/location.svg'),
+                       SvgPicture.asset(
+                          'assets/images/location.svg',
+                          width: 18.w,
+                          height: 18.h,
+                          color: MyColors.primaryColor,
+                        ),
                         SizedBox(width: 8.w),
                         Expanded(
                           child: Text(
@@ -353,12 +362,20 @@ class __TrainingPage extends State<TrainingPage> {
                         ),
                       ],
                     ),
-                  if (template.location != null) SizedBox(height: 10.h),
-                  // Start Date and End Date
-                  if (template.startDate != null && template.endDate != null)
-                    Row(
+                  ),
+                
+                // Start Date and End Date
+                if (template.startDate != null && template.endDate != null)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 10.h),
+                    child: Row(
                       children: [
-                        SvgPicture.asset('assets/images/calendar.svg'),
+                        SvgPicture.asset(
+                          'assets/images/calendar.svg',
+                          width: 18.w,
+                          height: 18.h,
+                          color: MyColors.primaryColor,
+                        ),
                         SizedBox(width: 8.w),
                         Expanded(
                           child: Text(
@@ -372,12 +389,20 @@ class __TrainingPage extends State<TrainingPage> {
                         ),
                       ],
                     ),
-                  if (template.startDate != null && template.endDate != null) SizedBox(height: 10.h),
-                  // Company Name
-                  if (template.companyName != null)
-                    Row(
+                  ),
+                
+                // Company Name
+                if (template.companyName != null && template.companyName!.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 10.h),
+                    child: Row(
                       children: [
-                        SvgPicture.asset('assets/images/building.svg'),
+                        SvgPicture.asset(
+                          'assets/images/building.svg',
+                          width: 18.w,
+                          height: 18.h,
+                    
+                        ),
                         SizedBox(width: 8.w),
                         Expanded(
                           child: Text(
@@ -391,33 +416,45 @@ class __TrainingPage extends State<TrainingPage> {
                         ),
                       ],
                     ),
-                     SizedBox(height: 20.h),
-                    Padding(
-                      padding:  EdgeInsets.only(right: 153),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          
-                        },
-                        style: ElevatedButton.styleFrom(
+                  ),
+                
+                SizedBox(height: 10.h),
+                
+                // Apply Button
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            "تم التقديم بنجاح على: ${template.title}",
+                            style: TextStyle(fontFamily: "Noto Kufi Arabic"),
+                          ),
                           backgroundColor: MyColors.primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 8.h),
                         ),
-                        child: Text(
-                          "قدم الآن",
-                          style: TextStyle(
-                            fontFamily: "Noto Kufi Arabic",
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15.sp,
-                            color: MyColors.whiteColor,
-                          ),
-                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 12.h),
+                      elevation: 2,
+                    ),
+                    child: Text(
+                      "قدم الآن",
+                      style: TextStyle(
+                        fontFamily: "Noto Kufi Arabic",
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15.sp,
+                        color: MyColors.whiteColor,
                       ),
                     ),
-                ],
-              ),
+                  ),
+                ),
+              ],
             ),
           ),
         );

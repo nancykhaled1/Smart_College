@@ -300,21 +300,23 @@ class GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
     );
   }
 
-  Widget _buildTrainingDetails(Template? template) {
-    if (template == null) {
-      return const SizedBox.shrink();
-    }
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+Widget _buildTrainingDetails(Template? template) {
+  if (template == null) {
+    return const SizedBox.shrink();
+  }
+  
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Location Row
+      if (template.location != null)
         Row(
           children: [
             SvgPicture.asset('assets/images/location.svg'),
             SizedBox(width: 5.w),
             Expanded(
               child: Text(
-                template.location ?? "موقع غير محدد",
+                template.location!,
                 style: TextStyle(
                   fontFamily: "Noto Kufi Arabic",
                   fontWeight: FontWeight.w500,
@@ -323,39 +325,78 @@ class GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
                 ),
               ),
             ),
-            if (template.startDate != null && template.endDate != null) ...[
-              SizedBox(width: 8.w),
-              SvgPicture.asset('assets/images/calendar.svg'),
-              SizedBox(width: 5.w),
-              Expanded(
-                child: Text(
-                  "${_formatDate(template.startDate!)} – ${_formatDate(template.endDate!)}",
-                  style: TextStyle(
-                    fontFamily: "Noto Kufi Arabic",
-                    fontWeight: FontWeight.w500,
-                    fontSize: 10.sp,
-                    color: MyColors.greyColor,
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
-        SizedBox(height: 10.h),
-        _buildDetailRow(
-          'assets/images/building.svg', 
-          template.companyName ?? "اسم الشركة غير محدد"
+      if (template.location != null) SizedBox(height: 10.h),
+      
+      // Date Row
+      if (template.startDate != null && template.endDate != null)
+        Row(
+          children: [
+            SvgPicture.asset('assets/images/calendar.svg'),
+            SizedBox(width: 5.w),
+            Expanded(
+              child: Text(
+                "${_formatDate(template.startDate!)} – ${_formatDate(template.endDate!)}",
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontFamily: "Noto Kufi Arabic",
+                  fontWeight: FontWeight.w500,
+                  color: MyColors.greyColor,
+                ),
+              ),
+            ),
+          ],
         ),
+      if (template.startDate != null && template.endDate != null) 
         SizedBox(height: 10.h),
-        _buildDetailRow('assets/images/map.svg', "View in Map"),
-      ],
-    );
-  }
-  
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
+      
+      // Company Name Row
+      if (template.companyName != null)
+        Row(
+          children: [
+            SvgPicture.asset('assets/images/building.svg'),
+            SizedBox(width: 5.w),
+            Expanded(
+              child: Text(
+                template.companyName!,
+                style: TextStyle(
+                  fontFamily: "Noto Kufi Arabic",
+                  fontWeight: FontWeight.w500,
+                  fontSize: 10.sp,
+                  color: MyColors.greyColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      if (template.companyName != null) SizedBox(height: 10.h),
+      
+      // Map Row
+      Row(
+        children: [
+          SvgPicture.asset('assets/images/map.svg'),
+          SizedBox(width: 5.w),
+          Expanded(
+            child: Text(
+              "View in Map",
+              style: TextStyle(
+                fontFamily: "Noto Kufi Arabic",
+                fontWeight: FontWeight.w500,
+                fontSize: 10.sp,
+                color: MyColors.greyColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
+String _formatDate(DateTime date) {
+  return '${date.day}/${date.month}/${date.year}';
+}
   Widget _buildDetailRow(String icon, String text) {
     return Row(
       children: [
@@ -503,14 +544,8 @@ class GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: MyColors.whiteColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10),
+       
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -539,11 +574,11 @@ class GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.right,
                     ),
-                    SizedBox(height: 8.h),
+                  
                     Text(
                       newsModel.content,
                       style: TextStyle(
-                        fontSize: 11.sp,
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.w400,
                         fontFamily: "Noto Kufi Arabic",
                         color: MyColors.greyColor,
@@ -553,7 +588,7 @@ class GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.right,
                     ),
-                    SizedBox(height: 12.h),
+                  //  SizedBox(height: 12.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -563,10 +598,10 @@ class GraduatedHomeScreenState extends State<GraduatedHomeScreen> {
                                 ? "${newsModel.createdAt!.day} ${_months[newsModel.createdAt!.month - 1]}, ${newsModel.createdAt!.year}"
                                 : "تاريخ غير متاح",
                             style: TextStyle(
-                              fontSize: 10.sp,
+                              fontSize: 9.sp,
                               fontWeight: FontWeight.w400,
                               fontFamily: "Noto Kufi Arabic",
-                              color: const Color(0xffAAAAAB),
+                              color: MyColors.greyColor,
                             ),
                           ),
                         ),

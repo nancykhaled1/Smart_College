@@ -74,13 +74,7 @@ class _NewsDetailsState extends State<NewsDetails> {
                       decoration: BoxDecoration(
                         color: MyColors.whiteColor,
                         borderRadius: BorderRadius.circular(9),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                       
                       ),
                       child: Center(
                         child: SvgPicture.asset(
@@ -183,14 +177,14 @@ class _NewsDetailsState extends State<NewsDetails> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            spreadRadius: 1,
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        // boxShadow: [
+                        //   BoxShadow(
+                        //     color: Colors.black.withOpacity(0.05),
+                        //     spreadRadius: 1,
+                        //     blurRadius: 10,
+                        //     offset: const Offset(0, 2),
+                        //   ),
+                       // ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +193,7 @@ class _NewsDetailsState extends State<NewsDetails> {
                           Text(
                             widget.news.title.isNotEmpty ? widget.news.title : "بدون عنوان",
                             style: TextStyle(
-                              fontSize: 18.sp,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               fontFamily: "Noto Kufi Arabic",
                               color: MyColors.softBlackColor,
@@ -212,13 +206,13 @@ class _NewsDetailsState extends State<NewsDetails> {
                           
                           // Date
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.calendar_today,
-                                size: 14.sp,
-                                color: const Color(0xffAAAAAB),
-                              ),
+                              // Icon(
+                              //   Icons.calendar_today,
+                              //   size: 14.sp,
+                              //   color: const Color(0xffAAAAAB),
+                              // ),
                               SizedBox(width: 5.w),
                               Text(
                                 _formatDate(widget.news.createdAt),
@@ -226,28 +220,28 @@ class _NewsDetailsState extends State<NewsDetails> {
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.w500,
                                   fontFamily: "Noto Kufi Arabic",
-                                  color: const Color(0xffAAAAAB),
+                                  color:  MyColors.greyColor,
                                 ),
-                                textAlign: TextAlign.right,
+                                textAlign: TextAlign.left,
                               ),
                             ],
                           ),
                           
-                          SizedBox(height: 20.h),
+                          // SizedBox(height: 20.h),
                           
-                          Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
+                          //Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
                           
-                          SizedBox(height: 20.h),
+                           SizedBox(height: 20.h),
                           
                           // Content
                           Text(
                             widget.news.content.isNotEmpty ? widget.news.content : "لا يوجد محتوى متاح",
                             style: TextStyle(
-                              fontSize: 14.sp,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w400,
                               fontFamily: "Noto Kufi Arabic",
                               color: widget.news.content.isNotEmpty 
-                                  ? MyColors.blackColor 
+                                    ? Color(0xff545454) 
                                   : Colors.grey,
                               height: 1.8,
                             ),

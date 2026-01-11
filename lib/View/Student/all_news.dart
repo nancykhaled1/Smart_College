@@ -76,7 +76,7 @@ class _AllNewsState extends State<AllNews> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+    //  backgroundColor: Colors.white,
       body: Stack(
         children: [
           // Background
@@ -89,12 +89,89 @@ class _AllNewsState extends State<AllNews> {
           
           // Search Bar
           Positioned(
-            top: 50.h,
-            left: 0,
-            right: 0,
-            child: CommonTopSearchBar(controller: _searchController),
+  top: 50.h,
+  left: 0,
+  right: 0,
+  child: Container(
+    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+  
+    child: Row(
+      children: [
+        // Back Button
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            width: 39.w,
+            height: 38.h,
+            decoration: BoxDecoration(
+              color: MyColors.whiteColor,
+              borderRadius: BorderRadius.circular(9),
+             
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                "assets/images/back.svg",
+                width: 8.w,
+                height: 13.h,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
-          
+        ),
+        
+        SizedBox(width: 12.w),
+        
+        // Search TextField
+        Expanded(
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _searchController,
+            builder: (context, value, child) {
+              return TextField(
+                controller: _searchController,
+                textDirection: TextDirection.rtl,
+                decoration: InputDecoration(
+                  hintText: 'ابحث عن الأخبار...',
+                  hintStyle: TextStyle(
+                    fontFamily: 'Noto Kufi Arabic',
+                    fontSize: 14.sp,
+                    color: Colors.grey,
+                  ),
+                  suffixIcon: Icon(Icons.search, color: Color(0xFF00BFA5)),
+                  prefixIcon: value.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _isSearching = false;
+                            });
+                            context.read<NewsCubit>().getNews();
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
+                ),
+                style: TextStyle(
+                  fontFamily: 'Noto Kufi Arabic',
+                  fontSize: 14.sp,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+  ),
+),
           // News List
           Positioned(
             top: 110.h,
@@ -238,14 +315,8 @@ class _AllNewsState extends State<AllNews> {
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: MyColors.whiteColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10),
+        
       ),
       child: IntrinsicHeight(
         child: Row(

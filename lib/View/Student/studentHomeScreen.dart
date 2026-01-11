@@ -649,14 +649,8 @@ class _HomescreenState extends State<studentHomescreen> {
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: MyColors.whiteColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10),
+       
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -675,21 +669,21 @@ class _HomescreenState extends State<studentHomescreen> {
                     Text(
                       newsModel.title,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                         fontFamily: "Noto Kufi Arabic",
-                        color: MyColors.blackColor,
+                        color:    Color(0xff383838) ,
                         height: 1.4,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.right,
                     ),
-                    SizedBox(height: 8.h),
+                   // SizedBox(height: 8.h),
                     Text(
                       newsModel.content,
                       style: TextStyle(
-                        fontSize: 11.sp,
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.w400,
                         fontFamily: "Noto Kufi Arabic",
                         color: MyColors.greyColor,
@@ -699,7 +693,7 @@ class _HomescreenState extends State<studentHomescreen> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.right,
                     ),
-                    SizedBox(height: 12.h),
+                   // SizedBox(height: 12.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -728,9 +722,9 @@ class _HomescreenState extends State<studentHomescreen> {
                             );
                           },
                           child: Text(
-                            "عرض المزيد",
+                            "معرفة المزيد",
                             style: TextStyle(
-                              fontSize: 12.sp,
+                              fontSize: 8.sp,
                               fontWeight: FontWeight.w500,
                               fontFamily: "Noto Kufi Arabic",
                               color: MyColors.primaryColor,
