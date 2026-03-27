@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,12 +8,12 @@ import 'package:smart_college/Models/Response/LoginError.dart';
 import 'package:smart_college/Models/Response/LoginResponse.dart';
 import 'package:smart_college/Repositories/LoginRepository.dart';
 import '../../../services/local/sharedPreference.dart';
-import 'States.dart';
+import '../../States/States.dart';
 
-class LoginScreenCubit extends Cubit<LoginStates> {
+class LoginScreenCubit extends Cubit<States> {
   final LoginRepository repository;
 
-  LoginScreenCubit(this.repository) : super(LoginInitialState());
+  LoginScreenCubit(this.repository) : super(InitialState());
 
   var formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
@@ -22,7 +24,7 @@ class LoginScreenCubit extends Cubit<LoginStates> {
 
   Future<void> login() async {
     if (formKey.currentState!.validate()) {
-      emit(LoginLoadingState(loadingMessage: "Loading..."));
+      emit(LoadingState(loadingMessage: "Loading..."));
 
       final request = LoginRequest(
         email: emailController.text,
@@ -34,22 +36,36 @@ class LoginScreenCubit extends Cubit<LoginStates> {
 
       response.fold(
             (error) {
-          emit(LoginErrorState(errorMessage: error.error!.message));
+          emit(ErrorState(errorMessage: error.error!.message));
         },
             (data) async {
-          // هنا جالك التوكن من السيرفر
-          final token = data.data?.token; // تأكدي إن اسم الفيلد هو token
 
-
-          // خزنه محليًا
+          //تخزين التوكن
+          final token = data.data?.token;
           await TokenStorage.saveToken(token!);
           final savedToken = await TokenStorage.getToken();
           print("Saved token locally: $savedToken");
 
-          // ابعتي الـ Success State
+          //تخزين الرول
+          final role = data.data?.user?.role;
+          await TokenStorage.saveRole(role!);
+          final savedRole = await TokenStorage.getRole();
+          print("Saved role locally: $savedRole");
+
+          //تخزين ال id
+          final userId = data.data?.user?.id;
+          await TokenStorage.saveId(userId!);
+          final savedUserId = await TokenStorage.getUserId();
+          print("Saved id locally: $savedUserId");
+
+
           emit(LoginSuccessState(response: data));
         },
       );
     }
   }
 }
+
+
+
+

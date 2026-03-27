@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_college/utils/colors.dart';
+import '../../Cubits/Home/ChatScreenViewModel.dart';
+import '../../services/local/sharedPreference.dart';
+import '../SmartChat/SmartChat.dart';
 
-class CommonBottomNavigation extends StatelessWidget {
+class StudentBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const CommonBottomNavigation({
+  const StudentBottomNavigation({
     super.key,
     required this.currentIndex,
     required this.onTap,
@@ -17,8 +21,8 @@ class CommonBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
-      children: [ 
- Container(
+      children: [
+        Container(
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
@@ -30,12 +34,21 @@ class CommonBottomNavigation extends StatelessWidget {
             ],
           ),
           child: BottomNavigationBar(
-            currentIndex: currentIndex,
-            onTap: onTap,
+            currentIndex: currentIndex > 2 ? currentIndex : currentIndex,
+            onTap: (index) {
+              // ✅ بدل ما نعمل Navigator.push، نبلّغ الـ parent يغير الصفحة
+              if (index == 2) {
+                // زر الشات - مش هنعمل حاجة هنا
+                return;
+              }
+              onTap(index); // ✅ نبلّغ الـ parent يغير الـ index
+            },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             selectedItemColor: MyColors.primaryColor,
             unselectedItemColor: MyColors.textColor,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
             selectedLabelStyle: TextStyle(
               fontFamily: "Noto Kufi Arabic",
               fontSize: 10.sp,
@@ -47,74 +60,57 @@ class CommonBottomNavigation extends StatelessWidget {
               fontWeight: FontWeight.w400,
             ),
             items: [
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  "assets/images/home.svg",
-                  width: 24.w,
-                  height: 24.h,
-                  color: currentIndex == 0
-                      ? MyColors.primaryColor
-                      : MyColors.textColor,
-                ),
-                label: 'الرئيسية',
+              _buildNavItem(
+                iconPath: "assets/images/home.svg",
+                label: "الرئيسية",
+                index: 0,
               ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  "assets/images/subject.svg",
-                  width: 24.w,
-                  height: 24.h,
-                  color: currentIndex == 1
-                      ? MyColors.primaryColor
-                      : MyColors.textColor,
-                ),
-                label: ' المواد الدراسية',
+              _buildNavItem(
+                iconPath: "assets/images/subject.svg",
+                label: "المواد الدراسية",
+                index: 1,
               ),
               const BottomNavigationBarItem(
-                icon: SizedBox.shrink(), // مكان فاضي لزر الشات
+                icon: SizedBox.shrink(),
                 label: '',
               ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  "assets/images/exam.svg",
-                  width: 24.w,
-                  height: 24.h,
-                  color: currentIndex == 3
-                      ? MyColors.primaryColor
-                      : MyColors.textColor,
-                ),
-                label: 'الامتحانات',
+              _buildNavItem(
+                iconPath: "assets/images/exam.svg",
+                label: "الامتحانات",
+                index: 3,
               ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  "assets/images/profile.svg",
-                  width: 24.w,
-                  height: 24.h,
-                  color: currentIndex == 4
-                      ? MyColors.primaryColor
-                      : MyColors.greyColor,
-                ),
-                label: 'حسابي',
+              _buildNavItem(
+                iconPath: "assets/images/profile.svg",
+                label: "حسابي",
+                index: 4,
               ),
             ],
           ),
         ),
 
-        // زر الشات الطالع لفوق
+        // ✅ زر الشات الطالع لفوق
         Positioned(
-          top: -25, // يخليه يطلع فوق شوية
-          left: MediaQuery.of(context).size.width / 2 - 30, // يتوسط الشاشة
+          top: -25,
+          left: MediaQuery.of(context).size.width / 2 - 30,
           child: GestureDetector(
-            onTap: () => onTap(0), // الزر هيعتبر index = 2
+            onTap: () => _openChatScreen(context),
             child: Container(
               width: 60,
               height: 60,
               decoration: BoxDecoration(
                 color: MyColors.primaryColor,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: MyColors.primaryColor.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Center(
                 child: SvgPicture.asset(
-                  "assets/images/chat.svg", // أيقونة الشات
+                  "assets/images/chat.svg",
                   width: 28.w,
                   height: 28.h,
                   color: Colors.white,
@@ -124,6 +120,42 @@ class CommonBottomNavigation extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem({
+    required String iconPath,
+    required String label,
+    required int index,
+  }) {
+    return BottomNavigationBarItem(
+      icon: SvgPicture.asset(
+        iconPath,
+        width: 24.w,
+        height: 24.h,
+        color: currentIndex == index ? MyColors.primaryColor : MyColors.textColor,
+      ),
+      label: label,
+    );
+  }
+
+  Future<void> _openChatScreen(BuildContext context) async {
+    final savedToken = await TokenStorage.getToken();
+    
+    if (!context.mounted) return;
+
+    // ✅ فتح صفحة الشات في صفحة جديدة (مش جزء من الـ bottom navigation)
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => ChatCubit(
+            token: savedToken ?? '',
+            adminId: "68d505b6cb5768439463619b",
+          )..connectSocket(),
+          child: const ChatScreen(),
+        ),
+      ),
     );
   }
 }

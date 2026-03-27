@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:smart_college/Cubits/Home/ChatScreenViewModel.dart';
+import 'package:smart_college/View/Graduated/home/dashboard.dart';
+import 'package:smart_college/View/Graduated/home/postgraduat_%20studies.dart';
+import 'package:smart_college/View/Graduated/home/training.dart';
+import 'package:smart_college/View/SmartChat/SmartChat.dart';
+import 'package:smart_college/services/local/sharedPreference.dart';
 import 'package:smart_college/utils/colors.dart';
 
-class CommonBottomNavigation extends StatelessWidget {
+class BottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const CommonBottomNavigation({
+  const BottomNavigation({
     super.key,
     required this.currentIndex,
     required this.onTap,
   });
-
+  
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -32,7 +39,9 @@ class CommonBottomNavigation extends StatelessWidget {
           ),
           child: BottomNavigationBar(
             currentIndex: currentIndex,
-            onTap: onTap,
+        onTap: (index) {
+          onTap(index);
+        },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             selectedItemColor: MyColors.primaryColor,
@@ -101,21 +110,45 @@ class CommonBottomNavigation extends StatelessWidget {
         ),
 
         // زر الشات الطالع لفوق
-        Positioned(
-          top: -25, // يخليه يطلع فوق شوية
-          left: MediaQuery.of(context).size.width / 2 - 30, // يتوسط الشاشة
+       Positioned(
+          top: -25,
+          left: MediaQuery.of(context).size.width / 2 - 30,
           child: GestureDetector(
-            onTap: () => onTap(0), // الزر هيعتبر index = 2
+            onTap: () async {
+              final savedToken = await TokenStorage.getToken();
+              print("Token used: $savedToken");
+
+              // ✅ نروح لصفحة الشات بدون ما نأثر على الـ navigation
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (_) => ChatCubit(
+                      token: savedToken ?? '', // 🔑 توكن اليوزر الحالي
+                      adminId: "68d505b6cb5768439463619b", // الأدمن الأساسي
+                    )..connectSocket(), // ⬅️ نبدأ الاتصال فورًا
+                    child: ChatScreen(),
+                  ),
+                ),
+              );
+            },
             child: Container(
               width: 60,
               height: 60,
               decoration: BoxDecoration(
                 color: MyColors.primaryColor,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: MyColors.primaryColor.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Center(
                 child: SvgPicture.asset(
-                  "assets/images/chat.svg", // أيقونة الشات
+                  "assets/images/chat.svg",
                   width: 28.w,
                   height: 28.h,
                   color: Colors.white,
@@ -127,4 +160,27 @@ class CommonBottomNavigation extends StatelessWidget {
       ],
     );
   }
+ void _handleNavigation(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        onTap(0); 
+        break;
+
+      case 1: 
+        Navigator.pushNamed(context, PostgraduatStudies.routeName);
+        break;
+
+
+      case 3: 
+        Navigator.pushNamed(context, TrainingPage.routeName);
+        break;
+
+      case 4: 
+        Navigator.pushNamed(context, DashboardPage.routeName);
+        break;
+
+      default:
+        onTap(index);
+    }
+  } 
 }
